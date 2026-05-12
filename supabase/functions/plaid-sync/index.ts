@@ -32,7 +32,7 @@ serve(async (req) => {
           country_codes: ['US'],
           language: 'en',
           user: {
-            client_user_id: Deno.env.get('PLAID_CLIENT_ID') || 'driver_cc_user',
+            client_user_id: Deno.env.get('PLAID_CLIENT_ID') || 'pbtrack_user',
           },
           products: ['transactions'],
         }),
