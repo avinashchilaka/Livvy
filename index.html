@@ -129,46 +129,6 @@
   background:transparent;color:var(--muted);cursor:pointer;
 }
 
-/* SPLASH SCREEN */
-#splashScreen{
-  position:fixed;inset:0;z-index:9999;
-  background:#060810;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  transition:opacity 0.5s ease;
-}
-#splashScreen.fade{opacity:0;pointer-events:none;}
-#splashScreen.gone{display:none;}
-.splash-icon{font-size:5rem;margin-bottom:16px;animation:splashPulse 1s ease infinite;}
-.splash-title{
-  font-family:'Rajdhani',sans-serif;
-  font-size:1.8rem;font-weight:700;
-  letter-spacing:3px;color:#00e5ff;
-  text-transform:uppercase;margin-bottom:6px;
-}
-.splash-sub{
-  font-size:0.75rem;color:#4a5568;
-  letter-spacing:2px;text-transform:uppercase;
-  margin-bottom:32px;
-}
-.splash-ver{
-  font-family:'Share Tech Mono',monospace;
-  font-size:0.7rem;color:#00e5ff;
-  opacity:0.5;position:absolute;bottom:40px;
-}
-.splash-bar-wrap{
-  width:180px;height:3px;
-  background:rgba(0,229,255,0.1);
-  border-radius:99px;overflow:hidden;
-}
-.splash-bar{
-  height:100%;background:var(--accent,#00e5ff);
-  border-radius:99px;width:0%;
-  animation:splashLoad 1.5s ease forwards;
-}
-@keyframes splashPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
-@keyframes splashLoad{0%{width:0%;}100%{width:100%;}}
-
 body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;padding:12px;
   background-image:radial-gradient(ellipse at 20% 0%,rgba(0,229,255,0.04) 0%,transparent 60%),
   radial-gradient(ellipse at 80% 100%,rgba(168,85,247,0.04) 0%,transparent 60%);
@@ -417,17 +377,6 @@ input:focus,select:focus{border-color:var(--accent);}
       ✅ Already restored / Start fresh
     </button>
   </div>
-</div>
-
-<!-- SPLASH SCREEN -->
-<div id="splashScreen">
-  <div class="splash-icon">⚡</div>
-  <div class="splash-title">PBTrack</div>
-  <div class="splash-sub">Personal Finance Tracker</div>
-  <div class="splash-bar-wrap">
-    <div class="splash-bar"></div>
-  </div>
-  <div class="splash-ver" id="splashVer"></div>
 </div>
 
 <!-- HEADER -->
@@ -3145,10 +3094,10 @@ function checkNewVersion(){
 
   // Show full screen restore overlay ONLY if this version not confirmed yet
   if(confirmed !== VERSION){
-    // Show overlay after splash dismisses
+    // Show overlay directly
     setTimeout(()=>{
       if(overlay) overlay.classList.remove('gone');
-    }, 2000);
+    }, 0);
   } else {
     // Already confirmed — hide overlay, go straight to app
     if(overlay) overlay.classList.add('gone');
@@ -8439,20 +8388,6 @@ render();
 
 populateBudgetDetails();
 
-// ── SPLASH SCREEN ─────────────────────────────────────────────
-function initSplash(){
-  const splash = document.getElementById('splashScreen');
-  const splashVer = document.getElementById('splashVer');
-  if(splashVer) splashVer.textContent = VERSION;
-
-  // Dismiss splash immediately
-  if(splash){
-    splash.classList.add('fade');
-    setTimeout(()=>{ splash.classList.add('gone'); }, 500);
-  }
-}
-initSplash();
-
 // ── SERVICE WORKER (offline support) ──────────────────────────
 if('serviceWorker' in navigator){
   // Register inline service worker for offline capability
@@ -8555,7 +8490,7 @@ function renderDashToday(){
 // ── PLAID SYNC LOGIC ──────────────────────────────────────────
 async function startPlaidSync() {
   // Get supabase ref from Deno env in real environment, but here we can just mock or use the configured backend
-  // For the sake of ArthaPulse dashboard standalone file, we assume the user replaces SUPABASE_PROJECT_REF with their own
+  // For the sake of PBTrack dashboard standalone file, we assume the user replaces SUPABASE_PROJECT_REF with their own
   const SUPABASE_PROJECT_REF = window.SUPABASE_PROJECT_REF || 'your-project-ref';
 
   try {
