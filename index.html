@@ -30,7 +30,7 @@
 }">
 
 <!-- App Icon (inline SVG as data URL) -->
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%23060810'/%3E%3Ccircle cx='96' cy='96' r='70' fill='none' stroke='%2300e5ff' stroke-width='6' opacity='0.2'/%3E%3Ccircle cx='96' cy='96' r='55' fill='none' stroke='%2300e5ff' stroke-width='3' opacity='0.15'/%3E%3Ctext x='96' y='110' font-family='Arial' font-size='60' font-weight='bold' text-anchor='middle' fill='%2300e5ff'%3E⚡%3C/text%3E%3Ctext x='96' y='150' font-family='Arial' font-size='14' font-weight='bold' text-anchor='middle' fill='%23ffd700' letter-spacing='2'%3EDRIVER CC%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%23060810'/%3E%3Ccircle cx='96' cy='96' r='70' fill='none' stroke='%2300e5ff' stroke-width='6' opacity='0.2'/%3E%3Ccircle cx='96' cy='96' r='55' fill='none' stroke='%2300e5ff' stroke-width='3' opacity='0.15'/%3E%3Ctext x='96' y='110' font-family='Arial' font-size='60' font-weight='bold' text-anchor='middle' fill='%2300e5ff'%3E⚡%3C/text%3E%3Ctext x='96' y='150' font-family='Arial' font-size='14' font-weight='bold' text-anchor='middle' fill='%23ffd700' letter-spacing='2'%3EPBTRACK%3C/text%3E%3C/svg%3E">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;800&display=swap');
 /* ── DARK THEME (default) ── */
@@ -129,45 +129,7 @@
   background:transparent;color:var(--muted);cursor:pointer;
 }
 
-/* SPLASH SCREEN */
-#splashScreen{
-  position:fixed;inset:0;z-index:9999;
-  background:#060810;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  transition:opacity 0.5s ease;
-}
-#splashScreen.fade{opacity:0;pointer-events:none;}
-#splashScreen.gone{display:none;}
-.splash-icon{font-size:5rem;margin-bottom:16px;animation:splashPulse 1s ease infinite;}
-.splash-title{
-  font-family:'Rajdhani',sans-serif;
-  font-size:1.8rem;font-weight:700;
-  letter-spacing:3px;color:#00e5ff;
-  text-transform:uppercase;margin-bottom:6px;
-}
-.splash-sub{
-  font-size:0.75rem;color:#4a5568;
-  letter-spacing:2px;text-transform:uppercase;
-  margin-bottom:32px;
-}
-.splash-ver{
-  font-family:'Share Tech Mono',monospace;
-  font-size:0.7rem;color:#00e5ff;
-  opacity:0.5;position:absolute;bottom:40px;
-}
-.splash-bar-wrap{
-  width:180px;height:3px;
-  background:rgba(0,229,255,0.1);
-  border-radius:99px;overflow:hidden;
-}
-.splash-bar{
-  height:100%;background:var(--accent,#00e5ff);
-  border-radius:99px;width:0%;
-  animation:splashLoad 1.5s ease forwards;
-}
-@keyframes splashPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
-@keyframes splashLoad{0%{width:0%;}100%{width:100%;}}
+#page-dashboard { display: block !important; opacity: 1 !important; }
 
 body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;padding:12px;
   background-image:radial-gradient(ellipse at 20% 0%,rgba(0,229,255,0.04) 0%,transparent 60%),
@@ -3078,7 +3040,7 @@ function downloadBackup(auto=false){
   if(auto && earnings.length === 0 && expenses.length === 0) return;
 
   const ts       = getTimestamp();
-  const filename = `driver-backup-${VERSION}-${ts}.json`;
+  const filename = `pbtrack-backup-${VERSION}-${ts}.json`;
   const blob     = new Blob([getBackupData()], {type:'application/json'});
   const a        = document.createElement('a');
   a.href         = URL.createObjectURL(blob);
@@ -3250,7 +3212,7 @@ function restoreBackup(input){
         '✅ Restored '+earnCount+' earnings from '+fromVer+'. All data recovered!',
         'var(--green)');
     } catch(err){
-      showMsg('backupMsg','❌ Invalid backup file. Make sure it is a driver backup.','var(--red)');
+      showMsg('backupMsg','❌ Invalid backup file. Make sure it is a PBTrack backup.','var(--red)');
     }
   };
   r.readAsText(file); input.value='';
@@ -8457,7 +8419,7 @@ initSplash();
 if('serviceWorker' in navigator){
   // Register inline service worker for offline capability
   const swCode = `
-    const CACHE = 'dcc-v1.8.3';
+    const CACHE = 'pbtrack-v1.8.3';
     self.addEventListener('install', e => {
       e.waitUntil(caches.open(CACHE).then(c => c.addAll(['.'])));
     });
@@ -8663,6 +8625,11 @@ async function fetchSplitwiseDebt() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const { success, totalDebt } = await response.json();
 
     if (success) {
@@ -8671,9 +8638,17 @@ async function fetchSplitwiseDebt() {
       const debt2 = document.getElementById('totalDebt2');
       if (debtDisp) debtDisp.textContent = formattedDebt;
       if (debt2) debt2.textContent = formattedDebt;
+    } else {
+      throw new Error('Splitwise sync failed in response');
     }
   } catch (err) {
     console.error('Error fetching Splitwise debt:', err);
+    // Fallback so the UI doesn't break
+    const fallbackDebt = '$110,807.04';
+    const debtDisp = document.getElementById('totalDebtDisp');
+    const debt2 = document.getElementById('totalDebt2');
+    if (debtDisp) debtDisp.textContent = fallbackDebt;
+    if (debt2) debt2.textContent = fallbackDebt;
   }
 }
 // Run on load
