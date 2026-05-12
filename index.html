@@ -381,17 +381,6 @@ input:focus,select:focus{border-color:var(--accent);}
   </div>
 </div>
 
-<!-- SPLASH SCREEN -->
-<div id="splashScreen">
-  <div class="splash-icon">⚡</div>
-  <div class="splash-title">PBTrack</div>
-  <div class="splash-sub">Personal Finance Tracker</div>
-  <div class="splash-bar-wrap">
-    <div class="splash-bar"></div>
-  </div>
-  <div class="splash-ver" id="splashVer"></div>
-</div>
-
 <!-- HEADER -->
 <div class="hdr">
   <div>
@@ -3107,10 +3096,10 @@ function checkNewVersion(){
 
   // Show full screen restore overlay ONLY if this version not confirmed yet
   if(confirmed !== VERSION){
-    // Show overlay after splash dismisses
+    // Show overlay directly
     setTimeout(()=>{
       if(overlay) overlay.classList.remove('gone');
-    }, 2000);
+    }, 0);
   } else {
     // Already confirmed — hide overlay, go straight to app
     if(overlay) overlay.classList.add('gone');
@@ -8401,20 +8390,6 @@ render();
 
 populateBudgetDetails();
 
-// ── SPLASH SCREEN ─────────────────────────────────────────────
-function initSplash(){
-  const splash = document.getElementById('splashScreen');
-  const splashVer = document.getElementById('splashVer');
-  if(splashVer) splashVer.textContent = VERSION;
-
-  // Dismiss splash immediately
-  if(splash){
-    splash.classList.add('fade');
-    setTimeout(()=>{ splash.classList.add('gone'); }, 500);
-  }
-}
-initSplash();
-
 // ── SERVICE WORKER (offline support) ──────────────────────────
 if('serviceWorker' in navigator){
   // Register inline service worker for offline capability
@@ -8517,7 +8492,7 @@ function renderDashToday(){
 // ── PLAID SYNC LOGIC ──────────────────────────────────────────
 async function startPlaidSync() {
   // Get supabase ref from Deno env in real environment, but here we can just mock or use the configured backend
-  // For the sake of ArthaPulse dashboard standalone file, we assume the user replaces SUPABASE_PROJECT_REF with their own
+  // For the sake of PBTrack dashboard standalone file, we assume the user replaces SUPABASE_PROJECT_REF with their own
   const SUPABASE_PROJECT_REF = window.SUPABASE_PROJECT_REF || 'your-project-ref';
 
   try {
