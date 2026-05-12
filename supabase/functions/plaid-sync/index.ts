@@ -28,7 +28,7 @@ serve(async (req) => {
         body: JSON.stringify({
           client_id: PLAID_CLIENT_ID,
           secret: PLAID_SECRET,
-          client_name: 'PBTrack',
+          client_name: 'Driver Command Center',
           country_codes: ['US'],
           language: 'en',
           user: {

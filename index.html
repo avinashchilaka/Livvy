@@ -381,28 +381,36 @@ input:focus,select:focus{border-color:var(--accent);}
   </div>
 </div>
 
+<!-- SPLASH SCREEN -->
+<div id="splashScreen">
+  <div class="splash-icon">⚡</div>
+  <div class="splash-title">PBTrack</div>
+  <div class="splash-sub">Personal Finance Tracker</div>
+  <div class="splash-bar-wrap">
+    <div class="splash-bar"></div>
+  </div>
+  <div class="splash-ver" id="splashVer"></div>
+</div>
+
 <!-- HEADER -->
 <div class="hdr">
   <div>
     <div style="display:flex;align-items:center;gap:8px">
       <div class="hdr-title">⚡ PBTrack</div>
-      <span style="background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.2);
-        border-radius:5px;padding:2px 7px;font-size:0.6rem;font-family:'Share Tech Mono';
-        color:var(--accent);letter-spacing:1px" id="versionBadge">v1.8.14</span>
     </div>
     <div class="hdr-sub" id="dateStr"></div>
   </div>
   <div style="text-align:right;display:flex;align-items:center;gap:10px">
-    <button onclick="startPlaidSync()"
-      style="background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);
-        border-radius:8px;color:var(--accent);font-size:0.8rem;padding:6px 12px;
-        cursor:pointer;line-height:1;font-weight:bold;font-family:'Rajdhani',sans-serif;letter-spacing:1px;">
-      🏦 Sync Bank
-    </button>
-    <div>
+    <div style="text-align:right">
       <div style="font-size:0.6rem;letter-spacing:1px;color:var(--muted);text-transform:uppercase">Daily Quota</div>
-      <div style="font-family:'Share Tech Mono';font-size:1.2rem;color:var(--gold)">$400.00</div>
+      <div style="font-family:'Share Tech Mono';font-size:1.1rem;color:var(--gold);line-height:1.2">$400.00</div>
     </div>
+    <button onclick="startPlaidSync()"
+      style="background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.2);
+        border-radius:6px;color:var(--accent);font-size:0.75rem;padding:6px 10px;
+        cursor:pointer;line-height:1;font-weight:bold;font-family:'Rajdhani',sans-serif;letter-spacing:1px;display:flex;align-items:center;gap:4px;">
+      <span style="font-size:0.9rem">🏦</span> Sync
+    </button>
     <button onclick="toggleQuickMenu()"
       style="background:rgba(255,255,255,0.08);border:1px solid var(--border);
         border-radius:8px;color:var(--text);font-size:1.2rem;padding:6px 12px;
@@ -489,7 +497,7 @@ input:focus,select:focus{border-color:var(--accent);}
     <div style="padding:14px 16px 10px;border-bottom:1px solid var(--border)">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div id="dashTimeTitle" style="font-family:'Rajdhani';font-weight:700;font-size:0.85rem;letter-spacing:1px;text-transform:uppercase;color:var(--accent)">📋 Dashboard</div>
-        <div id="dashMode" style="font-size:0.68rem;padding:3px 8px;border-radius:99px;background:rgba(255,59,92,0.15);color:var(--red)">🔴 Catch Up</div>
+        <div id="dashMode" style="display:none;font-size:0.68rem;padding:3px 8px;border-radius:99px;background:rgba(255,59,92,0.15);color:var(--red)">🔴 Catch Up</div>
       </div>
     </div>
 
@@ -529,7 +537,7 @@ input:focus,select:focus{border-color:var(--accent);}
     <!-- Recommendation -->
     <div style="padding:10px 14px;border-top:1px solid var(--border)">
       <div style="font-size:0.7rem;color:var(--muted);margin-bottom:3px">💡 RECOMMENDED SHIFT</div>
-      <div id="dashRec" style="font-size:0.78rem;color:var(--text)">Loading...</div>
+      <div id="dashRec" style="font-size:0.78rem;color:var(--text)">Checking data...</div>
     </div>
   </div>
 
@@ -540,7 +548,7 @@ input:focus,select:focus{border-color:var(--accent);}
   <div style="display:flex;align-items:center;justify-content:space-between;background:var(--s1);border-radius:10px;padding:8px 14px;margin-bottom:10px">
     <button onclick="navDay(-1)" style="background:none;border:none;color:var(--accent);font-size:1.4rem;cursor:pointer;padding:2px 10px">◀</button>
     <div style="text-align:center;flex:1">
-      <div id="navDayLabel" style="font-family:'Rajdhani';font-weight:700;font-size:1rem;color:var(--accent)">Loading...</div>
+      <div id="navDayLabel" style="font-family:'Rajdhani';font-weight:700;font-size:1rem;color:var(--accent)">Checking data...</div>
       <div id="navDayDate" style="font-size:0.68rem;color:var(--muted)"></div>
     </div>
     <button onclick="navDay(1)" id="navDayFwd" style="background:none;border:none;color:var(--accent);font-size:1.4rem;cursor:pointer;padding:2px 10px">▶</button>
@@ -2908,64 +2916,8 @@ let UBER_CASHBACK_RATE = parseFloat(localStorage.getItem('dcc_cashback_rate') ||
 let calViewYear  = new Date().getFullYear();
 let calViewMonth = new Date().getMonth();
 
-// Global data variables
-let earnings         = JSON.parse(localStorage.getItem('dcc_earn')    || '[]');
-let expenses         = JSON.parse(localStorage.getItem('dcc_exp')     || '[]');
-window.plaidExpenses = JSON.parse(localStorage.getItem('dcc_plaid_exp') || '[]');
-let bills            = JSON.parse(localStorage.getItem('dcc_bills')   || 'null') || JSON.parse(JSON.stringify(DEFAULT_BILLS||[]));
-let debts            = JSON.parse(localStorage.getItem('dcc_debts')   || 'null') || JSON.parse(JSON.stringify(DEFAULT_DEBTS||[]));
-let accounts         = JSON.parse(localStorage.getItem('dcc_accts')   || 'null') || JSON.parse(JSON.stringify(DEFAULT_ACCOUNTS||[]));
-let shifts           = JSON.parse(localStorage.getItem('dcc_shifts')  || '[]');
-let transfers        = JSON.parse(localStorage.getItem('dcc_xfers')   || '[]');
-let efSaved          = parseFloat(localStorage.getItem('dcc_ef')      || '0');
-let subcats          = JSON.parse(localStorage.getItem('dcc_subcats') || 'null') || JSON.parse(JSON.stringify(DEFAULT_SUBCATS));
-let varoDeposits     = JSON.parse(localStorage.getItem('dcc_varo')   || '[]');
-let catchup          = JSON.parse(localStorage.getItem('dcc_catchup')|| '[]');
-let carryover        = JSON.parse(localStorage.getItem('dcc_carryover')|| '[]');
-let oneTimeExpenses  = JSON.parse(localStorage.getItem('dcc_onetimes')|| '[]');
-let milesLog         = JSON.parse(localStorage.getItem('dcc_miles')   || '[]');
-let eddieSavedTotal  = parseFloat(localStorage.getItem('dcc_eddie_saved') || '0');
-const EDDIE_DEADLINE = new Date('2026-07-01');
-const EDDIE_ORIGINAL = 4000;
-
-// Default subcategories per category
-const DEFAULT_SUBCATS = {
-  tesla: ['Tesla Supercharger'],
-  road: ['Coffee / Energy Drinks','Parking','Tolls','Car Wash','Minor Car Maintenance','Other'],
-  living: ['Food & Dining','Groceries','Household Supplies','Laundry','Online Shopping','Personal Care & Hygiene','Clothing','Entertainment','Other'],
-  subscriptions: ['Apple One','Google One','Crunchyroll','Mystro','Other subscription'],
-  debt: ['Eddie','Bharath','Akash Dhanasekar','Krishna Chaitanya','Anitha','Varo Cash Advance','Varo Line of Credit','Discover Card','Other debt payment'],
-  transfer: ['Uber Debit → Varo','Uber Debit → Apple Cash','Varo → Discover','Varo → Capital One','Apple Cash → Capital One','Apple Cash → Cash App','Cash App → Discover','Zelle out','Other transfer'],
-  medical: ['Ozempic','Prescription','Doctor visit','Other medical'],
-  other: ['Other expense']
-};
-
-const DEFAULT_BILLS = [
-  {name:'Rent',amount:2084.00,day:1,paid:true,paidAmount:2084.00,category:'bills',skipped:false},
-  {name:'India 1',amount:138.76,day:3,paid:true,paidAmount:138.76,category:'bills',skipped:false},
-  {name:'LetsFund (Credit Repair)',amount:63.00,day:7,paid:false,paidAmount:0,category:'bills',skipped:false},
-  {name:'Crunchyroll',amount:13.99,day:7,paid:false,paidAmount:0,category:'subscriptions',skipped:false},
-  {name:'AT&T',amount:540.00,day:8,paid:false,paidAmount:0,category:'bills',skipped:false},
-  {name:'Varo LOC Payment',amount:220.00,day:9,paid:false,paidAmount:0,category:'bills',skipped:false},
-  {name:'Mystro',amount:18.99,day:12,paid:true,paidAmount:18.99,category:'bills',skipped:false},
-  {name:'Tesla Loan Payment',amount:728.86,day:15,paid:true,paidAmount:728.86,category:'vehicle',skipped:false},
-  {name:'India 2',amount:138.76,day:18,paid:true,paidAmount:138.76,category:'bills',skipped:false},
-  {name:'Bharath CC',amount:735.00,day:20,paid:false,paidAmount:655.00,category:'bills',skipped:false},
-  {name:'Google One',amount:19.99,day:20,paid:true,paidAmount:19.99,category:'subscriptions',skipped:false},
-  {name:'Ozempic',amount:385.00,day:20,paid:false,paidAmount:0,category:'medical',skipped:true,lastSkipped:'2026-04'},
-  {name:'Utilities',amount:84.62,day:21,paid:false,paidAmount:0,category:'bills',skipped:false},
-  {name:'Discover Card (Min)',amount:44.00,day:22,paid:true,paidAmount:44.00,category:'debt',skipped:false},
-  {name:'Tesla Insurance',amount:212.96,day:23,paid:false,paidAmount:0,category:'vehicle',skipped:true,lastSkipped:'2026-04'},
-  {name:'India 3',amount:160.10,day:25,paid:true,paidAmount:160.10,category:'bills',skipped:false},
-  {name:'Apple One',amount:37.95,day:26,paid:false,paidAmount:0,category:'subscriptions',skipped:false},
-  {name:'Tesla Full Self-Driving',amount:106.67,day:11,paid:false,paidAmount:0,category:'subscriptions',skipped:false},
-  {name:'Tesla Premium Connectivity',amount:9.99,day:16,paid:false,paidAmount:0,category:'subscriptions',skipped:false},
-  {name:'Tesla Windshield Protection',amount:16.00,day:20,paid:false,paidAmount:0,category:'subscriptions',skipped:false},
-  {name:'Tesla Wheel & Tire Protection',amount:12.00,day:20,paid:false,paidAmount:0,category:'subscriptions',skipped:false},
-];
-
 // ── BILL MIGRATION (runs in calcAllAccountBalances) ──────────
-const REQUIRED_BILLS = [
+var REQUIRED_BILLS = [
     {name:'Tesla Full Self-Driving',amount:106.67,day:11,paid:false,paidAmount:0,category:'subscriptions',skipped:false},
     {name:'Tesla Premium Connectivity',amount:9.99,day:16,paid:false,paidAmount:0,category:'subscriptions',skipped:false},
     {name:'Tesla Windshield Protection',amount:16.00,day:20,paid:false,paidAmount:0,category:'subscriptions',skipped:false},
@@ -3000,6 +2952,85 @@ function calcAllAccountBalances(){
 
 // ═══════════════════════════════════════════════════════════════
 // BACKUP PROTECTION SYSTEM
+// Default subcategories per category
+
+var DEFAULT_DEBTS = [
+  {name:'Eddie',balance:4000,original:4000,priority:1,apr:0},
+  {name:'Bharath CC',balance:735.00,original:735.00,priority:2,apr:0},
+  {name:'Discover Card',balance:44.00,original:44.00,priority:3,apr:0},
+  {name:'Varo Line of Credit',balance:220.00,original:220.00,priority:4,apr:0},
+  {name:'Varo Cash Advance',balance:0,original:0,priority:5,apr:0},
+  {name:'Akash Dhanasekar',balance:2813.00,original:2813.00,priority:6,apr:0},
+  {name:'Krishna Chaitanya',balance:351.00,original:351.00,priority:7,apr:0},
+  {name:'Anitha',balance:99299.04,original:99299.04,priority:8,apr:0}
+];
+
+var DEFAULT_ACCOUNTS = [
+  {name:'Uber Pro Card',icon:'💳',balance:0},
+  {name:'Varo Bank',icon:'🏦',balance:0},
+  {name:'Apple Cash',icon:'📱',balance:0},
+  {name:'Cash App',icon:'💸',balance:0},
+  {name:'Discover Checking',icon:'🏦',balance:0},
+  {name:'Capital One',icon:'🏦',balance:0},
+  {name:'Atlas Credit Card',icon:'💳',balance:0},
+  {name:'Cash',icon:'💵',balance:0},
+  {name:'Varo Savings',icon:'🏦',balance:0}
+];
+var DEFAULT_SUBCATS = {
+  tesla: ['Tesla Supercharger'],
+  road: ['Coffee / Energy Drinks','Parking','Tolls','Car Wash','Minor Car Maintenance','Other'],
+  living: ['Food & Dining','Groceries','Household Supplies','Laundry','Online Shopping','Personal Care & Hygiene','Clothing','Entertainment','Other'],
+  subscriptions: ['Apple One','Google One','Crunchyroll','Mystro','Other subscription'],
+  debt: ['Eddie','Bharath','Akash Dhanasekar','Krishna Chaitanya','Anitha','Varo Cash Advance','Varo Line of Credit','Discover Card','Other debt payment'],
+  transfer: ['Uber Debit → Varo','Uber Debit → Apple Cash','Varo → Discover','Varo → Capital One','Apple Cash → Capital One','Apple Cash → Cash App','Cash App → Discover','Zelle out','Other transfer'],
+  medical: ['Ozempic','Prescription','Doctor visit','Other medical'],
+  other: ['Other expense']
+};
+
+var DEFAULT_BILLS = [
+  {name:'Rent',amount:2084.00,day:1,paid:true,paidAmount:2084.00,category:'bills',skipped:false},
+  {name:'India 1',amount:138.76,day:3,paid:true,paidAmount:138.76,category:'bills',skipped:false},
+  {name:'LetsFund (Credit Repair)',amount:63.00,day:7,paid:false,paidAmount:0,category:'bills',skipped:false},
+  {name:'Crunchyroll',amount:13.99,day:7,paid:false,paidAmount:0,category:'subscriptions',skipped:false},
+  {name:'AT&T',amount:540.00,day:8,paid:false,paidAmount:0,category:'bills',skipped:false},
+  {name:'Varo LOC Payment',amount:220.00,day:9,paid:false,paidAmount:0,category:'bills',skipped:false},
+  {name:'Mystro',amount:18.99,day:12,paid:true,paidAmount:18.99,category:'bills',skipped:false},
+  {name:'Tesla Loan Payment',amount:728.86,day:15,paid:true,paidAmount:728.86,category:'vehicle',skipped:false},
+  {name:'India 2',amount:138.76,day:18,paid:true,paidAmount:138.76,category:'bills',skipped:false},
+  {name:'Bharath CC',amount:735.00,day:20,paid:false,paidAmount:655.00,category:'bills',skipped:false},
+  {name:'Google One',amount:19.99,day:20,paid:true,paidAmount:19.99,category:'subscriptions',skipped:false},
+  {name:'Ozempic',amount:385.00,day:20,paid:false,paidAmount:0,category:'medical',skipped:true,lastSkipped:'2026-04'},
+  {name:'Utilities',amount:84.62,day:21,paid:false,paidAmount:0,category:'bills',skipped:false},
+  {name:'Discover Card (Min)',amount:44.00,day:22,paid:true,paidAmount:44.00,category:'debt',skipped:false},
+  {name:'Tesla Insurance',amount:212.96,day:23,paid:false,paidAmount:0,category:'vehicle',skipped:true,lastSkipped:'2026-04'},
+  {name:'India 3',amount:160.10,day:25,paid:true,paidAmount:160.10,category:'bills',skipped:false},
+  {name:'Apple One',amount:37.95,day:26,paid:false,paidAmount:0,category:'subscriptions',skipped:false},
+  {name:'Tesla Full Self-Driving',amount:106.67,day:11,paid:false,paidAmount:0,category:'subscriptions',skipped:false},
+  {name:'Tesla Premium Connectivity',amount:9.99,day:16,paid:false,paidAmount:0,category:'subscriptions',skipped:false},
+  {name:'Tesla Windshield Protection',amount:16.00,day:20,paid:false,paidAmount:0,category:'subscriptions',skipped:false},
+  {name:'Tesla Wheel & Tire Protection',amount:12.00,day:20,paid:false,paidAmount:0,category:'subscriptions',skipped:false},
+];
+
+// Global data variables
+var earnings         = JSON.parse(localStorage.getItem('dcc_earn')    || '[]');
+var expenses         = JSON.parse(localStorage.getItem('dcc_exp')     || '[]');
+window.plaidExpenses = JSON.parse(localStorage.getItem('dcc_plaid_exp') || '[]');
+var bills            = JSON.parse(localStorage.getItem('dcc_bills')   || 'null') || JSON.parse(JSON.stringify(DEFAULT_BILLS||[]));
+var debts            = JSON.parse(localStorage.getItem('dcc_debts')   || 'null') || JSON.parse(JSON.stringify(DEFAULT_DEBTS||[]));
+var accounts         = JSON.parse(localStorage.getItem('dcc_accts')   || 'null') || JSON.parse(JSON.stringify(DEFAULT_ACCOUNTS||[]));
+var shifts           = JSON.parse(localStorage.getItem('dcc_shifts')  || '[]');
+var transfers        = JSON.parse(localStorage.getItem('dcc_xfers')   || '[]');
+var efSaved          = parseFloat(localStorage.getItem('dcc_ef')      || '0');
+var subcats          = JSON.parse(localStorage.getItem('dcc_subcats') || 'null') || JSON.parse(JSON.stringify(DEFAULT_SUBCATS));
+let varoDeposits     = JSON.parse(localStorage.getItem('dcc_varo')   || '[]');
+let catchup          = JSON.parse(localStorage.getItem('dcc_catchup')|| '[]');
+let carryover        = JSON.parse(localStorage.getItem('dcc_carryover')|| '[]');
+let oneTimeExpenses  = JSON.parse(localStorage.getItem('dcc_onetimes')|| '[]');
+var milesLog         = JSON.parse(localStorage.getItem('dcc_miles')   || '[]');
+let eddieSavedTotal  = parseFloat(localStorage.getItem('dcc_eddie_saved') || '0');
+const EDDIE_DEADLINE = new Date('2026-07-01');
+const EDDIE_ORIGINAL = 4000;
+
 // ═══════════════════════════════════════════════════════════════
 
 function getTimestamp(){
@@ -3096,10 +3127,10 @@ function checkNewVersion(){
 
   // Show full screen restore overlay ONLY if this version not confirmed yet
   if(confirmed !== VERSION){
-    // Show overlay directly
+    // Show overlay after splash dismisses
     setTimeout(()=>{
       if(overlay) overlay.classList.remove('gone');
-    }, 0);
+    }, 2000);
   } else {
     // Already confirmed — hide overlay, go straight to app
     if(overlay) overlay.classList.add('gone');
@@ -3219,7 +3250,7 @@ function showMsg(id,text,color){
 let lastLoggedEarning = null;
 let selectedCashoutAcc = null;
 let selectedCashoutFeeType = 'standard';
-let viewDate = null; // null = today, otherwise YYYY-MM-DD string
+var viewDate = null; // null = today, otherwise YYYY-MM-DD string
 
 function logEarning(){
   const amt=parseFloat(document.getElementById('earnAmt').value);
@@ -6974,6 +7005,7 @@ function render(){
     dmEl.textContent = modeLabelsShort[mode];
     dmEl.style.background = modeColors[mode];
     dmEl.style.color = modeTextColors[mode];
+    dmEl.style.display = mode === 'catchup' ? 'block' : 'none';
   }
 
   // Dashboard stats
@@ -8390,6 +8422,20 @@ render();
 
 populateBudgetDetails();
 
+// ── SPLASH SCREEN ─────────────────────────────────────────────
+function initSplash(){
+  const splash = document.getElementById('splashScreen');
+  const splashVer = document.getElementById('splashVer');
+  if(splashVer) splashVer.textContent = VERSION;
+
+  // Dismiss splash immediately
+  if(splash){
+    splash.classList.add('fade');
+    setTimeout(()=>{ splash.classList.add('gone'); }, 500);
+  }
+}
+initSplash();
+
 // ── SERVICE WORKER (offline support) ──────────────────────────
 if('serviceWorker' in navigator){
   // Register inline service worker for offline capability
@@ -8492,7 +8538,7 @@ function renderDashToday(){
 // ── PLAID SYNC LOGIC ──────────────────────────────────────────
 async function startPlaidSync() {
   // Get supabase ref from Deno env in real environment, but here we can just mock or use the configured backend
-  // For the sake of PBTrack dashboard standalone file, we assume the user replaces SUPABASE_PROJECT_REF with their own
+  // For the sake of ArthaPulse dashboard standalone file, we assume the user replaces SUPABASE_PROJECT_REF with their own
   const SUPABASE_PROJECT_REF = window.SUPABASE_PROJECT_REF || 'your-project-ref';
 
   try {
