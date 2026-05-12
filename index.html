@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>⚡ Driver Command Center v1.8.9</title>
+<title>⚡ PBTrack v1.8.9</title>
 
 <!-- PWA Meta Tags -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Driver CC">
+<meta name="apple-mobile-web-app-title" content="PBTrack">
 <meta name="theme-color" content="#060810">
-<meta name="description" content="Driver Command Center — Personal Finance Tracker for Gig Drivers">
+<meta name="description" content="PBTrack — Personal Finance Tracker for Gig Drivers">
 
 <!-- Plaid Link SDK -->
 <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
@@ -19,8 +19,8 @@
 <!-- Triggering GitHub Pages Build -->
 <!-- PWA Manifest -->
 <link rel="manifest" href="data:application/json,{
-  &quot;name&quot;: &quot;Driver Command Center&quot;,
-  &quot;short_name&quot;: &quot;Driver CC&quot;,
+  &quot;name&quot;: &quot;PBTrack&quot;,
+  &quot;short_name&quot;: &quot;PBTrack&quot;,
   &quot;description&quot;: &quot;Personal Finance Tracker for Gig Drivers&quot;,
   &quot;start_url&quot;: &quot;.&quot;,
   &quot;display&quot;: &quot;standalone&quot;,
@@ -68,7 +68,7 @@
 
 /* ── LIGHT THEME ── */
 [data-theme="light"]{
-  --bg:#f0f4f8;--s1:#ffffff;--card:#ffffff;--card2:#f8fafc;
+  --bg:#f8f9fa;--s1:#ffffff;--card:#ffffff;--card2:#f8f9fa;
   --accent:#0077cc;--gold:#d97706;--red:#dc2626;--green:#059669;
   --orange:#ea580c;--purple:#7c3aed;--blue:#2563eb;--pink:#db2777;
   --text:#1a202c;--muted:#6b7280;--border:rgba(0,119,204,0.15);
@@ -78,7 +78,7 @@
 /* ── AUTO: follow system ── */
 @media(prefers-color-scheme:light){
   :root:not([data-theme="dark"]){
-    --bg:#f0f4f8;--s1:#ffffff;--card:#ffffff;--card2:#f8fafc;
+    --bg:#f8f9fa;--s1:#ffffff;--card:#ffffff;--card2:#f8f9fa;
     --accent:#0077cc;--gold:#d97706;--red:#dc2626;--green:#059669;
     --orange:#ea580c;--purple:#7c3aed;--blue:#2563eb;--pink:#db2777;
     --text:#1a202c;--muted:#6b7280;--border:rgba(0,119,204,0.15);
@@ -215,11 +215,11 @@ input,select{transition:background 0.3s,border-color 0.3s,color 0.3s;}
 .hdr-sub{font-size:0.68rem;color:var(--muted);margin-top:2px;}
 
 /* CARDS */
-.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px 15px;margin-bottom:10px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:13px 15px;margin-bottom:10px;}
 .card-title{font-family:'Rajdhani';font-weight:700;letter-spacing:2px;font-size:0.68rem;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
 .grid2{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:5px;margin-bottom:10px;}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 13px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:11px 13px;}
 .stat-label{font-size:0.62rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
 .stat-val{font-family:'Share Tech Mono';font-size:1.3rem;line-height:1;}
 
@@ -360,6 +360,42 @@ input:focus,select:focus{border-color:var(--accent);}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--muted);border-radius:99px;}
 @media(max-width:380px){.grid3{grid-template-columns:1fr 1fr;}.quota-wrap{flex-direction:column;gap:10px;}}
+
+/* UNIVERSAL 3-STATE LAYOUT */
+/* 1. Mobile (<768px): Single-column stack (Default behavior) */
+@media(min-width:768px) and (max-width:1199px) {
+  /* 2. Tablet/Fold (768px - 1200px): 2-column split-view */
+  .tabs-wrap { display: none !important; }
+  body { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1200px; margin: 0 auto; align-items: start; }
+  .page { display: block !important; }
+  #page-dashboard, #page-money { display: block !important; }
+  #page-track, #page-more { display: none !important; } /* Hide less important tabs in 2-col */
+  /* Re-arrange Money layout to ensure fixed goals / debt are prominent */
+  #moneySec-debt, #moneySec-bills { display: block !important; }
+  #moneySec-accts { display: none !important; }
+}
+
+@media(min-width:1200px) {
+  /* 3. Desktop (>1200px): 3-column dashboard */
+  .tabs-wrap { display: none !important; }
+  body { display: grid; grid-template-columns: 300px 1fr 350px; gap: 24px; max-width: 1400px; margin: 0 auto; align-items: start; }
+  .page { display: block !important; }
+
+  /* Left Nav/Goals */
+  #page-money { grid-column: 1; }
+  #moneySec-debt, #moneySec-bills { display: block !important; }
+  #moneySec-accts { display: none !important; }
+
+  /* Center Stats */
+  #page-dashboard { grid-column: 2; }
+
+  /* Right Transactions/Track */
+  #page-track { grid-column: 3; display: block !important; }
+  #trackSec-activity { display: block !important; }
+  #trackSec-month, #trackSec-ops, #trackSec-goals, #trackSec-shifts { display: none !important; }
+
+  #page-more { display: none !important; }
+}
 </style>
 </head>
 <body>
@@ -386,7 +422,7 @@ input:focus,select:focus{border-color:var(--accent);}
 <!-- SPLASH SCREEN -->
 <div id="splashScreen">
   <div class="splash-icon">⚡</div>
-  <div class="splash-title">Driver Command Center</div>
+  <div class="splash-title">PBTrack</div>
   <div class="splash-sub">Personal Finance Tracker</div>
   <div class="splash-bar-wrap">
     <div class="splash-bar"></div>
@@ -398,7 +434,7 @@ input:focus,select:focus{border-color:var(--accent);}
 <div class="hdr">
   <div>
     <div style="display:flex;align-items:center;gap:8px">
-      <div class="hdr-title">⚡ Command Center</div>
+      <div class="hdr-title">⚡ PBTrack</div>
       <span style="background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.2);
         border-radius:5px;padding:2px 7px;font-size:0.6rem;font-family:'Share Tech Mono';
         color:var(--accent);letter-spacing:1px" id="versionBadge">v1.8.14</span>
@@ -1491,8 +1527,8 @@ input:focus,select:focus{border-color:var(--accent);}
     <div style="background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2);border-radius:8px;padding:10px;margin-bottom:12px;font-size:0.75rem">
       <div style="font-family:'Rajdhani';font-weight:700;letter-spacing:1px;font-size:0.68rem;color:var(--gold);margin-bottom:4px">📁 WHERE TO SAVE FILES</div>
       <div style="color:var(--muted);line-height:1.6">
-        App files → <strong style="color:var(--text)">Driver Command Center / App Versions</strong><br>
-        Backups → <strong style="color:var(--text)">Driver Command Center / Backups</strong>
+        App files → <strong style="color:var(--text)">PBTrack / App Versions</strong><br>
+        Backups → <strong style="color:var(--text)">PBTrack / Backups</strong>
       </div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -1743,8 +1779,8 @@ input:focus,select:focus{border-color:var(--accent);}
     <div style="background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2);border-radius:8px;padding:10px;margin-bottom:12px;font-size:0.75rem">
       <div style="font-family:'Rajdhani';font-weight:700;letter-spacing:1px;font-size:0.68rem;color:var(--gold);margin-bottom:4px">📁 WHERE TO SAVE YOUR FILES</div>
       <div style="color:var(--muted);line-height:1.6">
-        App files → <strong style="color:var(--text)">Driver Command Center / App Versions</strong><br>
-        Backup files → <strong style="color:var(--text)">Driver Command Center / Backups / April 2026</strong>
+        App files → <strong style="color:var(--text)">PBTrack / App Versions</strong><br>
+        Backup files → <strong style="color:var(--text)">PBTrack / Backups / April 2026</strong>
       </div>
     </div>
     <div id="lastBackupInfo" style="font-size:0.75rem;color:var(--muted);margin-bottom:10px"></div>
@@ -3162,7 +3198,7 @@ function updateThemeButtons(mode){
 }
 
 function initTheme(){
-  const saved = localStorage.getItem('dcc_theme') || 'auto';
+  const saved = localStorage.getItem('dcc_theme') || 'light';
   applyTheme(saved);
   updateThemeButtons(saved);
 }
@@ -8409,13 +8445,11 @@ function initSplash(){
   const splashVer = document.getElementById('splashVer');
   if(splashVer) splashVer.textContent = VERSION;
 
-  // Dismiss splash after 1.8 seconds
-  setTimeout(()=>{
-    if(splash){
-      splash.classList.add('fade');
-      setTimeout(()=>{ splash.classList.add('gone'); }, 500);
-    }
-  }, 1800);
+  // Dismiss splash immediately
+  if(splash){
+    splash.classList.add('fade');
+    setTimeout(()=>{ splash.classList.add('gone'); }, 500);
+  }
 }
 initSplash();
 
@@ -8565,7 +8599,40 @@ async function startPlaidSync() {
           window.plaidExpenses = newExpenses;
           localStorage.setItem('dcc_plaid_exp', JSON.stringify(window.plaidExpenses));
 
-          alert(`✅ Plaid sync complete! Synced ${transactions.length} transactions.`);
+          // Smart Bill Tracking: mark bills as paid if transaction matches
+          const currentMonthPrefix = new Date().toISOString().substring(0, 7);
+          let billsAutoPaid = 0;
+
+          window.plaidExpenses.forEach(exp => {
+              if (!exp.isExpense || !exp.date.startsWith(currentMonthPrefix)) return;
+
+              // Simple fuzzy match for "Rent", "Tesla", "India"
+              const expNameLower = (exp.name || '').toLowerCase();
+
+              bills.forEach(bill => {
+                 if (bill.paid || bill.skipped) return;
+                 const billNameLower = bill.name.toLowerCase();
+
+                 // If the transaction name includes part of the bill name (or vice versa), mark it paid
+                 if (expNameLower.includes(billNameLower) || billNameLower.includes(expNameLower)) {
+                     // Check if amounts are somewhat close (within 10% or exact) to avoid false positives
+                     // Or just mark it if it's the exact same name
+                     // We'll keep it simple: if the name matches 'Rent', 'Tesla', 'India', mark it paid
+                     if (billNameLower.includes('rent') || billNameLower.includes('tesla') || billNameLower.includes('india')) {
+                         bill.paid = true;
+                         bill.paidAmount = bill.amount;
+                         billsAutoPaid++;
+                     }
+                 }
+              });
+          });
+
+          if (billsAutoPaid > 0) {
+             persist();
+             alert(`✅ Plaid sync complete! Auto-marked ${billsAutoPaid} bills as Paid.`);
+          } else {
+             alert(`✅ Plaid sync complete! Synced ${transactions.length} transactions.`);
+          }
 
           // Re-render dashboard to update totals
           render();
@@ -8587,6 +8654,30 @@ async function startPlaidSync() {
     alert('❌ Failed to start Plaid sync.');
   }
 }
+
+// ── SPLITWISE SYNC LOGIC ──────────────────────────────────────
+async function fetchSplitwiseDebt() {
+  const SUPABASE_PROJECT_REF = window.SUPABASE_PROJECT_REF || 'your-project-ref';
+  try {
+    const response = await fetch(`https://${SUPABASE_PROJECT_REF}.supabase.co/functions/v1/splitwise-sync`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const { success, totalDebt } = await response.json();
+
+    if (success) {
+      const formattedDebt = '$' + totalDebt.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+      const debtDisp = document.getElementById('totalDebtDisp');
+      const debt2 = document.getElementById('totalDebt2');
+      if (debtDisp) debtDisp.textContent = formattedDebt;
+      if (debt2) debt2.textContent = formattedDebt;
+    }
+  } catch (err) {
+    console.error('Error fetching Splitwise debt:', err);
+  }
+}
+// Run on load
+setTimeout(fetchSplitwiseDebt, 1000);
 
 // ── ACTIVITY SORT & FILTER ────────────────────────────────────
 window._actSortDir = 'desc';
