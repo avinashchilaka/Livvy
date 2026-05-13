@@ -2709,7 +2709,7 @@ function renderSpending() {
         const pct = total > 0 ? (amt/total*100) : 0;
         return `<div style="margin-bottom:14px;cursor:pointer" onclick="drillDownCategory('${cat}')">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-            <span style="font-size:0.85rem;font-weight:500">${catIcons[cat]||'📦'} ${cat.charAt(0).toUpperCase()+cat.slice(1)}</span>
+            <span style="font-size:0.85rem;font-weight:500">${catIcons[cat]||'📦'} ${cat.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</span>
             <span style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--red)">${fmt(amt)} ›</span>
           </div>
           <div class="prog-bar">
@@ -2798,7 +2798,7 @@ function drawDonutChart() {
       onclick="drillDownCategory('${cat}')">
       <div style="width:8px;height:8px;border-radius:2px;background:${colors[i]};flex-shrink:0"></div>
       <span style="font-size:0.72rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-        ${cat.charAt(0).toUpperCase()+cat.slice(1)}
+        ${cat.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}
       </span>
       <span style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);margin-left:auto;flex-shrink:0">
         ${Math.round(amt/total*100)}% ›
@@ -2900,23 +2900,23 @@ function renderBills() {
         const daysUntil = b.due_day - today;
         const chipClass = b.paid ? 'chip-paid' : daysUntil < 0 ? 'chip-overdue' : daysUntil<=3 ? 'chip-soon' : 'chip-upcoming';
         const chipText  = b.paid ? 'Paid' : daysUntil < 0 ? '🚨 Overdue' : daysUntil===0 ? 'Today' : `${b.due_day}${sfx(b.due_day)}`;
-        return `<div class="bill-row">
-          <div class="bill-body">
-            <div class="bill-name">${b.name}</div>
-            <div class="bill-due">${b.category || 'Other'} · due ${b.due_day}${sfx(b.due_day)}</div>
+        return `<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:0.85rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${b.name}</div>
+            <div style="font-size:0.68rem;color:var(--muted)">${b.category||'other'} · ${b.due_day}${sfx(b.due_day)}</div>
           </div>
-          <span class="chip ${chipClass}">${chipText}</span>
-          <div class="bill-amt" style="color:${b.paid?'var(--muted)':'var(--red)'}">${fmt(b.amount)}</div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">
+          <span class="chip ${chipClass}" style="flex-shrink:0">${chipText}</span>
+          <div style="font-family:'DM Mono',monospace;font-size:0.85rem;font-weight:500;color:${b.paid?'var(--muted)':'var(--red)'};flex-shrink:0">${fmt(b.amount)}</div>
+          <div style="display:flex;gap:3px;flex-shrink:0">
             ${b.skipped ? 
-              `<button class="btn-skip skipped" onclick="unskipBill(${realIdx})">↩ Unskip</button>` :
+              `<button class="btn-skip skipped" onclick="unskipBill(${realIdx})">↩</button>` :
               `${!b.paid ? 
-                `<button class="btn btn-ghost btn-sm" onclick="markBillPaid(${realIdx})">Pay</button>
+                `<button class="btn btn-ghost btn-sm" onclick="markBillPaid(${realIdx})">✓</button>
                  <button class="btn-skip" onclick="skipBill(${realIdx})">Skip</button>` :
-                `<button class="btn btn-ghost btn-sm" onclick="markBillUnpaid(${realIdx})">Undo</button>`
+                `<button class="btn btn-ghost btn-sm" onclick="markBillUnpaid(${realIdx})">↩</button>`
               }`
             }
-            <button class="btn btn-ghost btn-sm" onclick="openEditBillModal(${realIdx})" style="padding:7px 8px">✏️</button>
+            <button onclick="openEditBillModal(${realIdx})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85rem;padding:4px">✏️</button>
           </div>
         </div>`;
       }).join('')
@@ -3454,7 +3454,7 @@ function renderBudgetBars() {
     const color = pct >= 90 ? 'var(--red)' : pct >= 70 ? 'var(--gold)' : 'var(--accent)';
     return `<div class="budget-row">
       <div class="budget-header">
-        <span class="budget-label">${catIcons[cat]||'📦'} ${cat.charAt(0).toUpperCase()+cat.slice(1)}</span>
+        <span class="budget-label">${catIcons[cat]||'📦'} ${cat.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</span>
         <span class="budget-amounts">${fmt(spent)} / ${fmt(budget)}</span>
       </div>
       <div class="budget-bar">
@@ -3972,7 +3972,7 @@ function renderBudget() {
       const pct = total > 0 ? (amt/total*100) : 0;
       return `<div style="margin-bottom:12px">
         <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-          <span style="font-size:0.82rem">${catIcons[cat]||'📦'} ${cat.charAt(0).toUpperCase()+cat.slice(1)}</span>
+          <span style="font-size:0.82rem">${catIcons[cat]||'📦'} ${cat.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</span>
           <span style="font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--red)">${fmt(amt)}</span>
         </div>
         <div class="prog-bar"><div class="prog-fill" style="background:var(--accent);width:${pct}%"></div></div>
@@ -3993,7 +3993,7 @@ function renderBudget() {
       const color = pct >= 90 ? 'var(--red)' : pct >= 70 ? 'var(--gold)' : 'var(--accent)';
       return `<div class="budget-row">
         <div class="budget-header">
-          <span class="budget-label">${catIcons[cat]||'📦'} ${cat.charAt(0).toUpperCase()+cat.slice(1)}</span>
+          <span class="budget-label">${catIcons[cat]||'📦'} ${cat.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</span>
           <span class="budget-amounts">${fmt(spent2)} / ${fmt(limit)}</span>
         </div>
         <div class="budget-bar"><div class="budget-fill" style="width:${pct}%;background:${color}"></div></div>
@@ -4418,7 +4418,7 @@ function drillDownCategory(cat) {
 
   document.getElementById('drillIcon').textContent  = catIcons[cat] || '📦';
   document.getElementById('drillTotal').textContent = fmt(total);
-  document.getElementById('drillSub').textContent   = `${cat.charAt(0).toUpperCase()+cat.slice(1)} · ${txns.length} transactions this month`;
+  document.getElementById('drillSub').textContent   = `${cat.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())} · ${txns.length} transactions this month`;
 
   document.getElementById('drillList').innerHTML = txns.length
     ? txns.map(t => `
