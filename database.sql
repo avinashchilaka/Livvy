@@ -1,0 +1,103 @@
+-- ════════════════════════════════════════════════════
+-- PBTrack Database Setup
+-- Run this in Supabase → SQL Editor → New Query
+-- ════════════════════════════════════════════════════
+
+-- Users table
+create table if not exists users (
+  id            uuid default gen_random_uuid() primary key,
+  name          text not null,
+  email         text unique not null,
+  password_hash text not null,
+  monthly_goal  numeric default 9500,
+  daily_quota   numeric default 400,
+  created_at    timestamptz default now()
+);
+
+-- Earnings table
+create table if not exists earnings (
+  id         uuid default gen_random_uuid() primary key,
+  user_id    uuid references users(id) on delete cascade,
+  amount     numeric not null,
+  platform   text default 'Other',
+  date       date not null,
+  note       text,
+  is_manual  boolean default true,
+  created_at timestamptz default now()
+);
+
+-- Bills table
+create table if not exists bills (
+  id         uuid default gen_random_uuid() primary key,
+  user_id    uuid references users(id) on delete cascade,
+  name       text not null,
+  amount     numeric not null,
+  due_day    integer not null,
+  category   text default 'other',
+  paid       boolean default false,
+  created_at timestamptz default now()
+);
+
+-- Debts table
+create table if not exists debts (
+  id               uuid default gen_random_uuid() primary key,
+  user_id          uuid references users(id) on delete cascade,
+  name             text not null,
+  amount           numeric not null,
+  original         numeric,
+  monthly_payment  numeric default 0,
+  notes            text,
+  created_at       timestamptz default now()
+);
+
+-- Transactions (from Plaid)
+create table if not exists transactions (
+  id          uuid default gen_random_uuid() primary key,
+  user_id     uuid references users(id) on delete cascade,
+  plaid_id    text unique,
+  date        date not null,
+  amount      numeric not null,
+  description text,
+  category    text default 'other',
+  account_id  text,
+  institution text,
+  is_plaid    boolean default false,
+  is_income   boolean default false,
+  created_at  timestamptz default now()
+);
+
+-- Plaid access tokens (never expose these)
+create table if not exists plaid_tokens (
+  id           uuid default gen_random_uuid() primary key,
+  user_id      uuid references users(id) on delete cascade,
+  institution  text,
+  access_token text not null,
+  item_id      text,
+  cursor       text,
+  created_at   timestamptz default now(),
+  unique(user_id, institution)
+);
+
+-- Splitwise tokens
+create table if not exists splitwise_tokens (
+  id           uuid default gen_random_uuid() primary key,
+  user_id      uuid references users(id) on delete cascade unique,
+  access_token text not null,
+  created_at   timestamptz default now()
+);
+
+-- Row Level Security (keeps each user's data private)
+alter table users        enable row level security;
+alter table earnings     enable row level security;
+alter table bills        enable row level security;
+alter table debts        enable row level security;
+alter table transactions enable row level security;
+alter table plaid_tokens enable row level security;
+alter table splitwise_tokens enable row level security;
+
+-- Indexes for performance
+create index if not exists idx_earnings_user_date    on earnings(user_id, date desc);
+create index if not exists idx_transactions_user     on transactions(user_id, date desc);
+create index if not exists idx_transactions_plaid_id on transactions(plaid_id);
+create index if not exists idx_bills_user            on bills(user_id, due_day);
+create index if not exists idx_debts_user            on debts(user_id);

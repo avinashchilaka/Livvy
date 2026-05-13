@@ -1,0 +1,1992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>PBTrack</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+/* ═══════════════════════════
+   DESIGN TOKENS
+═══════════════════════════ */
+:root {
+  --bg:       #0a0b0d;
+  --s1:       #111316;
+  --card:     #16181c;
+  --card2:    #1c1f26;
+  --accent:   #7ecca0;
+  --accent2:  #4db885;
+  --green:    #7ecca0;
+  --red:      #f0626a;
+  --gold:     #f0c060;
+  --orange:   #f09040;
+  --purple:   #a78bfa;
+  --blue:     #60a5fa;
+  --text:     #eef0f5;
+  --text2:    #c4cad6;
+  --muted:    #616878;
+  --border:   rgba(255,255,255,0.07);
+  --border2:  rgba(255,255,255,0.12);
+  --r-sm:     8px;
+  --r-md:     14px;
+  --r-lg:     20px;
+}
+
+/* ═══════════════════════════
+   BASE
+═══════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: 80px;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 2px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 99px; }
+
+/* ═══════════════════════════
+   LAYOUT
+═══════════════════════════ */
+.page { display: none; padding: 16px; max-width: 600px; margin: 0 auto; }
+.page.active { display: block; }
+
+/* ═══════════════════════════
+   TOP BAR
+═══════════════════════════ */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.topbar-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.topbar-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.2px;
+}
+
+.topbar-date {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0a0b0d;
+  cursor: pointer;
+}
+
+/* ═══════════════════════════
+   BOTTOM NAV
+═══════════════════════════ */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--s1);
+  border-top: 1px solid var(--border);
+  display: flex;
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 4px 8px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 500;
+  gap: 4px;
+  transition: color 0.2s;
+  position: relative;
+}
+
+.nav-item.active {
+  color: var(--accent);
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 25%;
+  right: 25%;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 0 0 2px 2px;
+}
+
+.nav-icon { font-size: 1.2rem; line-height: 1; }
+
+/* ═══════════════════════════
+   CARDS
+═══════════════════════════ */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 18px 16px;
+  margin-bottom: 12px;
+}
+
+.card-sm {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px;
+}
+
+.card-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+/* ═══════════════════════════
+   ALERTS (dismissable)
+═══════════════════════════ */
+.alert-card {
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  border-left: 3px solid;
+  position: relative;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.alert-card.red    { background: rgba(240,98,106,0.08); border-color: var(--red); }
+.alert-card.gold   { background: rgba(240,192,96,0.08); border-color: var(--gold); }
+.alert-card.green  { background: rgba(126,204,160,0.08); border-color: var(--green); }
+.alert-card.purple { background: rgba(167,139,250,0.08); border-color: var(--purple); }
+
+.alert-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+.alert-body {
+  font-size: 0.75rem;
+  color: var(--text2);
+  line-height: 1.5;
+}
+
+.alert-dismiss {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.alert-dismiss:hover { color: var(--text); }
+
+/* ═══════════════════════════
+   HOME — DAILY TARGET RING
+═══════════════════════════ */
+.target-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 24px 20px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.ring-wrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 16px;
+}
+
+.ring-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ring-bg   { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 10; }
+.ring-fill { fill: none; stroke: var(--accent); stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 1s ease, stroke 0.5s; }
+
+.ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.ring-pct {
+  font-family: 'DM Mono', monospace;
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1;
+}
+
+.ring-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.earned-big {
+  font-family: 'DM Mono', monospace;
+  font-size: 2.4rem;
+  font-weight: 500;
+  color: var(--green);
+  letter-spacing: -1px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.target-sub {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.target-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.target-stat {
+  background: var(--s1);
+  border-radius: var(--r-sm);
+  padding: 10px 8px;
+  text-align: center;
+}
+
+.target-stat-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 3px;
+}
+
+.target-stat-lbl {
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ═══════════════════════════
+   QUICK LOG BUTTON
+═══════════════════════════ */
+.log-fab {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none;
+  border-radius: 50%;
+  color: #0a0b0d;
+  font-size: 1.4rem;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(126,204,160,0.4);
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.log-fab:active {
+  transform: scale(0.93);
+  box-shadow: 0 2px 10px rgba(126,204,160,0.3);
+}
+
+/* ═══════════════════════════
+   STAT GRID
+═══════════════════════════ */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.stat-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px;
+}
+
+.stat-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 1.3rem;
+  font-weight: 500;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+
+.stat-lbl {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ═══════════════════════════
+   SECTION HEADER
+═══════════════════════════ */
+.section-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  margin-top: 4px;
+}
+
+.section-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.section-link {
+  font-size: 0.72rem;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+
+/* ═══════════════════════════
+   TRANSACTION ROWS
+═══════════════════════════ */
+.txn-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.txn-row:last-child { border-bottom: none; }
+
+.txn-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--card2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.txn-body { flex: 1; min-width: 0; }
+
+.txn-name {
+  font-size: 0.88rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.txn-meta {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.txn-amt {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════
+   BILLS
+═══════════════════════════ */
+.bill-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.bill-row:last-child { border-bottom: none; }
+
+.bill-body { flex: 1; }
+
+.bill-name {
+  font-size: 0.88rem;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.bill-due {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.bill-amt {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.88rem;
+  font-weight: 500;
+  text-align: right;
+}
+
+.chip {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  padding: 3px 8px;
+  border-radius: 99px;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.chip-overdue  { background: rgba(240,98,106,0.12); color: var(--red); }
+.chip-soon     { background: rgba(240,192,96,0.12); color: var(--gold); }
+.chip-paid     { background: rgba(126,204,160,0.12); color: var(--green); }
+.chip-upcoming { background: rgba(96,165,250,0.12); color: var(--blue); }
+
+/* ═══════════════════════════
+   PROGRESS BAR
+═══════════════════════════ */
+.prog-bar {
+  height: 5px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.prog-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.8s ease;
+}
+
+/* ═══════════════════════════
+   INPUTS
+═══════════════════════════ */
+.inp-group { margin-bottom: 14px; }
+
+.inp-group label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.inp-group input,
+.inp-group select {
+  width: 100%;
+  background: var(--s1);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.92rem;
+  padding: 11px 13px;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+
+.inp-group input:focus,
+.inp-group select:focus { border-color: var(--accent); }
+
+.inp-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* ═══════════════════════════
+   BUTTONS
+═══════════════════════════ */
+.btn {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.88rem;
+  padding: 12px 18px;
+  border: none;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #0a0b0d;
+  width: 100%;
+  padding: 14px;
+  box-shadow: 0 4px 16px rgba(126,204,160,0.25);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1.5px solid var(--border2);
+  color: var(--text2);
+}
+
+.btn-red   { background: var(--red);    color: #fff; }
+.btn-gold  { background: var(--gold);   color: #0a0b0d; }
+.btn-sm    { font-size: 0.75rem; padding: 7px 12px; }
+
+/* ═══════════════════════════
+   MODAL
+═══════════════════════════ */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 200;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  backdrop-filter: blur(4px);
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  padding: 20px 20px 32px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.modal-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border2);
+  border-radius: 99px;
+  margin: 0 auto 20px;
+}
+
+.modal h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.modal-sub {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+
+/* ═══════════════════════════
+   DEBT ROWS
+═══════════════════════════ */
+.debt-row {
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.debt-row:last-child { border-bottom: none; }
+
+.debt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.debt-name  { font-size: 0.88rem; font-weight: 500; }
+.debt-bal   { font-family: 'DM Mono', monospace; font-size: 0.9rem; color: var(--red); }
+
+/* ═══════════════════════════
+   MISC
+═══════════════════════════ */
+.divider { height: 1px; background: var(--border); margin: 16px 0; }
+.empty   { text-align: center; padding: 32px 16px; color: var(--muted); font-size: 0.85rem; }
+.tag     { display: inline-block; font-size: 0.65rem; font-weight: 600; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.3px; }
+
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  gap: 8px;
+}
+
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.sync-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.65rem;
+  color: var(--muted);
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 3px 9px;
+}
+
+.sync-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+}
+
+.sync-dot.syncing { background: var(--gold); animation: pulse 1s infinite; }
+.sync-dot.error   { background: var(--red); }
+
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+@media(max-width:380px) {
+  .target-row { grid-template-columns: 1fr 1fr 1fr; }
+  .earned-big { font-size: 2rem; }
+  .ring-wrap  { width: 120px; height: 120px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-title" id="pageTitle">Good morning 👋</div>
+    <div class="topbar-date" id="topbarDate"></div>
+  </div>
+  <div class="topbar-right">
+    <div class="sync-badge" id="syncBadge">
+      <div class="sync-dot" id="syncDot"></div>
+      <span id="syncLabel">Live</span>
+    </div>
+    <div class="avatar" id="userAvatar" onclick="showPage('settings')">?</div>
+  </div>
+</div>
+
+<!-- ═══ PAGE: HOME ═══ -->
+<div class="page active" id="page-home">
+
+  <!-- Dismissable alerts container -->
+  <div id="alertsContainer"></div>
+
+  <!-- Daily target ring -->
+  <div class="target-card" id="targetCard">
+    <div class="card-label">Today's Progress</div>
+    <div class="ring-wrap">
+      <svg class="ring-svg" viewBox="0 0 100 100">
+        <circle class="ring-bg" cx="50" cy="50" r="42"/>
+        <circle class="ring-fill" id="ringFill" cx="50" cy="50" r="42"
+          stroke-dasharray="263.9" stroke-dashoffset="263.9"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-pct" id="ringPct">0%</div>
+        <div class="ring-label">of target</div>
+      </div>
+    </div>
+    <div class="earned-big" id="earnedBig">$0.00</div>
+    <div class="target-sub" id="targetSub">Target: $0.00 today</div>
+    <div class="target-row">
+      <div class="target-stat">
+        <div class="target-stat-val" id="statUber" style="color:var(--blue)">$0</div>
+        <div class="target-stat-lbl">Uber</div>
+      </div>
+      <div class="target-stat">
+        <div class="target-stat-val" id="statLyft" style="color:var(--purple)">$0</div>
+        <div class="target-stat-lbl">Lyft</div>
+      </div>
+      <div class="target-stat">
+        <div class="target-stat-val" id="statNet" style="color:var(--green)">$0</div>
+        <div class="target-stat-lbl">Net</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- This week + Month -->
+  <div class="stat-grid">
+    <div class="stat-box">
+      <div class="stat-val" id="statWeek" style="color:var(--accent)">$0</div>
+      <div class="stat-lbl">This Week</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val" id="statMonth" style="color:var(--accent)">$0</div>
+      <div class="stat-lbl">This Month</div>
+    </div>
+  </div>
+
+  <!-- Upcoming bills -->
+  <div class="section-hdr">
+    <div class="section-title">Upcoming Bills</div>
+    <button class="section-link" onclick="showPage('bills')">See all</button>
+  </div>
+  <div class="card" style="padding:0 16px">
+    <div id="upcomingBillsList">
+      <div class="loading-spinner"><div class="spinner"></div> Loading...</div>
+    </div>
+  </div>
+
+  <!-- Splitwise debts -->
+  <div class="section-hdr">
+    <div class="section-title">You Owe</div>
+    <button class="section-link" onclick="showPage('debts')">See all</button>
+  </div>
+  <div class="card" style="padding:0 16px">
+    <div id="splitwisePreview">
+      <div class="loading-spinner"><div class="spinner"></div> Loading...</div>
+    </div>
+  </div>
+
+  <!-- Recent transactions -->
+  <div class="section-hdr">
+    <div class="section-title">Recent Spending</div>
+    <button class="section-link" onclick="showPage('spending')">See all</button>
+  </div>
+  <div class="card" style="padding:0 16px">
+    <div id="recentTxns">
+      <div class="loading-spinner"><div class="spinner"></div> Syncing with bank...</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ PAGE: EARNINGS ═══ -->
+<div class="page" id="page-earnings">
+  <div style="padding:16px">
+
+    <div class="stat-grid">
+      <div class="stat-box">
+        <div class="stat-val" id="earnToday" style="color:var(--green)">$0.00</div>
+        <div class="stat-lbl">Today</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="earnWeek" style="color:var(--accent)">$0.00</div>
+        <div class="stat-lbl">This Week</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="earnMonth" style="color:var(--accent)">$0.00</div>
+        <div class="stat-lbl">This Month</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="earnTarget" style="color:var(--gold)">$0.00</div>
+        <div class="stat-lbl">Daily Target</div>
+      </div>
+    </div>
+
+    <!-- Monthly progress -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span class="card-label" style="margin:0">Monthly Goal Progress</span>
+        <span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted)" id="monthPct">0%</span>
+      </div>
+      <div class="prog-bar">
+        <div class="prog-fill" id="monthProg" style="background:var(--accent);width:0%"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:0.72rem;color:var(--muted)">
+        <span id="monthEarnedLabel">Earned: $0</span>
+        <span id="monthGoalLabel">Goal: $0</span>
+      </div>
+    </div>
+
+    <!-- Log earnings -->
+    <div class="card">
+      <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px">Log Earnings</h2>
+      <div class="inp-row">
+        <div class="inp-group">
+          <label>Amount ($)</label>
+          <input type="number" id="logAmt" placeholder="0.00" step="0.01" min="0">
+        </div>
+        <div class="inp-group">
+          <label>Platform</label>
+          <select id="logPlatform">
+            <option value="Uber">Uber</option>
+            <option value="Lyft">Lyft</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="inp-row">
+        <div class="inp-group">
+          <label>Date</label>
+          <input type="date" id="logDate">
+        </div>
+        <div class="inp-group">
+          <label>Note</label>
+          <input type="text" id="logNote" placeholder="SAN airport...">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="logEarning()">+ Log Earning</button>
+      <div id="logMsg" style="font-size:0.75rem;margin-top:8px;color:var(--green)"></div>
+    </div>
+
+    <!-- Earnings history -->
+    <div class="section-hdr">
+      <div class="section-title">History</div>
+    </div>
+    <div class="card" style="padding:0 16px">
+      <div id="earningsHistory"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ PAGE: SPENDING ═══ -->
+<div class="page" id="page-spending">
+  <div style="padding:16px">
+
+    <div class="stat-grid">
+      <div class="stat-box">
+        <div class="stat-val" id="spendToday" style="color:var(--red)">$0.00</div>
+        <div class="stat-lbl">Today</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="spendMonth" style="color:var(--orange)">$0.00</div>
+        <div class="stat-lbl">This Month</div>
+      </div>
+    </div>
+
+    <!-- Plaid sync button -->
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:0.85rem;font-weight:600" id="plaidStatus">Connect Bank</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:2px" id="plaidLastSync"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="plaidBtn" onclick="openPlaidLink()">🏦 Connect</button>
+    </div>
+
+    <!-- Categories -->
+    <div class="section-hdr">
+      <div class="section-title">By Category</div>
+    </div>
+    <div class="card" id="categoryBreakdown">
+      <div class="empty">Connect a bank account to see spending categories</div>
+    </div>
+
+    <!-- All transactions -->
+    <div class="section-hdr">
+      <div class="section-title">All Transactions</div>
+    </div>
+    <div class="card" style="padding:0 16px" id="allTxnsList">
+      <div class="empty">No transactions yet</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ PAGE: BILLS ═══ -->
+<div class="page" id="page-bills">
+  <div style="padding:16px">
+
+    <div class="stat-grid">
+      <div class="stat-box">
+        <div class="stat-val" id="billsTotal" style="color:var(--red)">$0</div>
+        <div class="stat-lbl">Monthly Total</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="billsUnpaid" style="color:var(--orange)">$0</div>
+        <div class="stat-lbl">Still Unpaid</div>
+      </div>
+    </div>
+
+    <div class="section-hdr">
+      <div class="section-title">Bill Schedule</div>
+      <button class="btn btn-ghost btn-sm" onclick="openModal('addBillModal')">+ Add</button>
+    </div>
+    <div class="card" style="padding:0 16px" id="billsList">
+      <div class="empty">No bills added yet</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ PAGE: DEBTS ═══ -->
+<div class="page" id="page-debts">
+  <div style="padding:16px">
+
+    <div class="stat-grid">
+      <div class="stat-box">
+        <div class="stat-val" id="debtTotal" style="color:var(--red)">$0</div>
+        <div class="stat-lbl">Total Owed</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="debtPaidMonth" style="color:var(--green)">$0</div>
+        <div class="stat-lbl">Paid This Month</div>
+      </div>
+    </div>
+
+    <!-- Splitwise -->
+    <div class="section-hdr">
+      <div class="section-title">Splitwise</div>
+      <button class="btn btn-ghost btn-sm" id="splitwiseBtn" onclick="connectSplitwise()">Connect</button>
+    </div>
+    <div class="card" style="padding:0 16px" id="splitwiseList">
+      <div class="empty">Connect Splitwise to see who you owe</div>
+    </div>
+
+    <!-- Manual debts -->
+    <div class="section-hdr">
+      <div class="section-title">Manual Debts</div>
+      <button class="btn btn-ghost btn-sm" onclick="openModal('addDebtModal')">+ Add</button>
+    </div>
+    <div class="card" style="padding:0 16px" id="manualDebtList">
+      <div class="empty">No debts added</div>
+    </div>
+
+    <!-- Payoff timeline -->
+    <div class="section-hdr">
+      <div class="section-title">Payoff Timeline</div>
+    </div>
+    <div class="card" id="payoffTimeline">
+      <div class="empty">Add debts to see your payoff plan</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ PAGE: SETTINGS ═══ -->
+<div class="page" id="page-settings">
+  <div style="padding:16px">
+
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+        <div class="avatar" style="width:48px;height:48px;font-size:1.1rem" id="settingsAvatar">?</div>
+        <div>
+          <div style="font-weight:600;font-size:0.95rem" id="settingsName">Loading...</div>
+          <div style="font-size:0.75rem;color:var(--muted)" id="settingsEmail"></div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="inp-group">
+        <label>Monthly Earnings Goal ($)</label>
+        <input type="number" id="settingsGoal" placeholder="9500">
+      </div>
+      <div class="inp-group">
+        <label>Daily Quota ($)</label>
+        <input type="number" id="settingsQuota" placeholder="400">
+      </div>
+      <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Connected Accounts</div>
+      <div id="connectedAccounts">
+        <div class="empty">No accounts connected</div>
+      </div>
+      <button class="btn btn-ghost" style="width:100%;margin-top:12px" onclick="openPlaidLink()">+ Connect Bank via Plaid</button>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Backup & Data</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <button class="btn btn-ghost" onclick="exportData()">📥 Export Backup</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">📤 Import Backup</button>
+        <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
+      </div>
+    </div>
+
+    <div class="card">
+      <button class="btn btn-red" style="width:100%" onclick="logout()">Sign Out</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ BOTTOM NAV ═══ -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showPage('home')" id="nav-home">
+    <span class="nav-icon">🏠</span>Home
+  </button>
+  <button class="nav-item" onclick="showPage('earnings')" id="nav-earnings">
+    <span class="nav-icon">⚡</span>Earnings
+  </button>
+  <button class="nav-item" onclick="showPage('spending')" id="nav-spending">
+    <span class="nav-icon">💳</span>Spending
+  </button>
+  <button class="nav-item" onclick="showPage('bills')" id="nav-bills">
+    <span class="nav-icon">📋</span>Bills
+  </button>
+  <button class="nav-item" onclick="showPage('debts')" id="nav-debts">
+    <span class="nav-icon">💸</span>Debts
+  </button>
+</nav>
+
+<!-- Quick log FAB -->
+<button class="log-fab" onclick="openModal('quickLogModal')" title="Log Earning">+</button>
+
+<!-- ═══ MODALS ═══ -->
+
+<!-- Quick Log Modal -->
+<div class="modal-overlay" id="quickLogModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Log Earning</h2>
+    <div class="modal-sub">Quick entry for today</div>
+    <div class="inp-row">
+      <div class="inp-group">
+        <label>Amount ($)</label>
+        <input type="number" id="qAmt" placeholder="0.00" step="0.01" min="0">
+      </div>
+      <div class="inp-group">
+        <label>Platform</label>
+        <select id="qPlatform">
+          <option value="Uber">Uber</option>
+          <option value="Lyft">Lyft</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="inp-group">
+      <label>Note (optional)</label>
+      <input type="text" id="qNote" placeholder="SAN airport, surge, etc.">
+    </div>
+    <button class="btn btn-primary" onclick="quickLog()">+ Log Now</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="closeModal('quickLogModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Add Bill Modal -->
+<div class="modal-overlay" id="addBillModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Add Bill</h2>
+    <div class="inp-group">
+      <label>Bill Name</label>
+      <input type="text" id="billName" placeholder="e.g. Rent, Tesla Loan...">
+    </div>
+    <div class="inp-row">
+      <div class="inp-group">
+        <label>Amount ($)</label>
+        <input type="number" id="billAmt" placeholder="0.00" step="0.01">
+      </div>
+      <div class="inp-group">
+        <label>Due Day of Month</label>
+        <input type="number" id="billDay" placeholder="1-31" min="1" max="31">
+      </div>
+    </div>
+    <div class="inp-group">
+      <label>Category</label>
+      <select id="billCat">
+        <option value="housing">🏠 Housing</option>
+        <option value="vehicle">🚗 Vehicle</option>
+        <option value="insurance">🛡️ Insurance</option>
+        <option value="utilities">💡 Utilities</option>
+        <option value="subscription">📱 Subscription</option>
+        <option value="debt">💳 Debt Payment</option>
+        <option value="other">📦 Other</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="addBill()">Add Bill</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="closeModal('addBillModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Add Debt Modal -->
+<div class="modal-overlay" id="addDebtModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Add Debt</h2>
+    <div class="inp-group">
+      <label>Person / Creditor</label>
+      <input type="text" id="debtName" placeholder="e.g. Eddie, Capital One...">
+    </div>
+    <div class="inp-row">
+      <div class="inp-group">
+        <label>Amount Owed ($)</label>
+        <input type="number" id="debtAmt" placeholder="0.00" step="0.01">
+      </div>
+      <div class="inp-group">
+        <label>Monthly Payment ($)</label>
+        <input type="number" id="debtMonthly" placeholder="0.00" step="0.01">
+      </div>
+    </div>
+    <div class="inp-group">
+      <label>Notes</label>
+      <input type="text" id="debtNotes" placeholder="e.g. Due Jul 1...">
+    </div>
+    <button class="btn btn-primary" onclick="addDebt()">Add Debt</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="closeModal('addDebtModal')">Cancel</button>
+  </div>
+</div>
+
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+
+<script>
+// ═══════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════
+const API   = window.location.origin;
+const TOKEN = () => localStorage.getItem('pb_token');
+const USER  = () => JSON.parse(localStorage.getItem('pb_user') || '{}');
+const fmt   = n => '$' + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+const fmtS  = n => (n < 0 ? '-' : '+') + fmt(n);
+
+// App state
+let state = {
+  earnings:     [],
+  expenses:     [],
+  bills:        [],
+  debts:        [],
+  splitwise:    [],
+  settings:     { monthly_goal: 9500, daily_quota: 400 },
+  plaidLinked:  false,
+};
+
+// ═══════════════════════════════════════
+// AUTH GUARD
+// ═══════════════════════════════════════
+if (!TOKEN()) { window.location.href = '/'; }
+
+// ═══════════════════════════════════════
+// API HELPER
+// ═══════════════════════════════════════
+async function api(path, opts = {}) {
+  const res = await fetch(`${API}${path}`, {
+    ...opts,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN()}`,
+      ...(opts.headers || {}),
+    },
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  if (res.status === 401) { logout(); return null; }
+  return res.json();
+}
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+const PAGE_TITLES = {
+  home: 'Good morning', earnings: 'Earnings',
+  spending: 'Spending', bills: 'Bills',
+  debts: 'Debts', settings: 'Settings',
+};
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const page = document.getElementById('page-' + id);
+  const nav  = document.getElementById('nav-' + id);
+  if (page) page.classList.add('active');
+  if (nav)  nav.classList.add('active');
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('pageTitle').textContent =
+    id === 'home' ? `${greeting} 👋` : PAGE_TITLES[id] || id;
+  if (id === 'home')     renderHome();
+  if (id === 'earnings') renderEarnings();
+  if (id === 'spending') renderSpending();
+  if (id === 'bills')    renderBills();
+  if (id === 'debts')    renderDebts();
+  if (id === 'settings') renderSettings();
+  window.scrollTo(0, 0);
+}
+
+// ═══════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+// Close modal on backdrop tap
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+// ═══════════════════════════════════════
+// ALERTS
+// ═══════════════════════════════════════
+function renderAlerts() {
+  const container = document.getElementById('alertsContainer');
+  const today     = new Date();
+  const day       = today.getDate();
+  const alerts    = [];
+
+  // Overdue bills
+  const overdue = state.bills.filter(b => !b.paid && b.due_day < day);
+  if (overdue.length) {
+    const total = overdue.reduce((s, b) => s + b.amount, 0);
+    alerts.push({ type: 'red', title: `${overdue.length} Overdue Bill${overdue.length>1?'s':''}`,
+      body: `${overdue.map(b=>b.name).join(', ')} — ${fmt(total)} total overdue` });
+  }
+
+  // Bills due in next 3 days
+  const soon = state.bills.filter(b => !b.paid && b.due_day >= day && b.due_day <= day + 3);
+  if (soon.length) {
+    alerts.push({ type: 'gold', title: 'Bills Due Soon',
+      body: soon.map(b => `${b.name} — ${fmt(b.amount)} on the ${b.due_day}th`).join(' · ') });
+  }
+
+  // Splitwise
+  const swTotal = state.splitwise.reduce((s, d) => s + d.amount, 0);
+  if (swTotal > 0) {
+    alerts.push({ type: 'purple', title: 'You Owe on Splitwise',
+      body: `${fmt(swTotal)} across ${state.splitwise.length} balance${state.splitwise.length>1?'s':''}` });
+  }
+
+  // Below target
+  const earned = getTodayEarnings();
+  const target = getDailyTarget();
+  if (earned === 0 && new Date().getHours() >= 8) {
+    alerts.push({ type: 'gold', title: 'No Earnings Logged Today',
+      body: `Your target is ${fmt(target)}. Start your first shift!` });
+  }
+
+  container.innerHTML = alerts.map((a, i) => `
+    <div class="alert-card ${a.type}" id="alert-${i}">
+      <div class="alert-title">${a.title}</div>
+      <div class="alert-body">${a.body}</div>
+      <button class="alert-dismiss" onclick="dismissAlert(${i})">×</button>
+    </div>`).join('');
+}
+
+function dismissAlert(i) {
+  const el = document.getElementById('alert-' + i);
+  if (el) { el.style.opacity='0'; el.style.transform='translateX(20px)'; el.style.transition='all 0.2s';
+    setTimeout(() => el.remove(), 200); }
+}
+
+// ═══════════════════════════════════════
+// CALCULATIONS
+// ═══════════════════════════════════════
+function getTodayStr() {
+  return new Date().toISOString().slice(0,10);
+}
+
+function getTodayEarnings() {
+  const today = getTodayStr();
+  return state.earnings.filter(e => e.date === today).reduce((s,e) => s + e.amount, 0);
+}
+
+function getWeekEarnings() {
+  const now = new Date();
+  const mon = new Date(now);
+  mon.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  mon.setHours(0,0,0,0);
+  return state.earnings.filter(e => new Date(e.date) >= mon).reduce((s,e) => s + e.amount, 0);
+}
+
+function getMonthEarnings() {
+  const m = getTodayStr().slice(0,7);
+  return state.earnings.filter(e => e.date.startsWith(m)).reduce((s,e) => s + e.amount, 0);
+}
+
+function getTodaySpending() {
+  const today = getTodayStr();
+  return state.expenses.filter(e => e.date === today).reduce((s,e) => s + e.amount, 0);
+}
+
+function getMonthSpending() {
+  const m = getTodayStr().slice(0,7);
+  return state.expenses.filter(e => e.date.startsWith(m)).reduce((s,e) => s + e.amount, 0);
+}
+
+function getDailyTarget() {
+  // Smart target: (remaining bills + overdue + splitwise) / days left in month
+  const today    = new Date();
+  const daysLeft = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate() - today.getDate() + 1;
+  const unpaid   = state.bills.filter(b => !b.paid).reduce((s,b) => s + b.amount, 0);
+  const swOwed   = state.splitwise.reduce((s,d) => s + d.amount, 0);
+  const monthly  = state.settings.monthly_goal || 9500;
+  const earned   = getMonthEarnings();
+  const remaining = Math.max(0, monthly + swOwed - earned);
+  return Math.max(state.settings.daily_quota || 400, remaining / Math.max(1, daysLeft));
+}
+
+// ═══════════════════════════════════════
+// HOME RENDER
+// ═══════════════════════════════════════
+function renderHome() {
+  renderAlerts();
+
+  const earned  = getTodayEarnings();
+  const target  = getDailyTarget();
+  const pct     = Math.min(100, (earned / target) * 100);
+  const spent   = getTodaySpending();
+  const net     = earned - spent;
+
+  // Ring
+  const circ = 263.9;
+  document.getElementById('ringFill').style.strokeDashoffset = circ - (circ * pct / 100);
+  document.getElementById('ringFill').style.stroke =
+    pct >= 100 ? 'var(--green)' : pct >= 60 ? 'var(--gold)' : 'var(--accent)';
+  document.getElementById('ringPct').textContent = Math.round(pct) + '%';
+  document.getElementById('earnedBig').textContent = fmt(earned);
+  document.getElementById('targetSub').textContent =
+    pct >= 100 ? `🎉 Target crushed! +${fmt(earned - target)} over` : `Target: ${fmt(target)} today`;
+
+  // Uber / Lyft / Net
+  const today   = getTodayStr();
+  const uberAmt = state.earnings.filter(e => e.date===today && e.platform==='Uber').reduce((s,e)=>s+e.amount,0);
+  const lyftAmt = state.earnings.filter(e => e.date===today && e.platform==='Lyft').reduce((s,e)=>s+e.amount,0);
+  document.getElementById('statUber').textContent = fmt(uberAmt);
+  document.getElementById('statLyft').textContent = fmt(lyftAmt);
+  document.getElementById('statNet').textContent  = fmt(net);
+  document.getElementById('statNet').style.color  = net >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('statWeek').textContent  = fmt(getWeekEarnings());
+  document.getElementById('statMonth').textContent = fmt(getMonthEarnings());
+
+  // Upcoming bills
+  const today2   = new Date();
+  const todayDay = today2.getDate();
+  const upcoming = [...state.bills]
+    .filter(b => !b.paid)
+    .sort((a,b) => a.due_day - b.due_day)
+    .slice(0, 4);
+
+  document.getElementById('upcomingBillsList').innerHTML = upcoming.length
+    ? upcoming.map(b => {
+        const daysUntil = b.due_day - todayDay;
+        const status = daysUntil < 0 ? 'overdue' : daysUntil <= 3 ? 'soon' : 'upcoming';
+        const chipText = daysUntil < 0 ? 'Overdue' : daysUntil === 0 ? 'Today' : `In ${daysUntil}d`;
+        const chipClass = daysUntil < 0 ? 'chip-overdue' : daysUntil <= 3 ? 'chip-soon' : 'chip-upcoming';
+        return `<div class="bill-row">
+          <div class="bill-body">
+            <div class="bill-name">${b.name}</div>
+            <div class="bill-due">${b.due_day}${['st','nd','rd'][b.due_day-1]||'th'} of month</div>
+          </div>
+          <span class="chip ${chipClass}">${chipText}</span>
+          <div class="bill-amt" style="color:var(--red)">${fmt(b.amount)}</div>
+        </div>`;
+      }).join('')
+    : '<div class="empty">No upcoming bills</div>';
+
+  // Splitwise preview
+  document.getElementById('splitwisePreview').innerHTML = state.splitwise.length
+    ? state.splitwise.slice(0,3).map(d => `
+        <div class="txn-row">
+          <div class="txn-icon">👤</div>
+          <div class="txn-body">
+            <div class="txn-name">${d.name}</div>
+            <div class="txn-meta">${d.group || 'Personal'}</div>
+          </div>
+          <div class="txn-amt" style="color:var(--red)">-${fmt(d.amount)}</div>
+        </div>`).join('')
+    : '<div class="empty">Connect Splitwise to see balances</div>';
+
+  // Recent transactions
+  const recent = [...state.expenses]
+    .sort((a,b) => b.date.localeCompare(a.date))
+    .slice(0, 5);
+
+  const catIcons = {
+    transportation:'🚗', food:'🍔', shopping:'🛍️', entertainment:'🎬',
+    utilities:'💡', health:'💊', housing:'🏠', other:'📦'
+  };
+
+  document.getElementById('recentTxns').innerHTML = recent.length
+    ? recent.map(t => `
+        <div class="txn-row">
+          <div class="txn-icon">${catIcons[t.category] || '💳'}</div>
+          <div class="txn-body">
+            <div class="txn-name">${t.description || t.name}</div>
+            <div class="txn-meta">${t.date} · ${t.category || 'Other'}</div>
+          </div>
+          <div class="txn-amt" style="color:var(--red)">-${fmt(t.amount)}</div>
+        </div>`).join('')
+    : '<div class="empty">Transactions will appear after connecting your bank</div>';
+}
+
+// ═══════════════════════════════════════
+// EARNINGS RENDER
+// ═══════════════════════════════════════
+function renderEarnings() {
+  const target = getDailyTarget();
+  document.getElementById('earnToday').textContent  = fmt(getTodayEarnings());
+  document.getElementById('earnWeek').textContent   = fmt(getWeekEarnings());
+  document.getElementById('earnMonth').textContent  = fmt(getMonthEarnings());
+  document.getElementById('earnTarget').textContent = fmt(target);
+
+  const goal    = state.settings.monthly_goal || 9500;
+  const earned  = getMonthEarnings();
+  const pct     = Math.min(100, (earned / goal) * 100);
+  document.getElementById('monthProg').style.width    = pct + '%';
+  document.getElementById('monthPct').textContent     = Math.round(pct) + '%';
+  document.getElementById('monthEarnedLabel').textContent = `Earned: ${fmt(earned)}`;
+  document.getElementById('monthGoalLabel').textContent   = `Goal: ${fmt(goal)}`;
+
+  // Set default date
+  document.getElementById('logDate').value = getTodayStr();
+
+  // History
+  const sorted = [...state.earnings].sort((a,b) => b.date.localeCompare(a.date)).slice(0,30);
+  const platformColors = { Uber:'var(--blue)', Lyft:'var(--purple)', Other:'var(--gold)' };
+  document.getElementById('earningsHistory').innerHTML = sorted.length
+    ? sorted.map((e,i) => `
+        <div class="txn-row">
+          <div class="txn-icon" style="background:${platformColors[e.platform]||'var(--card2)'}22">
+            ${e.platform==='Uber'?'🚗':e.platform==='Lyft'?'💜':'💰'}
+          </div>
+          <div class="txn-body">
+            <div class="txn-name">${e.platform}${e.note ? ' · '+e.note : ''}</div>
+            <div class="txn-meta">${e.date}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="txn-amt" style="color:var(--green)">+${fmt(e.amount)}</div>
+            <button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85rem"
+              onclick="deleteEarning(${i})">×</button>
+          </div>
+        </div>`).join('')
+    : '<div class="empty">No earnings logged yet</div>';
+}
+
+// ═══════════════════════════════════════
+// SPENDING RENDER
+// ═══════════════════════════════════════
+function renderSpending() {
+  document.getElementById('spendToday').textContent  = fmt(getTodaySpending());
+  document.getElementById('spendMonth').textContent  = fmt(getMonthSpending());
+
+  // Categories
+  const month = getTodayStr().slice(0,7);
+  const cats  = {};
+  state.expenses.filter(e => e.date.startsWith(month)).forEach(e => {
+    const c = e.category || 'other';
+    cats[c] = (cats[c] || 0) + e.amount;
+  });
+
+  const catIcons = {
+    transportation:'🚗', food:'🍔', shopping:'🛍️', entertainment:'🎬',
+    utilities:'💡', health:'💊', housing:'🏠', other:'📦',
+    'food_and_drink':'🍔', auto:'🚗', medical:'💊'
+  };
+
+  const total = Object.values(cats).reduce((s,v) => s+v, 0);
+  document.getElementById('categoryBreakdown').innerHTML = Object.keys(cats).length
+    ? Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([cat, amt]) => {
+        const pct = total > 0 ? (amt/total*100) : 0;
+        return `<div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+            <span style="font-size:0.85rem;font-weight:500">${catIcons[cat]||'📦'} ${cat}</span>
+            <span style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--red)">${fmt(amt)}</span>
+          </div>
+          <div class="prog-bar">
+            <div class="prog-fill" style="background:var(--accent);width:${pct}%"></div>
+          </div>
+          <div style="font-size:0.65rem;color:var(--muted);margin-top:3px">${pct.toFixed(0)}% of spending</div>
+        </div>`;
+      }).join('')
+    : '<div class="empty">Connect bank to see spending categories</div>';
+
+  // All transactions
+  const sorted = [...state.expenses].sort((a,b) => b.date.localeCompare(a.date));
+  document.getElementById('allTxnsList').innerHTML = sorted.length
+    ? sorted.map(t => `
+        <div class="txn-row">
+          <div class="txn-icon">${catIcons[t.category]||'💳'}</div>
+          <div class="txn-body">
+            <div class="txn-name">${t.description||t.name||'Transaction'}</div>
+            <div class="txn-meta">${t.date} · ${t.category||'Other'}${t.isPlaid?' · 🏦':''}</div>
+          </div>
+          <div class="txn-amt" style="color:var(--red)">-${fmt(t.amount)}</div>
+        </div>`).join('')
+    : '<div class="empty">No transactions yet</div>';
+
+  // Plaid status
+  if (state.plaidLinked) {
+    document.getElementById('plaidStatus').textContent = '🏦 Bank Connected';
+    document.getElementById('plaidBtn').textContent    = '↺ Sync';
+    document.getElementById('plaidBtn').onclick        = syncPlaid;
+  }
+}
+
+// ═══════════════════════════════════════
+// BILLS RENDER
+// ═══════════════════════════════════════
+function renderBills() {
+  const total  = state.bills.reduce((s,b) => s+b.amount, 0);
+  const unpaid = state.bills.filter(b=>!b.paid).reduce((s,b) => s+b.amount, 0);
+  document.getElementById('billsTotal').textContent  = fmt(total);
+  document.getElementById('billsUnpaid').textContent = fmt(unpaid);
+
+  const today = new Date().getDate();
+  const sorted = [...state.bills].sort((a,b) => a.due_day - b.due_day);
+
+  document.getElementById('billsList').innerHTML = sorted.length
+    ? sorted.map((b,i) => {
+        const daysUntil = b.due_day - today;
+        const chipClass = b.paid ? 'chip-paid' : daysUntil < 0 ? 'chip-overdue' : daysUntil<=3 ? 'chip-soon' : 'chip-upcoming';
+        const chipText  = b.paid ? 'Paid' : daysUntil < 0 ? 'Overdue' : daysUntil===0 ? 'Today' : `${b.due_day}th`;
+        return `<div class="bill-row">
+          <div class="bill-body">
+            <div class="bill-name">${b.name}</div>
+            <div class="bill-due">${b.category || 'Other'}</div>
+          </div>
+          <span class="chip ${chipClass}">${chipText}</span>
+          <div class="bill-amt" style="color:${b.paid?'var(--muted)':'var(--red)'}">${fmt(b.amount)}</div>
+          ${!b.paid ? `<button class="btn btn-ghost btn-sm" onclick="markBillPaid(${i})">Pay</button>` :
+            `<button class="btn btn-ghost btn-sm" onclick="markBillUnpaid(${i})">Undo</button>`}
+        </div>`;
+      }).join('')
+    : '<div class="empty">No bills added yet. Tap + Add to start.</div>';
+}
+
+// ═══════════════════════════════════════
+// DEBTS RENDER
+// ═══════════════════════════════════════
+function renderDebts() {
+  const total   = [...state.debts, ...state.splitwise].reduce((s,d) => s+d.amount, 0);
+  const month   = getTodayStr().slice(0,7);
+  const paidMo  = state.expenses.filter(e => e.date.startsWith(month) && e.category==='debt').reduce((s,e)=>s+e.amount,0);
+  document.getElementById('debtTotal').textContent     = fmt(total);
+  document.getElementById('debtPaidMonth').textContent = fmt(paidMo);
+
+  // Splitwise
+  document.getElementById('splitwiseList').innerHTML = state.splitwise.length
+    ? state.splitwise.map(d => `
+        <div class="debt-row">
+          <div class="debt-header">
+            <div class="debt-name">👤 ${d.name}</div>
+            <div class="debt-bal">-${fmt(d.amount)}</div>
+          </div>
+          <div style="font-size:0.72rem;color:var(--muted)">${d.group||'Personal'}</div>
+        </div>`).join('')
+    : '<div class="empty">Connect Splitwise to see who you owe</div>';
+
+  // Manual debts
+  document.getElementById('manualDebtList').innerHTML = state.debts.length
+    ? state.debts.map((d,i) => `
+        <div class="debt-row">
+          <div class="debt-header">
+            <div class="debt-name">${d.name}</div>
+            <div class="debt-bal">-${fmt(d.amount)}</div>
+          </div>
+          <div style="font-size:0.72rem;color:var(--muted)">
+            ${d.monthly_payment ? `${fmt(d.monthly_payment)}/mo · ` : ''}
+            ${d.notes||''}
+          </div>
+          <div class="prog-bar">
+            <div class="prog-fill" style="background:var(--accent);width:${Math.min(100,((d.original||d.amount)-d.amount)/(d.original||d.amount)*100)}%"></div>
+          </div>
+        </div>`).join('')
+    : '<div class="empty">No manual debts added</div>';
+
+  // Payoff timeline
+  const allDebts = [...state.debts, ...state.splitwise].filter(d=>d.amount>0).sort((a,b)=>a.amount-b.amount);
+  if (allDebts.length) {
+    const monthly = 500; // rough snowball payment
+    let html = '<div style="font-size:0.75rem;color:var(--muted);margin-bottom:12px">Snowball method — smallest debt first</div>';
+    let months = 0;
+    allDebts.forEach(d => {
+      const m = Math.ceil(d.amount / monthly);
+      months += m;
+      const date = new Date(); date.setMonth(date.getMonth() + months);
+      html += `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.82rem">
+        <span>${d.name}</span>
+        <span style="color:var(--accent);font-family:'DM Mono',monospace">
+          ${date.toLocaleDateString('en-US',{month:'short',year:'numeric'})}
+        </span>
+      </div>`;
+    });
+    document.getElementById('payoffTimeline').innerHTML = html;
+  }
+}
+
+// ═══════════════════════════════════════
+// SETTINGS RENDER
+// ═══════════════════════════════════════
+function renderSettings() {
+  const user = USER();
+  const initials = (user.name||'?').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('settingsAvatar').textContent = initials;
+  document.getElementById('settingsName').textContent   = user.name || 'Unknown';
+  document.getElementById('settingsEmail').textContent  = user.email || '';
+  document.getElementById('settingsGoal').value  = state.settings.monthly_goal || 9500;
+  document.getElementById('settingsQuota').value = state.settings.daily_quota  || 400;
+}
+
+// ═══════════════════════════════════════
+// EARNINGS ACTIONS
+// ═══════════════════════════════════════
+async function logEarning() {
+  const amt  = parseFloat(document.getElementById('logAmt').value);
+  const plat = document.getElementById('logPlatform').value;
+  const date = document.getElementById('logDate').value || getTodayStr();
+  const note = document.getElementById('logNote').value.trim();
+  if (!amt || amt <= 0) return showMsg('logMsg', 'Enter a valid amount', 'var(--red)');
+
+  const entry = { amount: amt, platform: plat, date, note, is_manual: true };
+  const res   = await api('/api/earnings', { method:'POST', body: entry });
+  if (!res) return;
+  state.earnings.push({ ...entry, id: res.id });
+  document.getElementById('logAmt').value  = '';
+  document.getElementById('logNote').value = '';
+  showMsg('logMsg', `✅ ${fmt(amt)} logged!`, 'var(--green)');
+  renderEarnings();
+  saveLocal();
+}
+
+async function quickLog() {
+  const amt  = parseFloat(document.getElementById('qAmt').value);
+  const plat = document.getElementById('qPlatform').value;
+  const note = document.getElementById('qNote').value.trim();
+  if (!amt || amt <= 0) return;
+  const entry = { amount: amt, platform: plat, date: getTodayStr(), note, is_manual: true };
+  const res   = await api('/api/earnings', { method:'POST', body: entry });
+  if (res) {
+    state.earnings.push({ ...entry, id: res.id });
+    closeModal('quickLogModal');
+    document.getElementById('qAmt').value  = '';
+    document.getElementById('qNote').value = '';
+    renderHome();
+    saveLocal();
+  }
+}
+
+async function deleteEarning(index) {
+  const e = state.earnings[state.earnings.length - 1 - index];
+  if (!e || !e.id) return;
+  await api(`/api/earnings/${e.id}`, { method:'DELETE' });
+  state.earnings = state.earnings.filter(x => x.id !== e.id);
+  renderEarnings();
+  saveLocal();
+}
+
+// ═══════════════════════════════════════
+// BILLS ACTIONS
+// ═══════════════════════════════════════
+async function addBill() {
+  const name = document.getElementById('billName').value.trim();
+  const amt  = parseFloat(document.getElementById('billAmt').value);
+  const day  = parseInt(document.getElementById('billDay').value);
+  const cat  = document.getElementById('billCat').value;
+  if (!name || !amt || !day) return;
+  const bill = { name, amount: amt, due_day: day, category: cat, paid: false };
+  const res  = await api('/api/bills', { method:'POST', body: bill });
+  if (res) {
+    state.bills.push({ ...bill, id: res.id });
+    closeModal('addBillModal');
+    document.getElementById('billName').value = '';
+    document.getElementById('billAmt').value  = '';
+    document.getElementById('billDay').value  = '';
+    renderBills();
+    saveLocal();
+  }
+}
+
+async function markBillPaid(i) {
+  const bill = state.bills[i];
+  if (!bill) return;
+  await api(`/api/bills/${bill.id}`, { method:'PATCH', body:{ paid: true } });
+  state.bills[i].paid = true;
+  renderBills();
+  saveLocal();
+}
+
+async function markBillUnpaid(i) {
+  const bill = state.bills[i];
+  if (!bill) return;
+  await api(`/api/bills/${bill.id}`, { method:'PATCH', body:{ paid: false } });
+  state.bills[i].paid = false;
+  renderBills();
+  saveLocal();
+}
+
+// ═══════════════════════════════════════
+// DEBTS ACTIONS
+// ═══════════════════════════════════════
+async function addDebt() {
+  const name    = document.getElementById('debtName').value.trim();
+  const amt     = parseFloat(document.getElementById('debtAmt').value);
+  const monthly = parseFloat(document.getElementById('debtMonthly').value) || 0;
+  const notes   = document.getElementById('debtNotes').value.trim();
+  if (!name || !amt) return;
+  const debt = { name, amount: amt, original: amt, monthly_payment: monthly, notes };
+  const res  = await api('/api/debts', { method:'POST', body: debt });
+  if (res) {
+    state.debts.push({ ...debt, id: res.id });
+    closeModal('addDebtModal');
+    document.getElementById('debtName').value    = '';
+    document.getElementById('debtAmt').value     = '';
+    document.getElementById('debtMonthly').value = '';
+    document.getElementById('debtNotes').value   = '';
+    renderDebts();
+    saveLocal();
+  }
+}
+
+// ═══════════════════════════════════════
+// SETTINGS ACTIONS
+// ═══════════════════════════════════════
+async function saveSettings() {
+  const goal  = parseFloat(document.getElementById('settingsGoal').value) || 9500;
+  const quota = parseFloat(document.getElementById('settingsQuota').value) || 400;
+  state.settings = { monthly_goal: goal, daily_quota: quota };
+  await api('/api/settings', { method:'PUT', body: state.settings });
+  showMsg('logMsg', '✅ Saved!', 'var(--green)');
+  saveLocal();
+}
+
+// ═══════════════════════════════════════
+// PLAID
+// ═══════════════════════════════════════
+async function openPlaidLink() {
+  try {
+    const r = await api('/api/plaid/link-token', { method:'POST' });
+    if (!r?.link_token) return alert('Could not connect to bank service. Try again.');
+    const handler = Plaid.create({
+      token: r.link_token,
+      onSuccess: async (public_token, meta) => {
+        setSyncing(true);
+        const ex = await api('/api/plaid/exchange-token', {
+          method:'POST', body:{ public_token, institution_name: meta.institution?.name }
+        });
+        if (ex?.ok) {
+          state.plaidLinked = true;
+          await syncPlaid();
+        }
+        setSyncing(false);
+      },
+      onExit: (err) => { if(err) console.error(err); }
+    });
+    handler.open();
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+async function syncPlaid() {
+  setSyncing(true);
+  const res = await api('/api/plaid/transactions');
+  if (res?.transactions) {
+    let added = 0;
+    res.transactions.forEach(t => {
+      if (state.expenses.some(e => e.plaid_id === t.plaid_id)) return;
+      state.expenses.push(t);
+      added++;
+    });
+    if (added > 0) { saveLocal(); renderHome(); }
+  }
+  setSyncing(false);
+}
+
+// ═══════════════════════════════════════
+// SPLITWISE
+// ═══════════════════════════════════════
+async function connectSplitwise() {
+  const r = await api('/api/splitwise/auth-url');
+  if (r?.url) window.location.href = r.url;
+}
+
+async function loadSplitwise() {
+  const r = await api('/api/splitwise/balances');
+  if (r?.balances) {
+    state.splitwise = r.balances;
+    saveLocal();
+  }
+}
+
+// ═══════════════════════════════════════
+// SYNC INDICATOR
+// ═══════════════════════════════════════
+function setSyncing(active) {
+  const dot   = document.getElementById('syncDot');
+  const label = document.getElementById('syncLabel');
+  if (active) { dot.className='sync-dot syncing'; label.textContent='Syncing...'; }
+  else         { dot.className='sync-dot';         label.textContent='Live'; }
+}
+
+// ═══════════════════════════════════════
+// MISC HELPERS
+// ═══════════════════════════════════════
+function showMsg(id, msg, color) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = color;
+  setTimeout(() => { el.textContent = ''; }, 3000);
+}
+
+function logout() {
+  localStorage.removeItem('pb_token');
+  localStorage.removeItem('pb_user');
+  localStorage.removeItem('pb_state');
+  window.location.href = '/';
+}
+
+function saveLocal() {
+  localStorage.setItem('pb_state', JSON.stringify(state));
+}
+
+function loadLocal() {
+  const saved = localStorage.getItem('pb_state');
+  if (saved) {
+    try { Object.assign(state, JSON.parse(saved)); } catch(e) {}
+  }
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify({ state, exported: new Date().toISOString() }, null,2)], { type:'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `pbtrack-backup-${getTodayStr()}.json`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.state) { Object.assign(state, data.state); saveLocal(); renderHome(); alert('✅ Data restored!'); }
+    } catch(e) { alert('Invalid backup file'); }
+  };
+  reader.readAsText(file);
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+async function init() {
+  // Load local cache first (instant)
+  loadLocal();
+
+  // Set user avatar
+  const user = USER();
+  const initials = (user.name||'?').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('userAvatar').textContent = initials;
+
+  // Set date
+  document.getElementById('topbarDate').textContent =
+    new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+
+  // Render immediately from cache
+  renderHome();
+
+  // Then fetch fresh data from server
+  setSyncing(true);
+  try {
+    const [earnings, bills, debts, settings] = await Promise.all([
+      api('/api/earnings'),
+      api('/api/bills'),
+      api('/api/debts'),
+      api('/api/settings'),
+    ]);
+    if (earnings?.data) state.earnings  = earnings.data;
+    if (bills?.data)    state.bills     = bills.data;
+    if (debts?.data)    state.debts     = debts.data;
+    if (settings)       state.settings  = { ...state.settings, ...settings };
+
+    // Sync Plaid + Splitwise
+    await Promise.allSettled([ syncPlaid(), loadSplitwise() ]);
+
+    saveLocal();
+    renderHome();
+  } catch(e) {
+    console.error('Init error:', e);
+  }
+  setSyncing(false);
+}
+
+init();
+</script>
+</body>
+</html>
