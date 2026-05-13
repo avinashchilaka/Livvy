@@ -1202,16 +1202,7 @@ body {
     </div>
   </div>
 
-  <!-- Splitwise debts -->
-  <div class="section-hdr">
-    <div class="section-title">You Owe</div>
-    <button class="section-link" onclick="showPage('accounts')">See all</button>
-  </div>
-  <div class="card" style="padding:0 16px">
-    <div id="splitwisePreview">
-      <div class="loading-spinner"><div class="spinner"></div> Loading...</div>
-    </div>
-  </div>
+
 
   <!-- Recent activity (earnings + spending mixed) -->
   <div class="section-hdr">
@@ -2103,7 +2094,7 @@ function renderHome() {
         return `<div class="bill-row">
           <div class="bill-body">
             <div class="bill-name">${b.name}</div>
-            <div class="bill-due">${b.due_day}${['st','nd','rd'][b.due_day-1]||'th'} of month</div>
+            <div class="bill-due">${b.due_day}${(d=>{const n=d%10,m=d%100;return m>=11&&m<=13?'th':n===1?'st':n===2?'nd':n===3?'rd':'th'})(b.due_day)} of month</div>
           </div>
           <span class="chip ${chipClass}">${chipText}</span>
           <div class="bill-amt" style="color:var(--red)">${fmt(b.amount)}</div>
