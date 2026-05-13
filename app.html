@@ -2405,7 +2405,8 @@ function renderBills() {
     ? sorted.map((b,i) => {
         const daysUntil = b.due_day - today;
         const chipClass = b.paid ? 'chip-paid' : daysUntil < 0 ? 'chip-overdue' : daysUntil<=3 ? 'chip-soon' : 'chip-upcoming';
-        const chipText  = b.paid ? 'Paid' : daysUntil < 0 ? 'Overdue' : daysUntil===0 ? 'Today' : `${b.due_day}th`;
+        const sfx = (d) => { const n=d%10,m=d%100; return m>=11&&m<=13?'th':n===1?'st':n===2?'nd':n===3?'rd':'th'; };
+        const chipText  = b.paid ? 'Paid' : daysUntil < 0 ? 'Overdue' : daysUntil===0 ? 'Today' : `${b.due_day}${sfx(b.due_day)}`;
         return `<div class="bill-row">
           <div class="bill-body">
             <div class="bill-name">${b.name}</div>
@@ -3213,10 +3214,16 @@ function autoDetectBills() {
   const suggested = [];
   patterns.forEach(p => {
     const found = state.expenses.some(e => (e.description||'').toLowerCase().includes(p.match));
-    const alreadyAdded = state.bills.some(b => b.name.toLowerCase().includes(p.match.split(' ')[0]));
+    // Check if already added by name OR by matching the pattern keyword
+    const alreadyAdded = state.bills.some(b => 
+      b.name.toLowerCase().includes(p.name.toLowerCase().split(' ')[0]) ||
+      (b.name.toLowerCase() === p.name.toLowerCase())
+    );
     if (found && !alreadyAdded) suggested.push(p);
   });
-  return suggested;
+  // Deduplicate by name
+  const seen = new Set();
+  return suggested.filter(p => { if (seen.has(p.name)) return false; seen.add(p.name); return true; });
 }
 
 function showBillSuggestions() {
@@ -3258,8 +3265,10 @@ async function addSuggestedBill(idx) {
 
 async function addAllSuggestedBills() {
   for (const b of (window._suggestedBills||[])) {
+    // Double-check not already in state
+    if (state.bills.some(x => x.name.toLowerCase() === b.name.toLowerCase())) continue;
     const res = await api('/api/bills', { method:'POST', body: { name:b.name, amount:b.amount, due_day:b.due_day, category:b.category } });
-    if (res) state.bills.push({ ...b, id: res.id, paid: false });
+    if (res?.id) state.bills.push({ ...b, id: res.id, paid: false });
   }
   saveLocal();
   renderBills();
