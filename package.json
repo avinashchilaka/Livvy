@@ -15,7 +15,8 @@
     "jsonwebtoken": "^9.0.2",
     "@supabase/supabase-js": "^2.39.0",
     "plaid": "^14.0.0",
-    "node-fetch": "^2.7.0"
+    "node-fetch": "^2.7.0",
+    "@anthropic-ai/sdk": "^0.20.0"
   },
   "engines": {
     "node": ">=18.0.0"
