@@ -1783,7 +1783,7 @@ function renderSpending() {
         const pct = total > 0 ? (amt/total*100) : 0;
         return `<div style="margin-bottom:14px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-            <span style="font-size:0.85rem;font-weight:500">${catIcons[cat]||'📦'} ${cat}</span>
+            <span style="font-size:0.85rem;font-weight:500">${catIcons[cat]||'📦'} ${cat.charAt(0).toUpperCase()+cat.slice(1)}</span>
             <span style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--red)">${fmt(amt)}</span>
           </div>
           <div class="prog-bar">
@@ -1804,7 +1804,7 @@ function renderSpending() {
           </div>
           <div class="txn-body">
             <div class="txn-name">${t.label || t.description||t.name||'Transaction'}</div>
-            <div class="txn-meta">${t.date} · ${t.category||'Other'}${t.is_plaid?' · 🏦':''}</div>
+            <div class="txn-meta">${t.date} · ${(t.category||'Other').charAt(0).toUpperCase()+(t.category||'other').slice(1)}${t.is_plaid?' · 🏦':''}</div>
           </div>
           <div class="txn-amt" style="color:var(--red)">-${fmt(t.amount)}</div>
         </div>`).join('')
