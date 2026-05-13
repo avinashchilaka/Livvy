@@ -811,6 +811,98 @@ body {
   font-weight: 500;
 }
 
+
+/* ═══════════════════════════
+   SHIFT TRACKER
+═══════════════════════════ */
+.shift-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.shift-active {
+  border-color: rgba(126,204,160,0.4);
+  background: rgba(126,204,160,0.04);
+}
+
+.shift-timer {
+  font-family: 'DM Mono', monospace;
+  font-size: 2rem;
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: 2px;
+  text-align: center;
+  margin: 8px 0;
+}
+
+.shift-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: var(--r-md);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.shift-btn-start {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #0a0b0d;
+  box-shadow: 0 4px 16px rgba(126,204,160,0.3);
+}
+
+.shift-btn-end {
+  background: linear-gradient(135deg, var(--red), #c0404a);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(240,98,106,0.3);
+}
+
+.shift-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.shift-stat {
+  background: var(--s1);
+  border-radius: var(--r-sm);
+  padding: 10px 8px;
+  text-align: center;
+}
+
+.shift-stat-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 3px;
+}
+
+.shift-stat-lbl {
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ═══════════════════════════
+   CLICKABLE NUMBERS
+═══════════════════════════ */
+.clickable-val {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+}
+
+.clickable-val:active { opacity: 0.7; }
+
 @media(max-width:380px) {
   .target-row { grid-template-columns: 1fr 1fr 1fr; }
   .earned-big { font-size: 2rem; }
@@ -1142,17 +1234,17 @@ body {
     <div id="targetBreakdownCard" style="background:var(--s1);border-radius:var(--r-sm);padding:10px 12px;margin:10px 0;text-align:left"></div>
 
     <div class="target-row">
-      <div class="target-stat">
-        <div class="target-stat-val" id="statUber" style="color:var(--blue)">$0</div>
-        <div class="target-stat-lbl">Uber</div>
+      <div class="target-stat" onclick="drillDownPlatform('Uber')">
+        <div class="target-stat-val clickable-val" id="statUber" style="color:var(--blue)">$0</div>
+        <div class="target-stat-lbl">Uber ›</div>
       </div>
-      <div class="target-stat">
-        <div class="target-stat-val" id="statLyft" style="color:var(--purple)">$0</div>
-        <div class="target-stat-lbl">Lyft</div>
+      <div class="target-stat" onclick="drillDownPlatform('Lyft')">
+        <div class="target-stat-val clickable-val" id="statLyft" style="color:var(--purple)">$0</div>
+        <div class="target-stat-lbl">Lyft ›</div>
       </div>
-      <div class="target-stat">
-        <div class="target-stat-val" id="statNet" style="color:var(--green)">$0</div>
-        <div class="target-stat-lbl">Net</div>
+      <div class="target-stat" onclick="drillDown('today')">
+        <div class="target-stat-val clickable-val" id="statNet" style="color:var(--green)">$0</div>
+        <div class="target-stat-lbl">Net ›</div>
       </div>
     </div>
   </div>
@@ -1225,18 +1317,41 @@ body {
 <div class="page" id="page-earnings">
   <div style="padding:16px">
 
+    <!-- Shift Tracker -->
+    <div class="shift-card" id="shiftCard">
+      <div class="card-label" style="margin-bottom:8px">⏱️ Shift Tracker</div>
+      <div class="shift-timer" id="shiftTimer">00:00:00</div>
+      <div id="shiftStats" class="shift-stats" style="display:none">
+        <div class="shift-stat">
+          <div class="shift-stat-val" id="shiftHours" style="color:var(--accent)">0h</div>
+          <div class="shift-stat-lbl">Hours</div>
+        </div>
+        <div class="shift-stat">
+          <div class="shift-stat-val" id="shiftEarned" style="color:var(--green)">$0</div>
+          <div class="shift-stat-lbl">Earned</div>
+        </div>
+        <div class="shift-stat">
+          <div class="shift-stat-val" id="shiftPerHour" style="color:var(--gold)">$0/hr</div>
+          <div class="shift-stat-lbl">Per Hour</div>
+        </div>
+      </div>
+      <button class="shift-btn shift-btn-start" id="shiftBtn" onclick="toggleShift()" style="margin-top:12px">
+        🚗 Start Shift
+      </button>
+    </div>
+
     <div class="stat-grid">
-      <div class="stat-box">
-        <div class="stat-val" id="earnToday" style="color:var(--green)">$0.00</div>
-        <div class="stat-lbl">Today</div>
+      <div class="stat-box" onclick="drillDown('today')">
+        <div class="stat-val clickable-val" id="earnToday" style="color:var(--green)">$0.00</div>
+        <div class="stat-lbl">Today ›</div>
       </div>
-      <div class="stat-box">
-        <div class="stat-val" id="earnWeek" style="color:var(--accent)">$0.00</div>
-        <div class="stat-lbl">This Week</div>
+      <div class="stat-box" onclick="drillDown('week')">
+        <div class="stat-val clickable-val" id="earnWeek" style="color:var(--accent)">$0.00</div>
+        <div class="stat-lbl">This Week ›</div>
       </div>
-      <div class="stat-box">
-        <div class="stat-val" id="earnMonth" style="color:var(--accent)">$0.00</div>
-        <div class="stat-lbl">This Month</div>
+      <div class="stat-box" onclick="drillDown('month')">
+        <div class="stat-val clickable-val" id="earnMonth" style="color:var(--accent)">$0.00</div>
+        <div class="stat-lbl">This Month ›</div>
       </div>
       <div class="stat-box">
         <div class="stat-val" id="earnTarget" style="color:var(--gold)">$0.00</div>
@@ -2154,11 +2269,13 @@ function getTodayStr() {
 
 function getTodayEarnings() {
   const today = getTodayStr();
-  // Use daily logs if available, otherwise fall back to earnings array
+  // Use daily logs if available AND non-zero
   if (state.dailyLogs[today]) {
-    return Object.values(state.dailyLogs[today]).reduce((s,v) => s + (parseFloat(v)||0), 0);
+    const logTotal = Object.values(state.dailyLogs[today]).reduce((s,v) => s + (parseFloat(v)||0), 0);
+    if (logTotal > 0) return logTotal;
   }
-  return state.earnings.filter(e => e.date === today && e.is_manual !== false).reduce((s,e) => s + e.amount, 0);
+  // Fall back to ALL earnings for today (manual + Plaid)
+  return state.earnings.filter(e => e.date === today).reduce((s,e) => s + e.amount, 0);
 }
 
 function getTodayEarningsByPlatform() {
@@ -3144,16 +3261,26 @@ function renderBestDays() {
 // ═══════════════════════════════════════
 function renderProjection() {
   const now = new Date();
-  const mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay()+6)%7)); mon.setHours(0,0,0,0);
   const daysIntoWeek = Math.max(1, (now.getDay()+6)%7 + 1);
-  const weekEarned = getWeekEarnings();
-  const dailyAvg = weekEarned / daysIntoWeek;
-  const projected = dailyAvg * 7;
+  const daysLeftWeek = 7 - daysIntoWeek;
+  const weekEarned   = getWeekEarnings();
+  const dailyAvg     = weekEarned / daysIntoWeek;
+  const projected    = dailyAvg * 7;
+  const target       = getDailyTarget();
+  const onTrack      = dailyAvg >= target;
 
   const el = document.getElementById('projectionVal');
   const sub = document.getElementById('projectionSub');
-  if (el) el.textContent = fmt(projected);
-  if (sub) sub.textContent = `Based on ${fmt(dailyAvg)}/day avg · ${7-daysIntoWeek} days left this week`;
+  if (el) {
+    el.textContent = fmt(projected);
+    el.style.color = onTrack ? 'var(--blue)' : 'var(--gold)';
+  }
+  if (sub) {
+    const needed = Math.max(0, (target * 7) - weekEarned);
+    sub.textContent = onTrack
+      ? `On track · ${fmt(dailyAvg)}/day avg · ${daysLeftWeek} days left`
+      : `Need ${fmt(needed)} more this week · ${fmt(dailyAvg)}/day so far`;
+  }
 }
 
 // ═══════════════════════════════════════
@@ -3424,23 +3551,35 @@ function renderAccounts() {
     if (state.plaidAccounts && state.plaidAccounts.length) {
       bankEl.innerHTML = state.plaidAccounts.map(a => {
         const isCredit = a.type === 'credit';
-        const bal = a.balances?.current || 0;
+        const bal   = a.balances?.current || 0;
         const avail = a.balances?.available || 0;
-        const color = isCredit ? 'var(--red)' : bal > 0 ? 'var(--accent)' : 'var(--muted)';
-        const icon = isCredit ? '💳' : a.subtype === 'savings' ? '🏦' : '🏦';
-        const label = isCredit ? `Owed: ${fmt(bal)}` : fmt(bal);
-        const availLabel = isCredit ? `Credit left: ${fmt(avail)}` : `Available: ${fmt(avail)}`;
-        return `<div class="txn-row">
-          <div class="txn-icon">${icon}</div>
-          <div class="txn-body">
-            <div class="txn-name">${a.name}${isCredit?' 💳':''}</div>
-            <div class="txn-meta">${a.institution||''} · ${isCredit?'credit card':a.subtype||a.type}</div>
-          </div>
-          <div style="text-align:right">
-            <div style="font-family:'DM Mono',monospace;font-size:0.9rem;color:${color}">${label}</div>
-            <div style="font-size:0.65rem;color:var(--muted)">${availLabel}</div>
-          </div>
-        </div>`;
+        const icon  = isCredit ? '💳' : '🏦';
+        if (isCredit) {
+          return `<div class="txn-row">
+            <div class="txn-icon">${icon}</div>
+            <div class="txn-body">
+              <div class="txn-name">${a.name}</div>
+              <div class="txn-meta">${a.institution||''} · credit card</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-family:'DM Mono',monospace;font-size:0.85rem;color:var(--red)">-${fmt(bal)} owed</div>
+              <div style="font-size:0.65rem;color:var(--green)">${fmt(avail)} available</div>
+            </div>
+          </div>`;
+        } else {
+          const color = bal > 0 ? 'var(--accent)' : 'var(--muted)';
+          return `<div class="txn-row">
+            <div class="txn-icon">${icon}</div>
+            <div class="txn-body">
+              <div class="txn-name">${a.name}</div>
+              <div class="txn-meta">${a.institution||''} · ${a.subtype||a.type}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-family:'DM Mono',monospace;font-size:0.9rem;color:${color}">${fmt(bal)}</div>
+              <div style="font-size:0.65rem;color:var(--muted)">Available: ${fmt(avail)}</div>
+            </div>
+          </div>`;
+        }
       }).join('');
     } else {
       bankEl.innerHTML = `<div style="padding:12px 0">
@@ -3598,12 +3737,12 @@ function dismissBillSuggestions() {
 // RULES ENGINE
 // ═══════════════════════════════════════
 const DEFAULT_RULES = {
-  skip: ['save your change','backup balance','account unload to card','fee for unloading','reward','interest paid','transfer from varo','mystro driver'],
+  skip: ['save your change','backup balance','account unload to card','fee for unloading','reward','interest paid','transfer from varo','mystro driver','fee for unloading'],
   family_support: ['wuvisaaft'],
   transportation: ['tesla supercharger','supercharger','sandag','eractoll'],
-  auto: ['tesla insurance','tesla subscription','socal tire','autozone','wells fargo auto'],
-  subscription: ['crunchyroll','cloaked','smartcredit','rocket money','ipostal','revolut','zenbusiness','p.skool','google one','apple.com/bill'],
-  transfers: ['apple cash','cash app','avinash chilaka','krishna vinta','apple cash balance'],
+  auto: ['tesla insurance','socal tire','autozone'],
+  subscription: ['tesla subscription','crunchyroll','cloaked','smartcredit','rocket money','ipostal','revolut','zenbusiness','p.skool','google one','apple.com/bill','uber *one'],
+  transfers: ['apple cash','cash app','avinash chilaka','krishna vinta','apple cash balance','uber pro card','uber instantpay','instantpay deposit'],
 };
 
 function applyRules(transactions) {
@@ -3880,6 +4019,179 @@ async function deleteBill(idx) {
 }
 
 
+
+// ═══════════════════════════════════════
+// SHIFT TRACKER
+// ═══════════════════════════════════════
+let shiftInterval = null;
+
+function toggleShift() {
+  const active = localStorage.getItem('pb_shift_start');
+  if (active) {
+    endShift();
+  } else {
+    startShift();
+  }
+}
+
+function startShift() {
+  const now = Date.now();
+  localStorage.setItem('pb_shift_start', now);
+  localStorage.setItem('pb_shift_earn_start', getTodayEarnings());
+  
+  const btn = document.getElementById('shiftBtn');
+  const card = document.getElementById('shiftCard');
+  const stats = document.getElementById('shiftStats');
+  if (btn) { btn.textContent = '🛑 End Shift'; btn.className = 'shift-btn shift-btn-end'; }
+  if (card) card.classList.add('shift-active');
+  if (stats) stats.style.display = 'grid';
+  
+  shiftInterval = setInterval(updateShiftTimer, 1000);
+  updateShiftTimer();
+}
+
+function endShift() {
+  const start = parseInt(localStorage.getItem('pb_shift_start') || 0);
+  const startEarn = parseFloat(localStorage.getItem('pb_shift_earn_start') || 0);
+  const elapsed = Date.now() - start;
+  const hours = elapsed / 3600000;
+  const earned = getTodayEarnings() - startEarn;
+  const perHour = hours > 0 ? earned / hours : 0;
+
+  clearInterval(shiftInterval);
+  shiftInterval = null;
+  localStorage.removeItem('pb_shift_start');
+  localStorage.removeItem('pb_shift_earn_start');
+
+  // Save shift to history
+  const shifts = JSON.parse(localStorage.getItem('pb_shifts') || '[]');
+  shifts.unshift({
+    date: getTodayStr(),
+    start: new Date(start).toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'}),
+    end: new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'}),
+    hours: Math.round(hours * 10) / 10,
+    earned: Math.round(earned * 100) / 100,
+    perHour: Math.round(perHour * 100) / 100,
+  });
+  if (shifts.length > 30) shifts.pop();
+  localStorage.setItem('pb_shifts', JSON.stringify(shifts));
+
+  const btn = document.getElementById('shiftBtn');
+  const card = document.getElementById('shiftCard');
+  const stats = document.getElementById('shiftStats');
+  if (btn) { btn.textContent = '🚗 Start Shift'; btn.className = 'shift-btn shift-btn-start'; }
+  if (card) card.classList.remove('shift-active');
+  if (stats) stats.style.display = 'none';
+
+  document.getElementById('shiftTimer').textContent = '00:00:00';
+
+  // Show summary
+  const h = Math.floor(hours);
+  const m = Math.floor((hours - h) * 60);
+  alert(`✅ Shift complete!
+${h}h ${m}m driven
+${fmt(earned)} earned
+${fmt(perHour)}/hour`);
+}
+
+function updateShiftTimer() {
+  const start = parseInt(localStorage.getItem('pb_shift_start') || 0);
+  if (!start) return;
+  const elapsed = Date.now() - start;
+  const h = Math.floor(elapsed / 3600000);
+  const m = Math.floor((elapsed % 3600000) / 60000);
+  const s = Math.floor((elapsed % 60000) / 1000);
+  const pad = n => String(n).padStart(2,'0');
+
+  const timer = document.getElementById('shiftTimer');
+  if (timer) timer.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+
+  // Update shift stats
+  const startEarn = parseFloat(localStorage.getItem('pb_shift_earn_start') || 0);
+  const earned = getTodayEarnings() - startEarn;
+  const hours = elapsed / 3600000;
+  const perHour = hours > 0.05 ? earned / hours : 0;
+
+  const shiftEarned = document.getElementById('shiftEarned');
+  const shiftHours = document.getElementById('shiftHours');
+  const shiftPerHour = document.getElementById('shiftPerHour');
+  if (shiftEarned) shiftEarned.textContent = fmt(earned);
+  if (shiftHours) shiftHours.textContent = `${Math.floor(hours)}h${Math.floor((hours%1)*60)}m`;
+  if (shiftPerHour) shiftPerHour.textContent = fmt(perHour) + '/hr';
+}
+
+function restoreShiftIfActive() {
+  const active = localStorage.getItem('pb_shift_start');
+  if (!active) return;
+  const btn = document.getElementById('shiftBtn');
+  const card = document.getElementById('shiftCard');
+  const stats = document.getElementById('shiftStats');
+  if (btn) { btn.textContent = '🛑 End Shift'; btn.className = 'shift-btn shift-btn-end'; }
+  if (card) card.classList.add('shift-active');
+  if (stats) stats.style.display = 'grid';
+  shiftInterval = setInterval(updateShiftTimer, 1000);
+  updateShiftTimer();
+}
+
+// ═══════════════════════════════════════
+// PLATFORM DRILL DOWN
+// ═══════════════════════════════════════
+function drillDownPlatform(platform) {
+  const today = getTodayStr();
+  const txns  = state.earnings.filter(e => e.date === today && e.platform === platform);
+  const total = txns.reduce((s,e) => s+e.amount, 0);
+  const icons = { Uber:'🚗', Lyft:'💜', Cash:'💵', Other:'💰' };
+
+  document.getElementById('drillIcon').textContent  = icons[platform] || '💰';
+  document.getElementById('drillTotal').textContent = fmt(total);
+  document.getElementById('drillSub').textContent   = `${platform} earnings today`;
+
+  document.getElementById('drillList').innerHTML = txns.length
+    ? txns.map(e => `
+        <div class="txn-row">
+          <div class="txn-icon">${icons[platform]||'💰'}</div>
+          <div class="txn-body">
+            <div class="txn-name">${e.note || platform}</div>
+            <div class="txn-meta">${e.date}</div>
+          </div>
+          <div class="txn-amt" style="color:var(--green)">+${fmt(e.amount)}</div>
+        </div>`).join('')
+    : `<div class="empty">No ${platform} earnings today</div>`;
+
+  openModal('drillModal');
+}
+
+// ═══════════════════════════════════════
+// SPENDING DRILL DOWN
+// ═══════════════════════════════════════
+function showSpendDrill() {
+  const month = getTodayStr().slice(0,7);
+  const txns  = [...state.expenses]
+    .filter(e => e.date.startsWith(month))
+    .sort((a,b) => b.date.localeCompare(a.date));
+  const total = txns.reduce((s,e) => s+e.amount, 0);
+  const catIcons = { transportation:'🚗', food:'🍔', shopping:'🛍️', entertainment:'🎬', utilities:'💡', health:'💊', housing:'🏠', other:'📦', debt:'💳', subscription:'📱', auto:'🚘', transfers:'↔️' };
+
+  document.getElementById('drillIcon').textContent  = '💳';
+  document.getElementById('drillTotal').textContent = fmt(total);
+  document.getElementById('drillSub').textContent   = `Total spending this month · ${txns.length} transactions`;
+
+  document.getElementById('drillList').innerHTML = txns.length
+    ? txns.map(t => `
+        <div class="txn-row">
+          <div class="txn-icon">${catIcons[t.category]||'📦'}</div>
+          <div class="txn-body">
+            <div class="txn-name">${t.label||t.description||'Transaction'}</div>
+            <div class="txn-meta">${t.date} · ${(t.category||'other').charAt(0).toUpperCase()+(t.category||'other').slice(1)}</div>
+          </div>
+          <div class="txn-amt" style="color:var(--red)">-${fmt(t.amount)}</div>
+        </div>`).join('')
+    : '<div class="empty">No spending this month</div>';
+
+  openModal('drillModal');
+}
+
+
 // ═══════════════════════════════════════
 // MISC HELPERS
 // ═══════════════════════════════════════
@@ -3954,6 +4266,9 @@ async function init() {
   // Restore last active page
   const lastPage = localStorage.getItem('pb_page') || 'home';
   if (lastPage !== 'home') showPage(lastPage);
+
+  // Restore shift timer if active
+  restoreShiftIfActive();
 
   // Show cached briefing instantly if fresh, otherwise fetch
   const hasCached = showCachedBriefing();

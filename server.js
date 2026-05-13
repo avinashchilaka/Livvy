@@ -119,6 +119,13 @@ app.post('/api/earnings', auth, async (req, res) => {
   res.json(data);
 });
 
+app.patch('/api/earnings/:id', auth, async (req, res) => {
+  const { data, error } = await supabase.from('earnings')
+    .update(req.body).eq('id', req.params.id).eq('user_id', req.user.id).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
 app.delete('/api/earnings/:id', auth, async (req, res) => {
   await supabase.from('earnings').delete()
     .eq('id', req.params.id).eq('user_id', req.user.id);
@@ -321,8 +328,22 @@ function mapTx(t, source) {
   const skipPatterns = [
     'account unload to card', 'fee for unloading', 'backup balance',
     'transfer from varo', 'transfer to varo', 'save your change',
-    'reward', 'mystro driver'
+    'reward', 'mystro driver', 'fee for unloading to card'
   ];
+
+  // Mark internal cashout transfers (not earnings, not spending)
+  const transferPatterns = [
+    'uber instantpay', 'instantpay deposit', 'uber pro card*avinash',
+    'apple cash balance add', 'apple cash sent'
+  ];
+  if (transferPatterns.some(p => name.includes(p))) {
+    return {
+      plaid_id: t.transaction_id, date: t.date,
+      amount: Math.abs(t.amount), description: t.name,
+      category: 'transfers', account_id: t.account_id,
+      institution: source, is_plaid: true, is_income: false,
+    };
+  }
   if (skipPatterns.some(p => name.includes(p))) {
     return null; // will be filtered out
   }
