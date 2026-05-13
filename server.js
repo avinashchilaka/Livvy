@@ -383,7 +383,7 @@ app.post('/api/ai/categorize', auth, async (req, res) => {
     ).join('\n');
 
     const msg = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-5',
       max_tokens: 1000,
       messages: [{
         role: 'user',
@@ -471,7 +471,7 @@ Active debts: ${debts.map(d => `${d.name} $${d.amount}`).join(', ') || 'None'}
     const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
 
     const msg = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-5',
       max_tokens: 1000,
       messages: [{
         role: 'user',
@@ -511,7 +511,7 @@ app.post('/api/ai/chat', auth, async (req, res) => {
   try {
     const { question, context } = req.body;
     const msg = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-5',
       max_tokens: 1000,
       messages: [{
         role: 'user',

@@ -1137,6 +1137,10 @@ body {
     </div>
     <div class="earned-big" id="earnedBig">$0.00</div>
     <div class="target-sub" id="targetSub">Target: $0.00 today</div>
+
+    <!-- Smart target breakdown -->
+    <div id="targetBreakdownCard" style="background:var(--s1);border-radius:var(--r-sm);padding:10px 12px;margin:10px 0;text-align:left"></div>
+
     <div class="target-row">
       <div class="target-stat">
         <div class="target-stat-val" id="statUber" style="color:var(--blue)">$0</div>
@@ -1454,6 +1458,22 @@ body {
       </div>
     </div>
 
+    <!-- Cash on Hand -->
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="card-label" style="margin-bottom:2px">💵 Cash on Hand</div>
+          <div style="font-size:0.75rem;color:var(--muted)">Included in daily target calculation</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input type="number" id="cashInput" placeholder="0.00" step="0.01" min="0"
+            style="width:90px;background:var(--s1);border:1.5px solid var(--border2);border-radius:var(--r-sm);color:var(--text);font-family:Inter,sans-serif;font-size:0.88rem;padding:7px 10px;outline:none;text-align:right"
+            value="${state.cashOnHand||0}">
+          <button class="btn btn-ghost btn-sm" onclick="saveCashOnHand()">Save</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Connected Bank Accounts -->
     <div class="section-hdr">
       <div class="section-title">Bank Accounts</div>
@@ -1540,6 +1560,57 @@ body {
   </div>
 </div>
 
+<!-- ═══ PAGE: BUDGET ═══ -->
+<div class="page" id="page-budget">
+  <div style="padding:16px">
+
+    <!-- Monthly overview -->
+    <div class="stat-grid">
+      <div class="stat-box" onclick="drillDown('month')">
+        <div class="stat-val" id="budgetEarned" style="color:var(--green)">$0</div>
+        <div class="stat-lbl">Earned ›</div>
+      </div>
+      <div class="stat-box" onclick="showSpendDrill()">
+        <div class="stat-val" id="budgetSpent" style="color:var(--red)">$0</div>
+        <div class="stat-lbl">Spent ›</div>
+      </div>
+    </div>
+
+    <!-- Net this month -->
+    <div class="card" style="text-align:center;padding:16px">
+      <div class="card-label" style="margin-bottom:6px">Net This Month</div>
+      <div style="font-family:'DM Mono',monospace;font-size:2rem;font-weight:500" id="budgetNet">$0</div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px" id="budgetNetSub"></div>
+    </div>
+
+    <!-- Smart target breakdown -->
+    <div class="section-hdr">
+      <div class="section-title">Daily Target Breakdown</div>
+    </div>
+    <div class="card" id="budgetTargetCard"></div>
+
+    <!-- Income sources -->
+    <div class="section-hdr">
+      <div class="section-title">Income This Month</div>
+    </div>
+    <div class="card" style="padding:0 16px" id="budgetIncomeList"></div>
+
+    <!-- Spending by category -->
+    <div class="section-hdr">
+      <div class="section-title">Spending by Category</div>
+    </div>
+    <div class="card" id="budgetCategoryList"></div>
+
+    <!-- Budget progress bars -->
+    <div class="section-hdr">
+      <div class="section-title">Budget Limits</div>
+      <button class="btn btn-ghost btn-sm" onclick="openModal('editBudgetModal')">Edit</button>
+    </div>
+    <div class="card" id="budgetProgressBars"></div>
+
+  </div>
+</div>
+
 <!-- ═══ PAGE: CHAT ═══ -->
 <div class="page" id="page-chat">
   <div class="chat-page">
@@ -1578,6 +1649,9 @@ body {
   <button class="nav-item" onclick="showPage('accounts')" id="nav-accounts">
     <span class="nav-icon">🏦</span>Accounts
   </button>
+  <button class="nav-item" onclick="showPage('budget')" id="nav-budget">
+    <span class="nav-icon">📊</span>Budget
+  </button>
   <button class="nav-item" onclick="showPage('chat')" id="nav-chat">
     <span class="nav-icon">💬</span>Ask AI
   </button>
@@ -1600,7 +1674,7 @@ body {
 </div>
 
 <!-- Quick log FAB -->
-<button class="log-fab" onclick="openModal('quickLogModal')" title="Log Earning">+</button>
+<button class="log-fab" onclick="openDailyLogModal()" title="Log Today's Earnings">+</button>
 
 <!-- ═══ MODALS ═══ -->
 
@@ -1697,6 +1771,79 @@ body {
   </div>
 </div>
 
+<!-- Daily Log Modal -->
+<div class="modal-overlay" id="dailyLogModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Today's Earnings</h2>
+    <div class="modal-sub" id="dlDate">Update your running total</div>
+    <div class="inp-group">
+      <label>🚗 Uber ($)</label>
+      <input type="number" id="dlUber" placeholder="0.00" step="0.01" min="0">
+    </div>
+    <div class="inp-group">
+      <label>💜 Lyft ($)</label>
+      <input type="number" id="dlLyft" placeholder="0.00" step="0.01" min="0">
+    </div>
+    <div class="inp-group">
+      <label>💵 Cash ($)</label>
+      <input type="number" id="dlCash" placeholder="0.00" step="0.01" min="0">
+    </div>
+    <div class="inp-group">
+      <label>💰 Other ($)</label>
+      <input type="number" id="dlOther" placeholder="0.00" step="0.01" min="0">
+    </div>
+    <button class="btn btn-primary" onclick="saveDailyLog()">💾 Save Today's Log</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="closeModal('dailyLogModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Edit Bill Modal -->
+<div class="modal-overlay" id="editBillModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Edit Bill</h2>
+    <input type="hidden" id="editBillIdx">
+    <div class="inp-group"><label>Bill Name</label><input type="text" id="editBillName"></div>
+    <div class="inp-row">
+      <div class="inp-group"><label>Amount ($)</label><input type="number" id="editBillAmt" step="0.01"></div>
+      <div class="inp-group"><label>Due Day</label><input type="number" id="editBillDay" min="1" max="31"></div>
+    </div>
+    <div class="inp-group">
+      <label>Category</label>
+      <select id="editBillCat">
+        <option value="housing">🏠 Housing</option>
+        <option value="vehicle">🚗 Vehicle</option>
+        <option value="insurance">🛡️ Insurance</option>
+        <option value="utilities">💡 Utilities</option>
+        <option value="subscription">📱 Subscription</option>
+        <option value="debt">💳 Debt Payment</option>
+        <option value="other">📦 Other</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="saveEditBill()">Save Changes</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="closeModal('editBillModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Edit Budget Modal -->
+<div class="modal-overlay" id="editBudgetModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Budget Limits</h2>
+    <div class="modal-sub">Set monthly spending limits per category</div>
+    <div class="inp-group"><label>Food ($)</label><input type="number" id="budgetFood" placeholder="400"></div>
+    <div class="inp-group"><label>Transportation ($)</label><input type="number" id="budgetTransport" placeholder="600"></div>
+    <div class="inp-group"><label>Shopping ($)</label><input type="number" id="budgetShopping" placeholder="150"></div>
+    <div class="inp-group"><label>Entertainment ($)</label><input type="number" id="budgetEntertain" placeholder="50"></div>
+    <div class="inp-group"><label>Utilities ($)</label><input type="number" id="budgetUtilities" placeholder="600"></div>
+    <div class="inp-group"><label>Other ($)</label><input type="number" id="budgetOther" placeholder="300"></div>
+    <div class="inp-group"><label>Daily Essentials estimate ($)</label><input type="number" id="budgetEssentials" placeholder="95"></div>
+    <button class="btn btn-primary" onclick="saveBudgetLimits()">Save Budget</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="closeModal('editBudgetModal')">Cancel</button>
+  </div>
+</div>
+
 <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 
 <script>
@@ -1716,9 +1863,11 @@ let state = {
   bills:        [],
   debts:        [],
   splitwise:    [],
-  settings:     { monthly_goal: 9500, daily_quota: 400 },
+  settings:     { monthly_goal: 9500, daily_quota: 400, daily_essentials: 95 },
   plaidLinked:  false,
   plaidAccounts: [],
+  cashOnHand:   0,
+  dailyLogs:    {}, // { 'YYYY-MM-DD': { Uber: amount, Lyft: amount, Cash: amount } }
 };
 
 // ═══════════════════════════════════════
@@ -1886,7 +2035,7 @@ async function api(path, opts = {}) {
 // NAVIGATION
 // ═══════════════════════════════════════
 const PAGE_TITLES = {
-  home: 'Good morning', earnings: 'Earnings', chat: 'Ask AI', accounts: 'Accounts',
+  home: 'Good morning', earnings: 'Earnings', chat: 'Ask AI', accounts: 'Accounts', budget: 'Budget',
   spending: 'Spending', bills: 'Bills',
   debts: 'Debts', settings: 'Settings',
 };
@@ -1909,6 +2058,7 @@ function showPage(id) {
   if (id === 'bills')    renderBills();
   if (id === 'debts')    renderDebts();
   if (id === 'accounts') renderAccounts();
+  if (id === 'budget')   renderBudget();
   if (id === 'settings') renderSettings();
   window.scrollTo(0, 0);
 }
@@ -2004,7 +2154,22 @@ function getTodayStr() {
 
 function getTodayEarnings() {
   const today = getTodayStr();
-  return state.earnings.filter(e => e.date === today).reduce((s,e) => s + e.amount, 0);
+  // Use daily logs if available, otherwise fall back to earnings array
+  if (state.dailyLogs[today]) {
+    return Object.values(state.dailyLogs[today]).reduce((s,v) => s + (parseFloat(v)||0), 0);
+  }
+  return state.earnings.filter(e => e.date === today && e.is_manual !== false).reduce((s,e) => s + e.amount, 0);
+}
+
+function getTodayEarningsByPlatform() {
+  const today = getTodayStr();
+  if (state.dailyLogs[today]) return state.dailyLogs[today];
+  const result = { Uber: 0, Lyft: 0, Cash: 0, Other: 0 };
+  state.earnings.filter(e => e.date === today && e.is_manual !== false).forEach(e => {
+    const p = e.platform || 'Other';
+    result[p] = (result[p] || 0) + e.amount;
+  });
+  return result;
 }
 
 function getWeekEarnings() {
@@ -2031,14 +2196,95 @@ function getMonthSpending() {
 }
 
 function getDailyTarget() {
-  // Smart target: remaining monthly goal / days left — Splitwise excluded from driving goal
   const today    = new Date();
-  const daysLeft = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate() - today.getDate() + 1;
-  const monthly  = state.settings.monthly_goal || 9500;
-  const earned   = getMonthEarnings();
-  const remaining = Math.max(0, monthly - earned);
-  const smartTarget = remaining / Math.max(1, daysLeft);
-  return Math.max(state.settings.daily_quota || 400, smartTarget);
+  const todayDay = today.getDate();
+
+  // Get all unpaid bills sorted by due date
+  const unpaidBills = state.bills
+    .filter(b => !b.paid)
+    .map(b => {
+      // Calculate days until due (handle overdue)
+      let daysUntil = b.due_day - todayDay;
+      if (daysUntil < 0) daysUntil = 0; // overdue = urgent
+      return { ...b, daysUntil };
+    })
+    .filter(b => b.daysUntil <= 30) // only next 30 days
+    .sort((a,b) => a.daysUntil - b.daysUntil);
+
+  // Total upcoming bills
+  const totalBills = unpaidBills.reduce((s,b) => s + b.amount, 0);
+
+  // Current available funds (debit/savings only, not credit)
+  const bankBalance = (state.plaidAccounts || [])
+    .filter(a => a.type === 'depository')
+    .reduce((s,a) => s + (a.balances?.available || a.balances?.current || 0), 0);
+
+  const cashBalance = state.cashOnHand || 0;
+  const totalAvailable = bankBalance + cashBalance;
+
+  // Gap = what we still need to earn
+  const gap = Math.max(0, totalBills - totalAvailable);
+
+  // Days until earliest bill due (minimum 1)
+  const daysUntilFirst = unpaidBills.length > 0
+    ? Math.max(1, unpaidBills[0].daysUntil || 1)
+    : 7;
+
+  // Bills portion per day
+  const billsPerDay = gap / daysUntilFirst;
+
+  // Dynamic daily essentials from last 7 days Plaid spending average
+  const essentials = getDynamicEssentials();
+
+  return Math.max(200, billsPerDay + essentials);
+}
+
+function getDynamicEssentials() {
+  // Average daily spending over last 7 days from Plaid
+  const days = [];
+  for (let i = 1; i <= 7; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push(d.toISOString().slice(0,10));
+  }
+  const totals = days.map(date =>
+    state.expenses
+      .filter(e => e.date === date && !['transfers','income','family_support'].includes(e.category))
+      .reduce((s,e) => s + e.amount, 0)
+  ).filter(t => t > 0); // only days with spending
+
+  if (!totals.length) return state.settings.daily_essentials || 95;
+  const avg = totals.reduce((s,t) => s+t, 0) / totals.length;
+  return Math.max(50, Math.round(avg));
+}
+
+function getTargetBreakdown() {
+  const today    = new Date();
+  const todayDay = today.getDate();
+
+  const unpaidBills = state.bills
+    .filter(b => !b.paid)
+    .map(b => ({ ...b, daysUntil: Math.max(0, b.due_day - todayDay) }))
+    .filter(b => b.daysUntil <= 30)
+    .sort((a,b) => a.daysUntil - b.daysUntil);
+
+  const totalBills = unpaidBills.reduce((s,b) => s + b.amount, 0);
+  const bankBalance = (state.plaidAccounts || [])
+    .filter(a => a.type === 'depository')
+    .reduce((s,a) => s + (a.balances?.available || a.balances?.current || 0), 0);
+  const cashBalance = state.cashOnHand || 0;
+  const totalAvailable = bankBalance + cashBalance;
+  const gap = Math.max(0, totalBills - totalAvailable);
+  const daysUntilFirst = unpaidBills.length > 0 ? Math.max(1, unpaidBills[0].daysUntil || 1) : 7;
+  const billsPerDay = gap / daysUntilFirst;
+  const essentials = getDynamicEssentials();
+  const nextBill = unpaidBills[0];
+
+  return {
+    totalBills, bankBalance, cashBalance, totalAvailable,
+    gap, daysUntilFirst, billsPerDay, essentials,
+    nextBill, target: Math.max(200, billsPerDay + essentials)
+  };
 }
 
 // ═══════════════════════════════════════
@@ -2063,8 +2309,40 @@ function renderHome() {
   if (pct >= 100) checkCelebrate(earned, target);
   document.getElementById('ringPct').textContent = Math.round(pct) + '%';
   document.getElementById('earnedBig').textContent = fmt(earned);
-  document.getElementById('targetSub').textContent =
-    pct >= 100 ? `🎉 Target crushed! +${fmt(earned - target)} over` : `Target: ${fmt(target)} today`;
+  const bd = getTargetBreakdown();
+  let targetSubText = '';
+  if (pct >= 100) {
+    targetSubText = `🎉 Target crushed! +${fmt(earned - target)} over`;
+  } else {
+    const stillNeed = Math.max(0, target - earned);
+    targetSubText = `Need ${fmt(stillNeed)} more · ${fmt(Math.round(bd.essentials))}/day essentials`;
+  }
+  document.getElementById('targetSub').textContent = targetSubText;
+
+  // Update target breakdown card if exists
+  const bdCard = document.getElementById('targetBreakdownCard');
+  if (bdCard) {
+    bdCard.innerHTML = `
+      <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:4px">
+        <span style="color:var(--muted)">📅 Bills coverage</span>
+        <span style="font-family:'DM Mono',monospace;color:var(--gold)">${fmt(Math.round(bd.billsPerDay))}/day</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:4px">
+        <span style="color:var(--muted)">⛽ Daily essentials (7-day avg)</span>
+        <span style="font-family:'DM Mono',monospace;color:var(--blue)">${fmt(Math.round(bd.essentials))}/day</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:8px">
+        <span style="color:var(--muted)">🏦 Available funds</span>
+        <span style="font-family:'DM Mono',monospace;color:var(--green)">${fmt(bd.totalAvailable)}</span>
+      </div>
+      <div style="height:1px;background:var(--border);margin-bottom:8px"></div>
+      <div style="display:flex;justify-content:space-between;font-size:0.8rem;font-weight:600">
+        <span>🎯 Real daily target</span>
+        <span style="font-family:'DM Mono',monospace;color:var(--accent)">${fmt(Math.round(bd.target))}</span>
+      </div>
+      ${bd.nextBill ? `<div style="font-size:0.68rem;color:var(--muted);margin-top:6px">Next: ${bd.nextBill.name} ${fmt(bd.nextBill.amount)} in ${bd.nextBill.daysUntil === 0 ? 'TODAY' : bd.daysUntilFirst + ' days'}</div>` : ''}
+    `;
+  }
 
   // Uber / Lyft / Net
   const today   = getTodayStr();
@@ -2390,23 +2668,34 @@ function renderBills() {
   document.getElementById('billsUnpaid').textContent = fmt(unpaid);
 
   const today = new Date().getDate();
-  const sorted = [...state.bills].sort((a,b) => a.due_day - b.due_day);
+  // Sort by due_day, with overdue first
+  const sfx = (d) => { const n=d%10,m=d%100; return m>=11&&m<=13?'th':n===1?'st':n===2?'nd':n===3?'rd':'th'; };
+  const sorted = [...state.bills].sort((a,b) => {
+    const aOver = a.due_day < today && !a.paid;
+    const bOver = b.due_day < today && !b.paid;
+    if (aOver && !bOver) return -1;
+    if (!aOver && bOver) return 1;
+    return a.due_day - b.due_day;
+  });
 
   document.getElementById('billsList').innerHTML = sorted.length
     ? sorted.map((b,i) => {
+        const realIdx = state.bills.indexOf(b);
         const daysUntil = b.due_day - today;
         const chipClass = b.paid ? 'chip-paid' : daysUntil < 0 ? 'chip-overdue' : daysUntil<=3 ? 'chip-soon' : 'chip-upcoming';
-        const sfx = (d) => { const n=d%10,m=d%100; return m>=11&&m<=13?'th':n===1?'st':n===2?'nd':n===3?'rd':'th'; };
-        const chipText  = b.paid ? 'Paid' : daysUntil < 0 ? 'Overdue' : daysUntil===0 ? 'Today' : `${b.due_day}${sfx(b.due_day)}`;
+        const chipText  = b.paid ? 'Paid' : daysUntil < 0 ? '🚨 Overdue' : daysUntil===0 ? 'Today' : `${b.due_day}${sfx(b.due_day)}`;
         return `<div class="bill-row">
           <div class="bill-body">
             <div class="bill-name">${b.name}</div>
-            <div class="bill-due">${b.category || 'Other'}</div>
+            <div class="bill-due">${b.category || 'Other'} · due ${b.due_day}${sfx(b.due_day)}</div>
           </div>
           <span class="chip ${chipClass}">${chipText}</span>
           <div class="bill-amt" style="color:${b.paid?'var(--muted)':'var(--red)'}">${fmt(b.amount)}</div>
-          ${!b.paid ? `<button class="btn btn-ghost btn-sm" onclick="markBillPaid(${i})">Pay</button>` :
-            `<button class="btn btn-ghost btn-sm" onclick="markBillUnpaid(${i})">Undo</button>`}
+          <div style="display:flex;gap:4px">
+            ${!b.paid ? `<button class="btn btn-ghost btn-sm" onclick="markBillPaid(${realIdx})">Pay</button>` :
+              `<button class="btn btn-ghost btn-sm" onclick="markBillUnpaid(${realIdx})">Undo</button>`}
+            <button class="btn btn-ghost btn-sm" onclick="openEditBillModal(${realIdx})" style="padding:7px 8px">✏️</button>
+          </div>
         </div>`;
       }).join('')
     : '<div class="empty">No bills added yet. Tap + Add to start.</div>';
@@ -2801,10 +3090,32 @@ function renderBestDays() {
   const totals = [0,0,0,0,0,0,0];
   const counts = [0,0,0,0,0,0,0];
 
-  state.earnings.forEach(e => {
-    const d = new Date(e.date + 'T12:00:00');
-    const dow = (d.getDay() + 6) % 7; // 0=Mon
-    totals[dow] += e.amount;
+  // Use ALL earnings including Plaid-synced ones
+  const allEarnings = [...state.earnings];
+
+  // Also aggregate daily logs
+  Object.entries(state.dailyLogs || {}).forEach(([date, logs]) => {
+    const dayTotal = Object.values(logs).reduce((s,v) => s+(parseFloat(v)||0), 0);
+    if (dayTotal > 0) {
+      // Check not already in earnings for that date
+      const alreadyHas = allEarnings.some(e => e.date === date && e.is_manual === true);
+      if (!alreadyHas) {
+        allEarnings.push({ date, amount: dayTotal, platform: 'Manual' });
+      }
+    }
+  });
+
+  // Group by day of week - use daily totals not individual transactions
+  const dailyTotals = {};
+  allEarnings.forEach(e => {
+    if (!e.date) return;
+    dailyTotals[e.date] = (dailyTotals[e.date] || 0) + e.amount;
+  });
+
+  Object.entries(dailyTotals).forEach(([date, total]) => {
+    const d = new Date(date + 'T12:00:00');
+    const dow = (d.getDay() + 6) % 7;
+    totals[dow] += total;
     counts[dow]++;
   });
 
@@ -2818,10 +3129,13 @@ function renderBestDays() {
     <div class="best-time-col">
       <div class="best-time-bar-wrap">
         <div class="best-time-bar ${i===topIdx?'top':''}"
-          style="height:${Math.round((avgs[i]/maxAvg)*46)+4}px"></div>
+          style="height:${Math.max(4, Math.round((avgs[i]/maxAvg)*46))}px;
+          background:${i===topIdx?'var(--accent)':'rgba(126,204,160,0.4)'}"></div>
       </div>
       <div class="best-time-day">${d}</div>
-      ${avgs[i]>0?`<div class="best-time-amt">$${Math.round(avgs[i])}</div>`:'<div class="best-time-amt" style="color:var(--muted)">-</div>'}
+      ${avgs[i]>0
+        ? `<div class="best-time-amt" style="color:${i===topIdx?'var(--accent)':'var(--muted)'}">$${Math.round(avgs[i])}</div>`
+        : '<div class="best-time-amt" style="color:var(--muted)">-</div>'}
     </div>`).join('');
 }
 
@@ -3310,6 +3624,253 @@ async function loadPlaidAccounts() {
     console.error('loadPlaidAccounts error:', e);
   }
 }
+
+
+// ═══════════════════════════════════════
+// BUDGET PAGE
+// ═══════════════════════════════════════
+function renderBudget() {
+  const month   = getTodayStr().slice(0,7);
+  const earned  = getMonthEarnings();
+  const spent   = getMonthSpending();
+  const net     = earned - spent;
+
+  document.getElementById('budgetEarned').textContent = fmt(earned);
+  document.getElementById('budgetSpent').textContent  = fmt(spent);
+  const netEl = document.getElementById('budgetNet');
+  if (netEl) {
+    netEl.textContent   = fmt(Math.abs(net));
+    netEl.style.color   = net >= 0 ? 'var(--green)' : 'var(--red)';
+  }
+  const netSub = document.getElementById('budgetNetSub');
+  if (netSub) netSub.textContent = net >= 0 ? `${fmt(net)} saved this month` : `${fmt(Math.abs(net))} in the hole this month`;
+
+  // Target breakdown
+  const bd = getTargetBreakdown();
+  const btEl = document.getElementById('budgetTargetCard');
+  if (btEl) {
+    btEl.innerHTML = `
+      <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:8px">
+        <span style="color:var(--muted)">📅 Upcoming bills (30 days)</span>
+        <span style="font-family:'DM Mono',monospace;color:var(--red)">${fmt(bd.totalBills)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:8px">
+        <span style="color:var(--muted)">🏦 Available funds</span>
+        <span style="font-family:'DM Mono',monospace;color:var(--green)">-${fmt(bd.totalAvailable)}</span>
+      </div>
+      <div style="height:1px;background:var(--border);margin-bottom:8px"></div>
+      <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:8px">
+        <span style="color:var(--muted)">📉 Gap to cover</span>
+        <span style="font-family:'DM Mono',monospace;color:var(--gold)">${fmt(bd.gap)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:8px">
+        <span style="color:var(--muted)">⛽ Daily essentials (7-day avg)</span>
+        <span style="font-family:'DM Mono',monospace;color:var(--blue)">${fmt(Math.round(bd.essentials))}/day</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.85rem;font-weight:600;padding-top:8px;border-top:1px solid var(--border)">
+        <span>🎯 Real daily target</span>
+        <span style="font-family:'DM Mono',monospace;color:var(--accent)">${fmt(Math.round(bd.target))}/day</span>
+      </div>
+      ${bd.nextBill ? `<div style="font-size:0.68rem;color:var(--muted);margin-top:6px">⚡ Next: ${bd.nextBill.name} ${fmt(bd.nextBill.amount)} due in ${bd.daysUntilFirst} days</div>` : ''}
+    `;
+  }
+
+  // Income sources
+  const incomeEl = document.getElementById('budgetIncomeList');
+  if (incomeEl) {
+    const incomeBySource = {};
+    state.earnings.filter(e => e.date.startsWith(month)).forEach(e => {
+      const p = e.platform || 'Other';
+      incomeBySource[p] = (incomeBySource[p] || 0) + e.amount;
+    });
+    // Also add Plaid income transactions
+    state.expenses.filter(e => e.date.startsWith(month) && e.category === 'income').forEach(e => {
+      incomeBySource['Bank deposits'] = (incomeBySource['Bank deposits'] || 0) + e.amount;
+    });
+
+    incomeEl.innerHTML = Object.entries(incomeBySource).length
+      ? Object.entries(incomeBySource).sort((a,b)=>b[1]-a[1]).map(([src,amt]) => `
+          <div class="txn-row">
+            <div class="txn-icon">${src==='Uber'?'🚗':src==='Lyft'?'💜':src==='Cash'?'💵':'🏦'}</div>
+            <div class="txn-body"><div class="txn-name">${src}</div></div>
+            <div class="txn-amt" style="color:var(--green)">+${fmt(amt)}</div>
+          </div>`).join('')
+      : '<div class="empty">No income recorded this month</div>';
+  }
+
+  // Category breakdown
+  const catEl = document.getElementById('budgetCategoryList');
+  const catIcons = { transportation:'🚗', food:'🍔', shopping:'🛍️', entertainment:'🎬', utilities:'💡', health:'💊', housing:'🏠', subscription:'📱', auto:'🚘', transfers:'↔️', other:'📦', debt:'💳', 'family_support':'❤️' };
+  if (catEl) {
+    const cats = {};
+    state.expenses.filter(e => e.date.startsWith(month) && !['income','transfers','family_support'].includes(e.category)).forEach(e => {
+      const c = e.category || 'other';
+      cats[c] = (cats[c] || 0) + e.amount;
+    });
+    const total = Object.values(cats).reduce((s,v)=>s+v,0);
+    catEl.innerHTML = Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([cat,amt]) => {
+      const pct = total > 0 ? (amt/total*100) : 0;
+      return `<div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:0.82rem">${catIcons[cat]||'📦'} ${cat.charAt(0).toUpperCase()+cat.slice(1)}</span>
+          <span style="font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--red)">${fmt(amt)}</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" style="background:var(--accent);width:${pct}%"></div></div>
+      </div>`;
+    }).join('') || '<div class="empty">No spending data</div>';
+  }
+
+  // Budget progress bars with limits
+  const limits = state.settings.budgetLimits || { food:400, transportation:600, shopping:150, entertainment:50, utilities:600, other:300 };
+  const cats2 = {};
+  state.expenses.filter(e => e.date.startsWith(month)).forEach(e => { const c=e.category||'other'; cats2[c]=(cats2[c]||0)+e.amount; });
+
+  const bpEl = document.getElementById('budgetProgressBars');
+  if (bpEl) {
+    bpEl.innerHTML = Object.entries(limits).map(([cat, limit]) => {
+      const spent2 = cats2[cat] || 0;
+      const pct = Math.min(100, (spent2/limit)*100);
+      const color = pct >= 90 ? 'var(--red)' : pct >= 70 ? 'var(--gold)' : 'var(--accent)';
+      return `<div class="budget-row">
+        <div class="budget-header">
+          <span class="budget-label">${catIcons[cat]||'📦'} ${cat.charAt(0).toUpperCase()+cat.slice(1)}</span>
+          <span class="budget-amounts">${fmt(spent2)} / ${fmt(limit)}</span>
+        </div>
+        <div class="budget-bar"><div class="budget-fill" style="width:${pct}%;background:${color}"></div></div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ═══════════════════════════════════════
+// EDITABLE DAILY EARNINGS
+// ═══════════════════════════════════════
+function openDailyLogModal() {
+  const today = getTodayStr();
+  const logs  = state.dailyLogs[today] || {};
+  document.getElementById('dlUber').value  = logs.Uber  || '';
+  document.getElementById('dlLyft').value  = logs.Lyft  || '';
+  document.getElementById('dlCash').value  = logs.Cash  || '';
+  document.getElementById('dlOther').value = logs.Other || '';
+  document.getElementById('dlDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  openModal('dailyLogModal');
+}
+
+async function saveDailyLog() {
+  const today = getTodayStr();
+  const uber  = parseFloat(document.getElementById('dlUber').value)  || 0;
+  const lyft  = parseFloat(document.getElementById('dlLyft').value)  || 0;
+  const cash  = parseFloat(document.getElementById('dlCash').value)  || 0;
+  const other = parseFloat(document.getElementById('dlOther').value) || 0;
+
+  state.dailyLogs[today] = { Uber: uber, Lyft: lyft, Cash: cash, Other: other };
+
+  // Save to earnings table - one entry per platform per day
+  for (const [platform, amount] of [['Uber',uber],['Lyft',lyft],['Cash',cash],['Other',other]]) {
+    if (amount <= 0) continue;
+    // Check if entry exists for today + platform
+    const existing = state.earnings.find(e => e.date === today && e.platform === platform && e.is_manual === true && !e.plaid_id);
+    if (existing) {
+      // Update existing
+      await api(`/api/earnings/${existing.id}`, { method:'PATCH', body: { amount } });
+      existing.amount = amount;
+    } else {
+      // Create new
+      const res = await api('/api/earnings', { method:'POST', body: { amount, platform, date: today, note: 'Daily log', is_manual: true } });
+      if (res?.id) state.earnings.push({ amount, platform, date: today, note: 'Daily log', is_manual: true, id: res.id });
+    }
+  }
+
+  closeModal('dailyLogModal');
+  saveLocal();
+  renderHome();
+  renderEarnings();
+}
+
+// ═══════════════════════════════════════
+// CASH ON HAND
+// ═══════════════════════════════════════
+function saveCashOnHand() {
+  const val = parseFloat(document.getElementById('cashInput').value) || 0;
+  state.cashOnHand = val;
+  saveLocal();
+  renderHome();
+  renderAccounts();
+}
+
+// ═══════════════════════════════════════
+// BUDGET LIMITS
+// ═══════════════════════════════════════
+function openEditBudget() {
+  const limits = state.settings.budgetLimits || { food:400, transportation:600, shopping:150, entertainment:50, utilities:600, other:300 };
+  document.getElementById('budgetFood').value      = limits.food || 400;
+  document.getElementById('budgetTransport').value = limits.transportation || 600;
+  document.getElementById('budgetShopping').value  = limits.shopping || 150;
+  document.getElementById('budgetEntertain').value = limits.entertainment || 50;
+  document.getElementById('budgetUtilities').value = limits.utilities || 600;
+  document.getElementById('budgetOther').value     = limits.other || 300;
+  document.getElementById('budgetEssentials').value = state.settings.daily_essentials || 95;
+  openModal('editBudgetModal');
+}
+
+async function saveBudgetLimits() {
+  const limits = {
+    food:          parseFloat(document.getElementById('budgetFood').value)      || 400,
+    transportation:parseFloat(document.getElementById('budgetTransport').value) || 600,
+    shopping:      parseFloat(document.getElementById('budgetShopping').value)  || 150,
+    entertainment: parseFloat(document.getElementById('budgetEntertain').value) || 50,
+    utilities:     parseFloat(document.getElementById('budgetUtilities').value) || 600,
+    other:         parseFloat(document.getElementById('budgetOther').value)     || 300,
+  };
+  state.settings.budgetLimits = limits;
+  state.settings.daily_essentials = parseFloat(document.getElementById('budgetEssentials').value) || 95;
+  await api('/api/settings', { method:'PUT', body: state.settings });
+  saveLocal();
+  closeModal('editBudgetModal');
+  renderBudget();
+}
+
+// ═══════════════════════════════════════
+// BILLS - SORTED BY DATE + EDITABLE
+// ═══════════════════════════════════════
+function openEditBillModal(idx) {
+  const bill = state.bills[idx];
+  if (!bill) return;
+  document.getElementById('editBillName').value    = bill.name;
+  document.getElementById('editBillAmt').value     = bill.amount;
+  document.getElementById('editBillDay').value     = bill.due_day;
+  document.getElementById('editBillCat').value     = bill.category || 'other';
+  document.getElementById('editBillIdx').value     = idx;
+  openModal('editBillModal');
+}
+
+async function saveEditBill() {
+  const idx  = parseInt(document.getElementById('editBillIdx').value);
+  const bill = state.bills[idx];
+  if (!bill) return;
+  const updates = {
+    name:     document.getElementById('editBillName').value,
+    amount:   parseFloat(document.getElementById('editBillAmt').value),
+    due_day:  parseInt(document.getElementById('editBillDay').value),
+    category: document.getElementById('editBillCat').value,
+  };
+  await api(`/api/bills/${bill.id}`, { method:'PATCH', body: updates });
+  Object.assign(state.bills[idx], updates);
+  saveLocal();
+  closeModal('editBillModal');
+  renderBills();
+}
+
+async function deleteBill(idx) {
+  const bill = state.bills[idx];
+  if (!bill) return;
+  if (!confirm(`Delete ${bill.name}?`)) return;
+  await api(`/api/bills/${bill.id}`, { method:'DELETE' });
+  state.bills.splice(idx, 1);
+  saveLocal();
+  renderBills();
+}
+
 
 // ═══════════════════════════════════════
 // MISC HELPERS
