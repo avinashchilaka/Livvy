@@ -1258,8 +1258,12 @@ body {
     <div class="briefing-text" id="briefingText"></div>
     <div class="briefing-tip" id="briefingTip"></div>
   </div>
-  <div id="aiBriefingLoading" class="briefing-card">
-    <div class="briefing-loading"><div class="spinner"></div> Claude is preparing your briefing...</div>
+  <div id="aiBriefingLoading" class="briefing-card" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div class="briefing-loading"><div class="spinner"></div> Claude is preparing your briefing...</div>
+      <button onclick="document.getElementById('aiBriefingLoading').style.display='none'" 
+        style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:4px 8px">×</button>
+    </div>
   </div>
 
   <!-- Daily target ring -->
@@ -4584,11 +4588,15 @@ async function init() {
     renderHome();
 
     // Load AI briefing (after data is ready, if not cached)
-    if (!hasCached) loadBriefing();
+    if (!hasCached) {
+      // Show loader now that server is confirmed awake
+      document.getElementById('aiBriefingLoading').style.display = 'block';
+      loadBriefing();
+    }
 
   } catch(e) {
     console.error('Init error:', e);
-    if (!hasCached) loadBriefing();
+    // Don't show briefing if server had errors
   }
   setSyncing(false);
 }
