@@ -744,6 +744,73 @@ body {
 
 @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
 
+/* ═══════════════════════════
+   AI BRIEFING CARD
+═══════════════════════════ */
+.briefing-card {
+  background: linear-gradient(135deg, rgba(126,204,160,0.08) 0%, rgba(77,184,133,0.04) 100%);
+  border: 1px solid rgba(126,204,160,0.2);
+  border-radius: var(--r-lg);
+  padding: 18px 16px;
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.briefing-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+}
+
+.briefing-card.warning {
+  background: linear-gradient(135deg, rgba(240,192,96,0.08) 0%, rgba(240,144,64,0.04) 100%);
+  border-color: rgba(240,192,96,0.2);
+}
+
+.briefing-card.warning::before {
+  background: linear-gradient(90deg, var(--gold), var(--orange));
+}
+
+.briefing-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.briefing-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.briefing-headline {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.briefing-text {
+  font-size: 0.8rem;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.briefing-tip {
+  background: rgba(255,255,255,0.04);
+  border-radius: var(--r-sm);
+  padding: 8px 10px;
+  font-size: 0.73rem;
+  color: var(--accent);
+  font-weight: 500;
+}
+
 @media(max-width:380px) {
   .target-row { grid-template-columns: 1fr 1fr 1fr; }
   .earned-big { font-size: 2rem; }
@@ -773,6 +840,19 @@ body {
 
   <!-- Dismissable alerts container -->
   <div id="alertsContainer"></div>
+
+  <!-- AI Morning Briefing -->
+  <div id="aiBriefingCard" class="briefing-card" style="display:none">
+    <div class="briefing-header">
+      <div class="briefing-icon" id="briefingIcon">🤖</div>
+      <div class="briefing-headline" id="briefingHeadline"></div>
+    </div>
+    <div class="briefing-text" id="briefingText"></div>
+    <div class="briefing-tip" id="briefingTip"></div>
+  </div>
+  <div id="aiBriefingLoading" class="briefing-card">
+    <div class="briefing-loading"><div class="spinner"></div> Claude is preparing your briefing...</div>
+  </div>
 
   <!-- Daily target ring -->
   <div class="target-card" id="targetCard">
@@ -1235,8 +1315,147 @@ let state = {
 };
 
 // ═══════════════════════════════════════
-// AUTH GUARD
+// MERCHANT LOGOS (Clearbit)
 // ═══════════════════════════════════════
+const LOGO_CACHE = {};
+
+function getMerchantLogo(description, merchantType) {
+  // Build domain from merchant type or description
+  const name = (merchantType || description || '').toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim();
+
+  const domainMap = {
+    'uber': 'uber.com', 'lyft': 'lyft.com', 'doordash': 'doordash.com',
+    'grubhub': 'grubhub.com', 'mcdonalds': 'mcdonalds.com', 'starbucks': 'starbucks.com',
+    'amazon': 'amazon.com', 'walmart': 'walmart.com', 'target': 'target.com',
+    'netflix': 'netflix.com', 'spotify': 'spotify.com', 'hulu': 'hulu.com',
+    'shell': 'shell.com', 'chevron': 'chevron.com', 'exxon': 'exxon.com',
+    'bp': 'bp.com', 'circle k': 'circlek.com', 'costco': 'costco.com',
+    'att': 'att.com', 'verizon': 'verizon.com', 'tmobile': 't-mobile.com',
+    'google': 'google.com', 'apple': 'apple.com', 'microsoft': 'microsoft.com',
+    'chase': 'chase.com', 'bank of america': 'bankofamerica.com',
+    'wells fargo': 'wellsfargo.com', 'paypal': 'paypal.com', 'venmo': 'venmo.com',
+    'chipotle': 'chipotle.com', 'subway': 'subway.com', 'taco bell': 'tacobell.com',
+    'chick fil a': 'chickfila.com', 'cvs': 'cvs.com', 'walgreens': 'walgreens.com',
+    'home depot': 'homedepot.com', 'lowes': 'lowes.com', 'ikea': 'ikea.com',
+    'best buy': 'bestbuy.com', 'tesla': 'tesla.com', 'instacart': 'instacart.com',
+  };
+
+  // Try exact match first
+  for (const [key, domain] of Object.entries(domainMap)) {
+    if (name.includes(key)) {
+      return `https://logo.clearbit.com/${domain}`;
+    }
+  }
+
+  // Generic: try first meaningful word as .com
+  const words = name.split(/\s+/).filter(w => w.length > 2);
+  if (words[0]) {
+    return `https://logo.clearbit.com/${words[0]}.com`;
+  }
+  return null;
+}
+
+function txnIconEl(tx) {
+  const catIcons = {
+    transportation:'🚗', food:'🍔', shopping:'🛍️', entertainment:'🎬',
+    utilities:'💡', health:'💊', housing:'🏠', other:'📦',
+    food_and_drink:'🍔', auto:'🚗', medical:'💊', debt:'💳', income:'💰'
+  };
+
+  const logoUrl = getMerchantLogo(tx.description || tx.name, tx.merchant_type);
+  if (logoUrl) {
+    return `<img class="merchant-logo" src="${logoUrl}"
+      onerror="this.style.display='none';this.nextSibling.style.display='flex'"
+      alt="">
+    <div class="merchant-logo-fallback" style="display:none">${catIcons[tx.category]||'💳'}</div>`;
+  }
+  return `<div class="merchant-logo-fallback">${catIcons[tx.category]||'💳'}</div>`;
+}
+
+// ═══════════════════════════════════════
+// AI MORNING BRIEFING
+// ═══════════════════════════════════════
+async function loadBriefing() {
+  try {
+    const r = await api('/api/ai/briefing');
+    const card    = document.getElementById('aiBriefingCard');
+    const loading = document.getElementById('aiBriefingLoading');
+    if (!r || r.error) { loading.style.display = 'none'; return; }
+
+    loading.style.display = 'none';
+    card.style.display = 'block';
+
+    if (r.mood === 'warning') card.classList.add('warning');
+    document.getElementById('briefingIcon').textContent =
+      r.mood === 'positive' ? '🚀' : r.mood === 'warning' ? '⚠️' : '📊';
+    document.getElementById('briefingHeadline').textContent = r.headline || 'Daily Briefing';
+    document.getElementById('briefingText').textContent     = r.briefing || '';
+    document.getElementById('briefingTip').textContent      = r.tip || '';
+
+    // Cache for 30 min to avoid re-fetching
+    localStorage.setItem('pb_briefing', JSON.stringify({ ...r, cachedAt: Date.now() }));
+  } catch(e) {
+    document.getElementById('aiBriefingLoading').style.display = 'none';
+    console.error('Briefing error:', e);
+  }
+}
+
+function showCachedBriefing() {
+  try {
+    const cached = JSON.parse(localStorage.getItem('pb_briefing') || '{}');
+    if (!cached.cachedAt) return false;
+    const age = Date.now() - cached.cachedAt;
+    if (age > 30 * 60 * 1000) return false; // 30 min stale
+
+    const card    = document.getElementById('aiBriefingCard');
+    const loading = document.getElementById('aiBriefingLoading');
+    loading.style.display = 'none';
+    card.style.display = 'block';
+    if (cached.mood === 'warning') card.classList.add('warning');
+    document.getElementById('briefingIcon').textContent =
+      cached.mood === 'positive' ? '🚀' : cached.mood === 'warning' ? '⚠️' : '📊';
+    document.getElementById('briefingHeadline').textContent = cached.headline || 'Daily Briefing';
+    document.getElementById('briefingText').textContent     = cached.briefing || '';
+    document.getElementById('briefingTip').textContent      = cached.tip || '';
+    return true;
+  } catch(e) { return false; }
+}
+
+// ═══════════════════════════════════════
+// AI CATEGORIZATION
+// ═══════════════════════════════════════
+async function aiCategorizeTransactions(txns) {
+  if (!txns || !txns.length) return txns;
+  try {
+    // Only categorize uncategorized or 'other' transactions
+    const toCateg = txns.filter(t => !t.ai_categorized && (!t.category || t.category === 'other')).slice(0, 20);
+    if (!toCateg.length) return txns;
+
+    const r = await api('/api/ai/categorize', { method:'POST', body: { transactions: toCateg } });
+    if (!r?.categorized) return txns;
+
+    // Apply AI results back
+    r.categorized.forEach(result => {
+      const tx = toCateg[result.index];
+      if (!tx) return;
+      const idx = txns.findIndex(t => t === tx || t.plaid_id === tx.plaid_id);
+      if (idx >= 0) {
+        txns[idx].category      = result.category || txns[idx].category;
+        txns[idx].merchant_type = result.merchant_type;
+        txns[idx].label         = result.label;
+        txns[idx].ai_categorized = true;
+      }
+    });
+    saveLocal();
+  } catch(e) {
+    console.error('AI categorize error:', e);
+  }
+  return txns;
+}
+
+
 if (!TOKEN()) { window.location.href = '/'; }
 
 // ═══════════════════════════════════════
@@ -1388,15 +1607,14 @@ function getMonthSpending() {
 }
 
 function getDailyTarget() {
-  // Smart target: (remaining bills + overdue + splitwise) / days left in month
+  // Smart target: remaining monthly goal / days left — Splitwise excluded from driving goal
   const today    = new Date();
   const daysLeft = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate() - today.getDate() + 1;
-  const unpaid   = state.bills.filter(b => !b.paid).reduce((s,b) => s + b.amount, 0);
-  const swOwed   = state.splitwise.reduce((s,d) => s + d.amount, 0);
   const monthly  = state.settings.monthly_goal || 9500;
   const earned   = getMonthEarnings();
-  const remaining = Math.max(0, monthly + swOwed - earned);
-  return Math.max(state.settings.daily_quota || 400, remaining / Math.max(1, daysLeft));
+  const remaining = Math.max(0, monthly - earned);
+  const smartTarget = remaining / Math.max(1, daysLeft);
+  return Math.max(state.settings.daily_quota || 400, smartTarget);
 }
 
 // ═══════════════════════════════════════
@@ -1483,9 +1701,11 @@ function renderHome() {
   document.getElementById('recentTxns').innerHTML = recent.length
     ? recent.map(t => `
         <div class="txn-row">
-          <div class="txn-icon">${catIcons[t.category] || '💳'}</div>
+          <div style="display:flex;align-items:center;flex-shrink:0">
+            ${txnIconEl(t)}
+          </div>
           <div class="txn-body">
-            <div class="txn-name">${t.description || t.name}</div>
+            <div class="txn-name">${t.label || t.description || t.name}</div>
             <div class="txn-meta">${t.date} · ${t.category || 'Other'}</div>
           </div>
           <div class="txn-amt" style="color:var(--red)">-${fmt(t.amount)}</div>
@@ -1579,10 +1799,12 @@ function renderSpending() {
   document.getElementById('allTxnsList').innerHTML = sorted.length
     ? sorted.map(t => `
         <div class="txn-row">
-          <div class="txn-icon">${catIcons[t.category]||'💳'}</div>
+          <div style="display:flex;align-items:center;flex-shrink:0">
+            ${txnIconEl(t)}
+          </div>
           <div class="txn-body">
-            <div class="txn-name">${t.description||t.name||'Transaction'}</div>
-            <div class="txn-meta">${t.date} · ${t.category||'Other'}${t.isPlaid?' · 🏦':''}</div>
+            <div class="txn-name">${t.label || t.description||t.name||'Transaction'}</div>
+            <div class="txn-meta">${t.date} · ${t.category||'Other'}${t.is_plaid?' · 🏦':''}</div>
           </div>
           <div class="txn-amt" style="color:var(--red)">-${fmt(t.amount)}</div>
         </div>`).join('')
@@ -1954,9 +2176,17 @@ async function init() {
   const initials = (user.name||'?').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
   document.getElementById('userAvatar').textContent = initials;
 
+  // Fix greeting based on current local time
+  const _hour = new Date().getHours();
+  const _greeting = _hour < 12 ? 'Good morning' : _hour < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('pageTitle').textContent = _greeting + ' 👋';
+
   // Set date
   document.getElementById('topbarDate').textContent =
     new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+
+  // Show cached briefing instantly if fresh, otherwise fetch
+  const hasCached = showCachedBriefing();
 
   // Render immediately from cache
   renderHome();
@@ -1978,10 +2208,20 @@ async function init() {
     // Sync Plaid + Splitwise
     await Promise.allSettled([ syncPlaid(), loadSplitwise() ]);
 
+    // AI categorize any uncategorized transactions
+    if (state.expenses.length) {
+      state.expenses = await aiCategorizeTransactions(state.expenses);
+    }
+
     saveLocal();
     renderHome();
+
+    // Load AI briefing (after data is ready, if not cached)
+    if (!hasCached) loadBriefing();
+
   } catch(e) {
     console.error('Init error:', e);
+    if (!hasCached) loadBriefing();
   }
   setSyncing(false);
 }

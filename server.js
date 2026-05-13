@@ -6,6 +6,7 @@ const bcrypt   = require('bcryptjs');
 const jwt      = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
 const { Configuration, PlaidApi, PlaidEnvironments, Products, CountryCode } = require('plaid');
+const Anthropic = require('@anthropic-ai/sdk');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -29,6 +30,9 @@ const plaid = new PlaidApi(new Configuration({
     'PLAID-SECRET':    process.env.PLAID_SECRET,
   }},
 }));
+
+// ── Anthropic (Claude AI) ─────────────────────────────────
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // ── JWT Auth Middleware ───────────────────────────────────
 function auth(req, res, next) {
@@ -299,6 +303,143 @@ function mapTx(t, source) {
 }
 
 // ════════════════════════════════════════════════════════
+// AI ROUTES (Claude)
+// ════════════════════════════════════════════════════════
+
+// AI transaction categorization
+app.post('/api/ai/categorize', auth, async (req, res) => {
+  try {
+    const { transactions } = req.body;
+    if (!transactions || !transactions.length) return res.json({ categorized: [] });
+
+    const txList = transactions.map((t, i) =>
+      `${i}. "${t.description}" amount=$${t.amount} date=${t.date}`
+    ).join('\n');
+
+    const msg = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{
+        role: 'user',
+        content: `Categorize these financial transactions. For each, return a JSON array with objects having:
+- index (number)
+- category: one of [transportation, food, shopping, entertainment, utilities, health, housing, debt, income, other]
+- merchant_type: short merchant name for logo lookup (e.g. "uber", "mcdonalds", "netflix", "amazon")
+- label: friendly short display name (e.g. "Uber Eats", "McDonald's", "Netflix")
+
+Transactions:
+${txList}
+
+Return ONLY a valid JSON array, no other text.`
+      }]
+    });
+
+    let categorized = [];
+    try {
+      const text = msg.content[0].text.replace(/```json|```/g, '').trim();
+      categorized = JSON.parse(text);
+    } catch (e) {
+      console.error('AI parse error:', e);
+    }
+
+    res.json({ categorized });
+  } catch (e) {
+    console.error('AI categorize error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// AI morning briefing
+app.get('/api/ai/briefing', auth, async (req, res) => {
+  try {
+    // Gather context
+    const today = new Date().toISOString().slice(0, 10);
+    const month = today.slice(0, 7);
+
+    const [earningsRes, billsRes, debtsRes, settingsRes] = await Promise.all([
+      supabase.from('earnings').select('*').eq('user_id', req.user.id).order('date', { ascending: false }).limit(60),
+      supabase.from('bills').select('*').eq('user_id', req.user.id),
+      supabase.from('debts').select('*').eq('user_id', req.user.id),
+      supabase.from('users').select('monthly_goal, daily_quota, name').eq('id', req.user.id).single(),
+    ]);
+
+    const earnings  = earningsRes.data || [];
+    const bills     = billsRes.data || [];
+    const debts     = debtsRes.data || [];
+    const settings  = settingsRes.data || {};
+
+    const todayEarnings = earnings.filter(e => e.date === today).reduce((s, e) => s + e.amount, 0);
+    const monthEarnings = earnings.filter(e => e.date.startsWith(month)).reduce((s, e) => s + e.amount, 0);
+
+    // Yesterday
+    const yd = new Date(); yd.setDate(yd.getDate() - 1);
+    const yesterday = yd.toISOString().slice(0, 10);
+    const ydEarnings = earnings.filter(e => e.date === yesterday).reduce((s, e) => s + e.amount, 0);
+
+    const dayOfMonth = new Date().getDate();
+    const daysLeft   = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate() - dayOfMonth + 1;
+    const remaining  = Math.max(0, (settings.monthly_goal || 9500) - monthEarnings);
+    const dailyNeeded = daysLeft > 0 ? (remaining / daysLeft) : 0;
+
+    const upcomingBills = bills
+      .filter(b => !b.paid && b.due_day >= dayOfMonth && b.due_day <= dayOfMonth + 7)
+      .sort((a, b) => a.due_day - b.due_day);
+
+    const overdueBills = bills.filter(b => !b.paid && b.due_day < dayOfMonth);
+
+    const context = `
+Driver name: ${settings.name || 'Driver'}
+Today: ${today} (day ${dayOfMonth} of month, ${daysLeft} days left)
+Monthly goal: $${settings.monthly_goal || 9500}
+Month earnings so far: $${monthEarnings.toFixed(2)}
+Remaining to goal: $${remaining.toFixed(2)}
+Daily amount needed: $${dailyNeeded.toFixed(2)}
+Yesterday's earnings: $${ydEarnings.toFixed(2)}
+Today's earnings so far: $${todayEarnings.toFixed(2)}
+Upcoming bills (next 7 days): ${upcomingBills.map(b => `${b.name} $${b.amount} due ${b.due_day}th`).join(', ') || 'None'}
+Overdue bills: ${overdueBills.map(b => `${b.name} $${b.amount}`).join(', ') || 'None'}
+Active debts: ${debts.map(d => `${d.name} $${d.amount}`).join(', ') || 'None'}
+`.trim();
+
+    const hour = new Date().getHours();
+    const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+
+    const msg = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{
+        role: 'user',
+        content: `You are a smart financial assistant for a gig driver. Generate a concise, motivating ${timeOfDay} briefing (3-4 sentences max). Be specific with numbers. Be encouraging but realistic. No fluff. Sound like a sharp financial coach, not a chatbot.
+
+Context:
+${context}
+
+Return ONLY a JSON object:
+{
+  "headline": "short punchy headline (max 8 words)",
+  "briefing": "2-3 sentence briefing with specific numbers",
+  "mood": "positive|warning|neutral",
+  "tip": "one actionable tip for today"
+}`
+      }]
+    });
+
+    let result = { headline: 'Good ' + timeOfDay, briefing: '', mood: 'neutral', tip: '' };
+    try {
+      const text = msg.content[0].text.replace(/```json|```/g, '').trim();
+      result = JSON.parse(text);
+    } catch (e) {
+      console.error('Briefing parse error:', e);
+    }
+
+    res.json(result);
+  } catch (e) {
+    console.error('Briefing error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ════════════════════════════════════════════════════════
 // SPLITWISE ROUTES
 // ════════════════════════════════════════════════════════
 
@@ -334,9 +475,9 @@ app.get('/api/splitwise/callback', async (req, res) => {
       user_id:      userId,
       access_token: data.access_token,
     });
-    res.redirect('/app.html?splitwise=connected');
+    res.redirect('https://pbtrack.onrender.com/app.html?splitwise=connected');
   } catch (e) {
-    res.redirect('/app.html?splitwise=error');
+    res.redirect('https://pbtrack.onrender.com/app.html?splitwise=error');
   }
 });
 
