@@ -268,14 +268,19 @@ app.get('/api/plaid/transactions', auth, async (req, res) => {
       const earningsToInsert = incomeItems.map(t => {
         const desc = (t.description || '').toLowerCase();
         const platform = desc.includes('lyft') ? 'Lyft'
-          : (desc.includes('uber') || desc.includes('instantpay')) ? 'Uber'
+          : (desc.includes('uber') || desc.includes('instantpay') || 
+             desc === 'trip' || desc === 'tips' || desc === 'miscellaneous' ||
+             desc.includes('uber pro card')) ? 'Uber'
           : 'Other';
+        // Friendly display note
+        const noteMap = { 'trip': 'Fare', 'tips': 'Tip', 'miscellaneous': 'Misc earnings' };
+        const note = noteMap[desc] || t.description;
         return {
           user_id:   req.user.id,
           amount:    t.amount,
           platform,
           date:      t.date,
-          note:      t.description,
+          note,
           is_manual: false,
           plaid_id:  t.plaid_id,
         };

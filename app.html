@@ -941,11 +941,11 @@ body {
 }
 .best-time-bar {
   width: 100%; border-radius: 3px 3px 0 0;
-  background: var(--accent); opacity: 0.3;
+  background: var(--accent); opacity: 0.45;
   transition: height 0.6s ease, opacity 0.3s;
   min-height: 3px;
 }
-.best-time-bar.top { opacity: 1; }
+.best-time-bar.top { opacity: 1; background: var(--accent); box-shadow: 0 0 8px rgba(126,204,160,0.4); }
 .best-time-day {
   font-size: 0.55rem; color: var(--muted);
   font-weight: 600; text-transform: uppercase;
@@ -1316,10 +1316,14 @@ body {
     </div>
     <div style="padding:0 4px;margin-bottom:8px">
       <div class="time-tabs">
-        <button class="time-tab active" onclick="filterEarnings('today',this)">Today</button>
-        <button class="time-tab" onclick="filterEarnings('week',this)">Week</button>
+        <button class="time-tab" onclick="filterEarnings('yesterday',this)">Yesterday</button>
+        <button class="time-tab active" onclick="filterEarnings('week',this)">Week</button>
         <button class="time-tab" onclick="filterEarnings('month',this)">Month</button>
         <button class="time-tab" onclick="filterEarnings('all',this)">All</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:0 2px">
+        <input type="date" id="earningsDatePicker" style="background:var(--s1);border:1.5px solid var(--border2);border-radius:var(--r-sm);color:var(--text);font-family:Inter,sans-serif;font-size:0.8rem;padding:7px 10px;outline:none;flex:1" onchange="filterEarnings('date',null)">
+        <span style="font-size:0.7rem;color:var(--muted)">Pick day</span>
       </div>
     </div>
     <div class="card" style="padding:0 16px">
@@ -2683,7 +2687,7 @@ function drillDown(period) {
 // ═══════════════════════════════════════
 // EARNINGS TIME FILTER
 // ═══════════════════════════════════════
-let currentEarningsFilter = 'all';
+let currentEarningsFilter = 'week';
 
 function filterEarnings(period, btn) {
   currentEarningsFilter = period;
@@ -2694,14 +2698,19 @@ function filterEarnings(period, btn) {
 
 function renderEarningsHistory() {
   const today = getTodayStr();
+  const yd = new Date(); yd.setDate(yd.getDate()-1);
+  const yesterday = yd.toISOString().slice(0,10);
   const month = today.slice(0,7);
   const now = new Date();
   const mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay()+6)%7)); mon.setHours(0,0,0,0);
+  const pickedDate = document.getElementById('earningsDatePicker')?.value;
 
   let filtered = [...state.earnings];
   if (currentEarningsFilter === 'today') filtered = filtered.filter(e => e.date === today);
+  else if (currentEarningsFilter === 'yesterday') filtered = filtered.filter(e => e.date === yesterday);
   else if (currentEarningsFilter === 'week') filtered = filtered.filter(e => new Date(e.date) >= mon);
   else if (currentEarningsFilter === 'month') filtered = filtered.filter(e => e.date.startsWith(month));
+  else if (currentEarningsFilter === 'date' && pickedDate) filtered = filtered.filter(e => e.date === pickedDate);
 
   filtered.sort((a,b) => b.date.localeCompare(a.date)).slice(0, 50);
   const platformColors = { Uber:'var(--blue)', Lyft:'var(--purple)', Other:'var(--gold)' };
