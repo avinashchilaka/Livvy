@@ -1607,15 +1607,14 @@ function getMonthSpending() {
 }
 
 function getDailyTarget() {
-  // Smart target: (remaining bills + overdue + splitwise) / days left in month
+  // Smart target: remaining monthly goal / days left — Splitwise excluded from driving goal
   const today    = new Date();
   const daysLeft = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate() - today.getDate() + 1;
-  const unpaid   = state.bills.filter(b => !b.paid).reduce((s,b) => s + b.amount, 0);
-  const swOwed   = state.splitwise.reduce((s,d) => s + d.amount, 0);
   const monthly  = state.settings.monthly_goal || 9500;
   const earned   = getMonthEarnings();
-  const remaining = Math.max(0, monthly + swOwed - earned);
-  return Math.max(state.settings.daily_quota || 400, remaining / Math.max(1, daysLeft));
+  const remaining = Math.max(0, monthly - earned);
+  const smartTarget = remaining / Math.max(1, daysLeft);
+  return Math.max(state.settings.daily_quota || 400, smartTarget);
 }
 
 // ═══════════════════════════════════════
@@ -2176,6 +2175,11 @@ async function init() {
   const user = USER();
   const initials = (user.name||'?').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
   document.getElementById('userAvatar').textContent = initials;
+
+  // Fix greeting based on current local time
+  const _hour = new Date().getHours();
+  const _greeting = _hour < 12 ? 'Good morning' : _hour < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('pageTitle').textContent = _greeting + ' 👋';
 
   // Set date
   document.getElementById('topbarDate').textContent =
