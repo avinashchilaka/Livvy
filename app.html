@@ -1037,6 +1037,39 @@ body {
       <button class="btn btn-ghost btn-sm" id="plaidBtn" onclick="openPlaidLink()">🏦 Connect</button>
     </div>
 
+    <!-- Donut Chart -->
+    <div class="section-hdr">
+      <div class="section-title">Spending Breakdown</div>
+    </div>
+    <div class="card" id="donutCard">
+      <div style="display:flex;align-items:center;gap:16px">
+        <div style="position:relative;flex-shrink:0">
+          <canvas id="donutChart" width="130" height="130"></canvas>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <div style="font-family:'DM Mono',monospace;font-size:0.85rem;font-weight:500;color:var(--text)" id="donutTotal">$0</div>
+            <div style="font-size:0.58rem;color:var(--muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase">Total</div>
+          </div>
+        </div>
+        <div id="donutLegend" style="flex:1;min-width:0"></div>
+      </div>
+    </div>
+
+    <!-- Cash Flow Bar Chart -->
+    <div class="section-hdr">
+      <div class="section-title">Daily Cash Flow</div>
+    </div>
+    <div class="card">
+      <div style="display:flex;gap:12px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:5px;font-size:0.7rem;color:var(--muted)">
+          <div style="width:10px;height:10px;border-radius:2px;background:var(--green)"></div> Earnings
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:0.7rem;color:var(--muted)">
+          <div style="width:10px;height:10px;border-radius:2px;background:var(--red)"></div> Spending
+        </div>
+      </div>
+      <canvas id="cashFlowChart" height="180" style="width:100%"></canvas>
+    </div>
+
     <!-- Categories -->
     <div class="section-hdr">
       <div class="section-title">By Category</div>
@@ -1485,6 +1518,7 @@ const PAGE_TITLES = {
 };
 
 function showPage(id) {
+  localStorage.setItem('pb_page', id);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const page = document.getElementById('page-' + id);
@@ -1816,7 +1850,136 @@ function renderSpending() {
     document.getElementById('plaidBtn').textContent    = '↺ Sync';
     document.getElementById('plaidBtn').onclick        = syncPlaid;
   }
+  // Draw charts
+  setTimeout(() => { drawDonutChart(); drawCashFlowChart(); }, 50);
 }
+
+// ═══════════════════════════════════════
+// CHARTS
+// ═══════════════════════════════════════
+function drawDonutChart() {
+  const canvas = document.getElementById('donutChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const month = getTodayStr().slice(0,7);
+  const cats = {};
+  state.expenses.filter(e => e.date.startsWith(month) && e.category !== 'income').forEach(e => {
+    const c = e.category || 'other';
+    cats[c] = (cats[c] || 0) + e.amount;
+  });
+
+  const entries = Object.entries(cats).sort((a,b) => b[1]-a[1]).slice(0,6);
+  const total   = entries.reduce((s,[,v]) => s+v, 0);
+  if (!total) return;
+
+  document.getElementById('donutTotal').textContent = '$' + Math.round(total).toLocaleString();
+
+  const colors = ['#7ecca0','#60a5fa','#f0c060','#f0626a','#a78bfa','#f09040'];
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2, r = W*0.44, inner = W*0.28;
+
+  ctx.clearRect(0,0,W,H);
+  let angle = -Math.PI/2;
+
+  entries.forEach(([cat, amt], i) => {
+    const slice = (amt/total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, angle, angle+slice);
+    ctx.closePath();
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fill();
+    angle += slice;
+  });
+
+  // Inner circle (donut hole)
+  ctx.beginPath();
+  ctx.arc(cx, cy, inner, 0, Math.PI*2);
+  ctx.fillStyle = '#16181c';
+  ctx.fill();
+
+  // Legend
+  const catIcons = {
+    transportation:'🚗', food:'🍔', shopping:'🛍️', entertainment:'🎬',
+    utilities:'💡', health:'💊', housing:'🏠', other:'📦', debt:'💳', income:'💰'
+  };
+  const legend = document.getElementById('donutLegend');
+  legend.innerHTML = entries.map(([cat, amt], i) => `
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;min-width:0">
+      <div style="width:8px;height:8px;border-radius:2px;background:${colors[i]};flex-shrink:0"></div>
+      <span style="font-size:0.72rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+        ${cat.charAt(0).toUpperCase()+cat.slice(1)}
+      </span>
+      <span style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);margin-left:auto;flex-shrink:0">
+        ${Math.round(amt/total*100)}%
+      </span>
+    </div>`).join('');
+}
+
+function drawCashFlowChart() {
+  const canvas = document.getElementById('cashFlowChart');
+  if (!canvas) return;
+
+  // Set actual pixel width
+  canvas.width  = canvas.offsetWidth || 320;
+  canvas.height = 180;
+
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  // Last 7 days
+  const days = [];
+  for (let i=6; i>=0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    days.push(d.toISOString().slice(0,10));
+  }
+
+  const earned  = days.map(d => state.earnings.filter(e=>e.date===d).reduce((s,e)=>s+e.amount,0));
+  const spent   = days.map(d => state.expenses.filter(e=>e.date===d && e.category!=='income').reduce((s,e)=>s+e.amount,0));
+  const maxVal  = Math.max(...earned, ...spent, 1);
+
+  const padL=8, padR=8, padT=10, padB=28;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  const barW   = (chartW / days.length) * 0.35;
+  const gap    = (chartW / days.length);
+
+  ctx.clearRect(0,0,W,H);
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
+  [0.25,0.5,0.75,1].forEach(p => {
+    const y = padT + chartH * (1-p);
+    ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke();
+  });
+
+  days.forEach((d, i) => {
+    const x    = padL + i * gap + gap/2;
+    const eH   = (earned[i]/maxVal) * chartH;
+    const sH   = (spent[i]/maxVal)  * chartH;
+
+    // Earnings bar
+    ctx.fillStyle = '#7ecca0';
+    ctx.beginPath();
+    ctx.roundRect(x - barW - 2, padT + chartH - eH, barW, eH, [3,3,0,0]);
+    ctx.fill();
+
+    // Spending bar
+    ctx.fillStyle = '#f0626a';
+    ctx.beginPath();
+    ctx.roundRect(x + 2, padT + chartH - sH, barW, sH, [3,3,0,0]);
+    ctx.fill();
+
+    // Day label
+    const label = new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'short'}).slice(0,2);
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.font = '10px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, x, H - 8);
+  });
+}
+
 
 // ═══════════════════════════════════════
 // BILLS RENDER
@@ -2079,10 +2242,28 @@ async function syncPlaid() {
   if (res?.transactions) {
     let added = 0;
     res.transactions.forEach(t => {
+      // Auto-import Uber/Lyft/income into earnings
+      if (t.is_income || t.category === 'income') {
+        const platform = (t.description||'').toLowerCase().includes('lyft') ? 'Lyft'
+          : (t.description||'').toLowerCase().includes('uber') ? 'Uber' : 'Other';
+        if (!state.earnings.some(e => e.plaid_id === t.plaid_id)) {
+          state.earnings.push({
+            plaid_id: t.plaid_id,
+            amount: t.amount,
+            platform,
+            date: t.date,
+            note: t.description,
+            is_manual: false,
+          });
+        }
+        return; // don't add to expenses
+      }
+      // Add to expenses (spending)
       if (state.expenses.some(e => e.plaid_id === t.plaid_id)) return;
       state.expenses.push(t);
       added++;
     });
+    state.plaidLinked = true;
     if (added > 0) { saveLocal(); renderHome(); }
   }
   setSyncing(false);
@@ -2184,6 +2365,10 @@ async function init() {
   // Set date
   document.getElementById('topbarDate').textContent =
     new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+
+  // Restore last active page
+  const lastPage = localStorage.getItem('pb_page') || 'home';
+  if (lastPage !== 'home') showPage(lastPage);
 
   // Show cached briefing instantly if fresh, otherwise fetch
   const hasCached = showCachedBriefing();

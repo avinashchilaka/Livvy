@@ -250,7 +250,7 @@ app.get('/api/plaid/transactions', auth, async (req, res) => {
           access_token: t.access_token,
           ...(cursor ? { cursor } : {}),
         });
-        r.data.added.forEach(tx => all.push(mapTx(tx, t.institution)));
+        r.data.added.forEach(tx => { const mapped = mapTx(tx, t.institution); if (mapped) all.push(mapped); });
         cursor  = r.data.next_cursor;
         hasMore = r.data.has_more;
       }
@@ -280,8 +280,20 @@ app.get('/api/plaid/transactions', auth, async (req, res) => {
 });
 
 function mapTx(t, source) {
+  const name = (t.name || '').toLowerCase();
   const isIncome = t.amount < 0;
-  const catMap   = {
+
+  // Skip internal transfers / duplicates that inflate numbers
+  const skipPatterns = [
+    'account unload to card', 'fee for unloading', 'backup balance',
+    'transfer from varo', 'transfer to varo', 'save your change',
+    'reward', 'mystro driver'
+  ];
+  if (skipPatterns.some(p => name.includes(p))) {
+    return null; // will be filtered out
+  }
+
+  const catMap = {
     'TRANSPORTATION':'transportation','AUTO':'transportation',
     'FOOD_AND_DRINK':'food','GENERAL_MERCHANDISE':'shopping',
     'HOME_IMPROVEMENT':'housing','MEDICAL':'health',
@@ -289,16 +301,36 @@ function mapTx(t, source) {
     'RENT_AND_UTILITIES':'utilities','LOAN_PAYMENTS':'debt',
     'INCOME':'income','TRAVEL':'transportation',
   };
+
+  // Smart category overrides based on description
+  let category = catMap[t.personal_finance_category?.primary?.toUpperCase()] || 'other';
+
+  // Uber/Lyft income detection
+  const isGigIncome = (
+    (name === 'lyft' || name.startsWith('lyft ')) ||
+    name.includes('uber instantpay') ||
+    name.includes('uber pro card') ||
+    name === 'tips' ||
+    name === 'trip'
+  );
+
+  if (isGigIncome || isIncome) category = 'income';
+
+  // Tesla supercharger = transportation (driving expense)
+  if (name.includes('tesla supercharger') || name.includes('supercharger')) {
+    category = 'transportation';
+  }
+
   return {
     plaid_id:    t.transaction_id,
     date:        t.date,
     amount:      Math.abs(t.amount),
     description: t.name,
-    category:    catMap[t.personal_finance_category?.primary?.toUpperCase()] || 'other',
+    category,
     account_id:  t.account_id,
     institution: source,
     is_plaid:    true,
-    is_income:   isIncome,
+    is_income:   isIncome || isGigIncome,
   };
 }
 
