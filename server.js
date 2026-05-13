@@ -526,6 +526,39 @@ app.post('/api/ai/chat', auth, async (req, res) => {
   }
 });
 
+
+// Get Plaid account balances
+app.get('/api/plaid/accounts', auth, async (req, res) => {
+  try {
+    const { data: tokens } = await supabase
+      .from('plaid_tokens').select('*').eq('user_id', req.user.id);
+    if (!tokens?.length) return res.json({ accounts: [] });
+
+    const allAccounts = [];
+    for (const t of tokens) {
+      try {
+        const r = await plaid.accountsGet({ access_token: t.access_token });
+        r.data.accounts.forEach(a => {
+          allAccounts.push({
+            id:          a.account_id,
+            name:        a.name,
+            type:        a.type,
+            subtype:     a.subtype,
+            institution: t.institution,
+            balances:    a.balances,
+            mask:        a.mask,
+          });
+        });
+      } catch(e) {
+        console.error('Account fetch error:', e.message);
+      }
+    }
+    res.json({ accounts: allAccounts });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ════════════════════════════════════════════════════════
 // SPLITWISE ROUTES
 // ════════════════════════════════════════════════════════
