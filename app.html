@@ -903,6 +903,55 @@ body {
 
 .clickable-val:active { opacity: 0.7; }
 
+
+/* ═══════════════════════════
+   SKIP BUTTON / PILL
+═══════════════════════════ */
+.chip-skipped { background: rgba(97,104,120,0.15); color: var(--muted); }
+
+.btn-skip {
+  background: transparent;
+  border: 1.5px solid var(--border2);
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 99px;
+  cursor: pointer;
+  font-family: Inter, sans-serif;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-skip:active { background: var(--card2); }
+.btn-skip.skipped { 
+  background: rgba(97,104,120,0.15); 
+  color: var(--muted);
+  border-color: transparent;
+}
+
+/* ═══════════════════════════
+   TRANSACTION DETAIL
+═══════════════════════════ */
+.txn-detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8rem;
+}
+.txn-detail-row:last-child { border-bottom: none; }
+.txn-detail-label { color: var(--muted); }
+.txn-detail-val { font-weight: 500; font-family: 'DM Mono', monospace; }
+
+/* ═══════════════════════════
+   EDIT EARNINGS ROW
+═══════════════════════════ */
+.earn-row-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
 @media(max-width:380px) {
   .target-row { grid-template-columns: 1fr 1fr 1fr; }
   .earned-big { font-size: 2rem; }
@@ -1886,6 +1935,52 @@ body {
   </div>
 </div>
 
+<!-- Edit Earning Modal -->
+<div class="modal-overlay" id="editEarningModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Edit Earning</h2>
+    <input type="hidden" id="editEarnId">
+    <div class="inp-row">
+      <div class="inp-group">
+        <label>Amount ($)</label>
+        <input type="number" id="editEarnAmt" step="0.01" min="0">
+      </div>
+      <div class="inp-group">
+        <label>Platform</label>
+        <select id="editEarnPlatform">
+          <option value="Uber">Uber</option>
+          <option value="Lyft">Lyft</option>
+          <option value="Cash">Cash</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="inp-row">
+      <div class="inp-group">
+        <label>Date</label>
+        <input type="date" id="editEarnDate">
+      </div>
+      <div class="inp-group">
+        <label>Note</label>
+        <input type="text" id="editEarnNote" placeholder="Optional note">
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="saveEditEarning()">Save Changes</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="closeModal('editEarningModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Transaction Detail Modal -->
+<div class="modal-overlay" id="txnDetailModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="txnDetailName">Transaction</h2>
+    <div id="txnDetailContent"></div>
+    <button class="btn btn-ghost" style="width:100%;margin-top:16px" onclick="closeModal('txnDetailModal')">Close</button>
+  </div>
+</div>
+
 <!-- Daily Log Modal -->
 <div class="modal-overlay" id="dailyLogModal">
   <div class="modal">
@@ -2318,14 +2413,13 @@ function getDailyTarget() {
 
   // Get all unpaid bills sorted by due date
   const unpaidBills = state.bills
-    .filter(b => !b.paid)
+    .filter(b => !b.paid && !b.skipped) // exclude skipped
     .map(b => {
-      // Calculate days until due (handle overdue)
       let daysUntil = b.due_day - todayDay;
-      if (daysUntil < 0) daysUntil = 0; // overdue = urgent
+      if (daysUntil < 0) daysUntil = 0;
       return { ...b, daysUntil };
     })
-    .filter(b => b.daysUntil <= 30) // only next 30 days
+    .filter(b => b.daysUntil <= 30)
     .sort((a,b) => a.daysUntil - b.daysUntil);
 
   // Total upcoming bills
@@ -2609,15 +2703,15 @@ function renderSpending() {
   document.getElementById('categoryBreakdown').innerHTML = Object.keys(cats).length
     ? Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([cat, amt]) => {
         const pct = total > 0 ? (amt/total*100) : 0;
-        return `<div style="margin-bottom:14px">
+        return `<div style="margin-bottom:14px;cursor:pointer" onclick="drillDownCategory('${cat}')">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
             <span style="font-size:0.85rem;font-weight:500">${catIcons[cat]||'📦'} ${cat.charAt(0).toUpperCase()+cat.slice(1)}</span>
-            <span style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--red)">${fmt(amt)}</span>
+            <span style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--red)">${fmt(amt)} ›</span>
           </div>
           <div class="prog-bar">
             <div class="prog-fill" style="background:var(--accent);width:${pct}%"></div>
           </div>
-          <div style="font-size:0.65rem;color:var(--muted);margin-top:3px">${pct.toFixed(0)}% of spending</div>
+          <div style="font-size:0.65rem;color:var(--muted);margin-top:3px">${pct.toFixed(0)}% · tap to see transactions</div>
         </div>`;
       }).join('')
     : '<div class="empty">Connect bank to see spending categories</div>';
@@ -2696,13 +2790,14 @@ function drawDonutChart() {
   };
   const legend = document.getElementById('donutLegend');
   legend.innerHTML = entries.map(([cat, amt], i) => `
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;min-width:0">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;min-width:0;cursor:pointer"
+      onclick="drillDownCategory('${cat}')">
       <div style="width:8px;height:8px;border-radius:2px;background:${colors[i]};flex-shrink:0"></div>
       <span style="font-size:0.72rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
         ${cat.charAt(0).toUpperCase()+cat.slice(1)}
       </span>
       <span style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);margin-left:auto;flex-shrink:0">
-        ${Math.round(amt/total*100)}%
+        ${Math.round(amt/total*100)}% ›
       </span>
     </div>`).join('');
 }
@@ -2808,9 +2903,15 @@ function renderBills() {
           </div>
           <span class="chip ${chipClass}">${chipText}</span>
           <div class="bill-amt" style="color:${b.paid?'var(--muted)':'var(--red)'}">${fmt(b.amount)}</div>
-          <div style="display:flex;gap:4px">
-            ${!b.paid ? `<button class="btn btn-ghost btn-sm" onclick="markBillPaid(${realIdx})">Pay</button>` :
-              `<button class="btn btn-ghost btn-sm" onclick="markBillUnpaid(${realIdx})">Undo</button>`}
+          <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">
+            ${b.skipped ? 
+              `<button class="btn-skip skipped" onclick="unskipBill(${realIdx})">↩ Unskip</button>` :
+              `${!b.paid ? 
+                `<button class="btn btn-ghost btn-sm" onclick="markBillPaid(${realIdx})">Pay</button>
+                 <button class="btn-skip" onclick="skipBill(${realIdx})">Skip</button>` :
+                `<button class="btn btn-ghost btn-sm" onclick="markBillUnpaid(${realIdx})">Undo</button>`
+              }`
+            }
             <button class="btn btn-ghost btn-sm" onclick="openEditBillModal(${realIdx})" style="padding:7px 8px">✏️</button>
           </div>
         </div>`;
@@ -3171,32 +3272,38 @@ function renderEarningsHistory() {
   const mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay()+6)%7)); mon.setHours(0,0,0,0);
   const pickedDate = document.getElementById('earningsDatePicker')?.value;
 
-  let filtered = [...state.earnings];
+  // MANUAL LOGS ONLY in earnings tab
+  let filtered = [...state.earnings].filter(e => e.is_manual === true && !e.plaid_id);
+
   if (currentEarningsFilter === 'today') filtered = filtered.filter(e => e.date === today);
   else if (currentEarningsFilter === 'yesterday') filtered = filtered.filter(e => e.date === yesterday);
   else if (currentEarningsFilter === 'week') filtered = filtered.filter(e => new Date(e.date) >= mon);
   else if (currentEarningsFilter === 'month') filtered = filtered.filter(e => e.date.startsWith(month));
   else if (currentEarningsFilter === 'date' && pickedDate) filtered = filtered.filter(e => e.date === pickedDate);
 
-  filtered.sort((a,b) => b.date.localeCompare(a.date)).slice(0, 50);
-  const platformColors = { Uber:'var(--blue)', Lyft:'var(--purple)', Other:'var(--gold)' };
+  filtered = filtered.sort((a,b) => b.date.localeCompare(a.date)).slice(0, 50);
+  const platformColors = { Uber:'var(--blue)', Lyft:'var(--purple)', Cash:'var(--gold)', Other:'var(--gold)' };
+  const platformIcons = { Uber:'🚗', Lyft:'💜', Cash:'💵', Other:'💰' };
 
   document.getElementById('earningsHistory').innerHTML = filtered.length
-    ? filtered.map((e, i) => `
+    ? filtered.map((e) => `
         <div class="txn-row">
           <div class="txn-icon" style="background:${platformColors[e.platform]||'var(--card2)'}22">
-            ${e.platform==='Uber'?'🚗':e.platform==='Lyft'?'💜':'💰'}
+            ${platformIcons[e.platform]||'💰'}
           </div>
           <div class="txn-body">
             <div class="txn-name">${e.platform}${e.note?' · '+e.note:''}</div>
             <div class="txn-meta">${e.date}</div>
           </div>
-          <div style="display:flex;align-items:center;gap:8px">
+          <div class="earn-row-actions">
             <div class="txn-amt" style="color:var(--green)">+${fmt(e.amount)}</div>
-            ${e.is_manual !== false ? `<button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;padding:4px 6px" onclick="deleteEarning('${e.id}')">×</button>` : ''}
+            <button style="background:none;border:1.5px solid var(--border2);color:var(--accent);cursor:pointer;font-size:0.72rem;padding:3px 8px;border-radius:6px;font-family:Inter,sans-serif"
+              onclick="openEditEarningModal('${e.id}','${e.platform}',${e.amount},'${e.date}','${(e.note||'').replace(/'/g,'')}')" >✏️</button>
+            <button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:2px 6px"
+              onclick="deleteEarning('${e.id}')">×</button>
           </div>
         </div>`).join('')
-    : '<div class="empty">No earnings for this period</div>';
+    : '<div class="empty">No manual earnings logged yet.<br><span style="font-size:0.75rem;color:var(--muted)">Tap + to log today's earnings</span></div>';
 }
 
 // ═══════════════════════════════════════
@@ -3412,11 +3519,13 @@ function renderFilteredTransactions() {
 
   document.getElementById('allTxnsList').innerHTML = sorted.length
     ? sorted.map(t => `
-        <div class="txn-row cat-${t.category||'other'}">
+        <div class="txn-row cat-${t.category||'other'}" 
+          onclick="showTxnDetail(${JSON.stringify(t).replace(/"/g,'&quot;')})"
+          style="cursor:pointer">
           <div style="display:flex;align-items:center;flex-shrink:0">${txnIconEl(t)}</div>
           <div class="txn-body">
             <div class="txn-name">${t.label||t.description||t.name||'Transaction'}</div>
-            <div class="txn-meta">${t.date} · ${(t.category||'Other').charAt(0).toUpperCase()+(t.category||'other').slice(1)}</div>
+            <div class="txn-meta">${t.date} · ${(t.category||'Other').charAt(0).toUpperCase()+(t.category||'other').slice(1)}${t.institution?' · '+t.institution:''}</div>
           </div>
           <div class="txn-amt" style="color:var(--red)">-${fmt(t.amount)}</div>
         </div>`).join('')
@@ -4192,6 +4301,168 @@ function showSpendDrill() {
 }
 
 
+
+// ═══════════════════════════════════════
+// EDIT EARNING
+// ═══════════════════════════════════════
+function openEditEarningModal(id, platform, amount, date, note) {
+  document.getElementById('editEarnId').value       = id;
+  document.getElementById('editEarnPlatform').value = platform;
+  document.getElementById('editEarnAmt').value      = amount;
+  document.getElementById('editEarnDate').value     = date;
+  document.getElementById('editEarnNote').value     = note || '';
+  openModal('editEarningModal');
+}
+
+async function saveEditEarning() {
+  const id       = document.getElementById('editEarnId').value;
+  const platform = document.getElementById('editEarnPlatform').value;
+  const amount   = parseFloat(document.getElementById('editEarnAmt').value);
+  const date     = document.getElementById('editEarnDate').value;
+  const note     = document.getElementById('editEarnNote').value.trim();
+  if (!amount || amount <= 0) return;
+
+  const res = await api(`/api/earnings/${id}`, { method:'PATCH', body: { amount, platform, date, note } });
+  if (res) {
+    const idx = state.earnings.findIndex(e => e.id === id);
+    if (idx >= 0) Object.assign(state.earnings[idx], { amount, platform, date, note });
+    // Update daily logs too
+    if (date === getTodayStr()) {
+      if (!state.dailyLogs[date]) state.dailyLogs[date] = {};
+      state.dailyLogs[date][platform] = amount;
+    }
+    saveLocal();
+    closeModal('editEarningModal');
+    renderEarningsHistory();
+    renderEarnings();
+    renderHome();
+  }
+}
+
+// ═══════════════════════════════════════
+// SKIP BILLS
+// ═══════════════════════════════════════
+async function skipBill(idx) {
+  const bill = state.bills[idx];
+  if (!bill) return;
+  await api(`/api/bills/${bill.id}`, { method:'PATCH', body: { skipped: true } });
+  state.bills[idx].skipped = true;
+  saveLocal();
+  renderBills();
+  renderHome(); // recalculate target without this bill
+}
+
+async function unskipBill(idx) {
+  const bill = state.bills[idx];
+  if (!bill) return;
+  await api(`/api/bills/${bill.id}`, { method:'PATCH', body: { skipped: false } });
+  state.bills[idx].skipped = false;
+  saveLocal();
+  renderBills();
+  renderHome();
+}
+
+// ═══════════════════════════════════════
+// TRANSACTION DETAIL POPUP
+// ═══════════════════════════════════════
+function showTxnDetail(txn) {
+  if (!txn) return;
+  const catIcons = { transportation:'🚗', food:'🍔', shopping:'🛍️', entertainment:'🎬', utilities:'💡', health:'💊', housing:'🏠', other:'📦', debt:'💳', subscription:'📱', auto:'🚘', transfers:'↔️', family_support:'❤️' };
+
+  document.getElementById('txnDetailName').textContent = txn.label || txn.description || txn.name || 'Transaction';
+  document.getElementById('txnDetailContent').innerHTML = `
+    <div class="txn-detail-row">
+      <span class="txn-detail-label">Amount</span>
+      <span class="txn-detail-val" style="color:${txn.is_income?'var(--green)':'var(--red)'}">
+        ${txn.is_income?'+':'-'}${fmt(txn.amount)}
+      </span>
+    </div>
+    <div class="txn-detail-row">
+      <span class="txn-detail-label">Date</span>
+      <span class="txn-detail-val">${txn.date}</span>
+    </div>
+    <div class="txn-detail-row">
+      <span class="txn-detail-label">Category</span>
+      <span class="txn-detail-val">${catIcons[txn.category]||'📦'} ${(txn.category||'Other').charAt(0).toUpperCase()+(txn.category||'other').slice(1)}</span>
+    </div>
+    ${txn.institution ? `<div class="txn-detail-row">
+      <span class="txn-detail-label">Account</span>
+      <span class="txn-detail-val">🏦 ${txn.institution}</span>
+    </div>` : ''}
+    ${txn.account_id ? `<div class="txn-detail-row">
+      <span class="txn-detail-label">Account ID</span>
+      <span class="txn-detail-val" style="font-size:0.7rem">...${txn.account_id.slice(-4)}</span>
+    </div>` : ''}
+    ${txn.is_plaid ? `<div class="txn-detail-row">
+      <span class="txn-detail-label">Source</span>
+      <span class="txn-detail-val">🏦 Bank (Plaid)</span>
+    </div>` : ''}
+  `;
+  openModal('txnDetailModal');
+}
+
+// ═══════════════════════════════════════
+// CATEGORY DRILL DOWN (spending)
+// ═══════════════════════════════════════
+function drillDownCategory(cat) {
+  const month = getTodayStr().slice(0,7);
+  const catIcons = { transportation:'🚗', food:'🍔', shopping:'🛍️', entertainment:'🎬', utilities:'💡', health:'💊', housing:'🏠', other:'📦', debt:'💳', subscription:'📱', auto:'🚘', transfers:'↔️', family_support:'❤️' };
+  const txns  = state.expenses
+    .filter(e => e.date.startsWith(month) && (e.category||'other') === cat)
+    .sort((a,b) => b.date.localeCompare(a.date));
+  const total = txns.reduce((s,e) => s+e.amount, 0);
+
+  document.getElementById('drillIcon').textContent  = catIcons[cat] || '📦';
+  document.getElementById('drillTotal').textContent = fmt(total);
+  document.getElementById('drillSub').textContent   = `${cat.charAt(0).toUpperCase()+cat.slice(1)} · ${txns.length} transactions this month`;
+
+  document.getElementById('drillList').innerHTML = txns.length
+    ? txns.map(t => `
+        <div class="txn-row" onclick="showTxnDetail(${JSON.stringify(t).replace(/"/g,'&quot;')})" style="cursor:pointer">
+          <div style="display:flex;align-items:center;flex-shrink:0">${txnIconEl(t)}</div>
+          <div class="txn-body">
+            <div class="txn-name">${t.label||t.description||'Transaction'}</div>
+            <div class="txn-meta">${t.date}${t.institution?' · '+t.institution:''}</div>
+          </div>
+          <div class="txn-amt" style="color:var(--red)">-${fmt(t.amount)}</div>
+        </div>`).join('')
+    : `<div class="empty">No ${cat} transactions this month</div>`;
+
+  openModal('drillModal');
+}
+
+// ═══════════════════════════════════════
+// MAKE ALL TRANSACTIONS CLICKABLE
+// ═══════════════════════════════════════
+function renderClickableTxns(containerId, txns, showIncome) {
+  const catIcons = { transportation:'🚗', food:'🍔', shopping:'🛍️', entertainment:'🎬', utilities:'💡', health:'💊', housing:'🏠', other:'📦', debt:'💳', subscription:'📱', auto:'🚘', transfers:'↔️', family_support:'❤️', income:'💰' };
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = txns.length
+    ? txns.map(t => {
+        const isEarn = t._type === 'earning' || t.is_income;
+        const color  = isEarn ? 'var(--green)' : 'var(--red)';
+        const sign   = isEarn ? '+' : '-';
+        const icon   = isEarn
+          ? `<div class="txn-icon" style="background:rgba(126,204,160,0.1)">${t.platform==='Uber'?'🚗':t.platform==='Lyft'?'💜':'💰'}</div>`
+          : `<div style="display:flex;align-items:center;flex-shrink:0">${txnIconEl(t)}</div>`;
+        const name = isEarn ? `${t.platform||''}${t.note?' · '+t.note:''}` : (t.label||t.description||'Transaction');
+        const meta = isEarn ? t.date : `${t.date} · ${(t.category||'other').charAt(0).toUpperCase()+(t.category||'other').slice(1)}`;
+        return `<div class="txn-row cat-${isEarn?'income':t.category||'other'}" 
+          onclick="showTxnDetail(${JSON.stringify({...t,is_income:isEarn}).replace(/"/g,'&quot;')})"
+          style="cursor:pointer">
+          ${icon}
+          <div class="txn-body">
+            <div class="txn-name">${name}</div>
+            <div class="txn-meta">${meta}</div>
+          </div>
+          <div class="txn-amt" style="color:${color}">${sign}${fmt(t.amount)}</div>
+        </div>`;
+      }).join('')
+    : '<div class="empty">No transactions</div>';
+}
+
+
 // ═══════════════════════════════════════
 // MISC HELPERS
 // ═══════════════════════════════════════
@@ -4214,7 +4485,18 @@ function saveLocal() {
   localStorage.setItem('pb_state', JSON.stringify(state));
 }
 
+const APP_VERSION = 'v3.0';
+
 function loadLocal() {
+  // Version check - clear old cache if version changed
+  const savedVersion = localStorage.getItem('pb_version');
+  if (savedVersion !== APP_VERSION) {
+    localStorage.setItem('pb_version', APP_VERSION);
+    localStorage.removeItem('pb_state');
+    localStorage.removeItem('pb_briefing');
+    console.log('Cache cleared for new version');
+    return;
+  }
   const saved = localStorage.getItem('pb_state');
   if (saved) {
     try { Object.assign(state, JSON.parse(saved)); } catch(e) {}
