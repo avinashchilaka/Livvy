@@ -3422,18 +3422,26 @@ function renderAccounts() {
   const bankEl = document.getElementById('bankAccountsList');
   if (bankEl) {
     if (state.plaidAccounts && state.plaidAccounts.length) {
-      bankEl.innerHTML = state.plaidAccounts.map(a => `
-        <div class="txn-row">
-          <div class="txn-icon">🏦</div>
+      bankEl.innerHTML = state.plaidAccounts.map(a => {
+        const isCredit = a.type === 'credit';
+        const bal = a.balances?.current || 0;
+        const avail = a.balances?.available || 0;
+        const color = isCredit ? 'var(--red)' : bal > 0 ? 'var(--accent)' : 'var(--muted)';
+        const icon = isCredit ? '💳' : a.subtype === 'savings' ? '🏦' : '🏦';
+        const label = isCredit ? `Owed: ${fmt(bal)}` : fmt(bal);
+        const availLabel = isCredit ? `Credit left: ${fmt(avail)}` : `Available: ${fmt(avail)}`;
+        return `<div class="txn-row">
+          <div class="txn-icon">${icon}</div>
           <div class="txn-body">
-            <div class="txn-name">${a.name}</div>
-            <div class="txn-meta">${a.institution||''} · ${a.type||'checking'}</div>
+            <div class="txn-name">${a.name}${isCredit?' 💳':''}</div>
+            <div class="txn-meta">${a.institution||''} · ${isCredit?'credit card':a.subtype||a.type}</div>
           </div>
           <div style="text-align:right">
-            <div style="font-family:'DM Mono',monospace;font-size:0.9rem;color:var(--accent)">${fmt(a.balances?.current||0)}</div>
-            <div style="font-size:0.65rem;color:var(--muted)">Available: ${fmt(a.balances?.available||0)}</div>
+            <div style="font-family:'DM Mono',monospace;font-size:0.9rem;color:${color}">${label}</div>
+            <div style="font-size:0.65rem;color:var(--muted)">${availLabel}</div>
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
     } else {
       bankEl.innerHTML = `<div style="padding:12px 0">
         <div style="font-size:0.82rem;color:var(--muted);margin-bottom:10px">No bank accounts connected yet.</div>
