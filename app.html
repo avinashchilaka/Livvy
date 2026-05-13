@@ -3307,7 +3307,7 @@ function renderEarningsHistory() {
               onclick="deleteEarning('${e.id}')">×</button>
           </div>
         </div>`).join('')
-    : '<div class="empty">No manual earnings logged yet.<br><span style="font-size:0.75rem;color:var(--muted)">Tap + to log today's earnings</span></div>';
+    : '<div class="empty">No manual earnings logged yet.<br><span style="font-size:0.75rem;color:var(--muted)">Tap + to log today&#39;s earnings</span></div>';
 }
 
 // ═══════════════════════════════════════
@@ -4498,7 +4498,9 @@ function loadLocal() {
     localStorage.setItem('pb_version', APP_VERSION);
     localStorage.removeItem('pb_state');
     localStorage.removeItem('pb_briefing');
-    console.log('Cache cleared for new version');
+    localStorage.removeItem('pb_page');
+    // NOTE: Keep pb_token and pb_user so user stays logged in
+    console.log('App cache cleared for new version');
     return;
   }
   const saved = localStorage.getItem('pb_state');
