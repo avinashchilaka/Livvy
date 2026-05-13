@@ -259,20 +259,49 @@ app.get('/api/plaid/transactions', auth, async (req, res) => {
         .update({ cursor }).eq('id', t.id);
     }
 
-    // Store transactions in DB (upsert — no duplicates)
-    if (all.length) {
+    // Split into income (earnings) and expenses
+    const incomeItems = all.filter(t => t.is_income || t.category === 'income');
+    const expenseItems = all.filter(t => !t.is_income && t.category !== 'income');
+
+    // Auto-insert Uber/Lyft/income into earnings table
+    if (incomeItems.length) {
+      const earningsToInsert = incomeItems.map(t => {
+        const desc = (t.description || '').toLowerCase();
+        const platform = desc.includes('lyft') ? 'Lyft'
+          : (desc.includes('uber') || desc.includes('instantpay')) ? 'Uber'
+          : 'Other';
+        return {
+          user_id:   req.user.id,
+          amount:    t.amount,
+          platform,
+          date:      t.date,
+          note:      t.description,
+          is_manual: false,
+          plaid_id:  t.plaid_id,
+        };
+      });
+      await supabase.from('earnings').upsert(earningsToInsert, { onConflict: 'plaid_id' });
+    }
+
+    // Store expense transactions in DB (upsert — no duplicates)
+    if (expenseItems.length) {
       await supabase.from('transactions').upsert(
-        all.map(t => ({ ...t, user_id: req.user.id })),
+        expenseItems.map(t => ({ ...t, user_id: req.user.id })),
         { onConflict: 'plaid_id' }
       );
     }
 
-    // Return all user's Plaid transactions
+    // Return all user's Plaid expense transactions
     const { data: txns } = await supabase
       .from('transactions').select('*').eq('user_id', req.user.id)
       .eq('is_plaid', true).order('date', { ascending: false }).limit(300);
 
-    res.json({ transactions: txns || [] });
+    // Also return earnings pulled from Plaid
+    const { data: plaidEarnings } = await supabase
+      .from('earnings').select('*').eq('user_id', req.user.id)
+      .eq('is_manual', false).order('date', { ascending: false }).limit(200);
+
+    res.json({ transactions: txns || [], plaidEarnings: plaidEarnings || [] });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: e.message });
@@ -467,6 +496,27 @@ Return ONLY a JSON object:
     res.json(result);
   } catch (e) {
     console.error('Briefing error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+
+// AI Chat endpoint
+app.post('/api/ai/chat', auth, async (req, res) => {
+  try {
+    const { question, context } = req.body;
+    const msg = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{
+        role: 'user',
+        content: context + '\n\nUser question: ' + question
+      }]
+    });
+    const answer = msg.content[0].text;
+    res.json({ answer });
+  } catch (e) {
+    console.error('Chat error:', e);
     res.status(500).json({ error: e.message });
   }
 });

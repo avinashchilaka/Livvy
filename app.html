@@ -816,6 +816,273 @@ body {
   .earned-big { font-size: 2rem; }
   .ring-wrap  { width: 120px; height: 120px; }
 }
+
+/* ═══════════════════════════
+   CLICKABLE STATS
+═══════════════════════════ */
+.stat-box { cursor: pointer; transition: border-color 0.2s, transform 0.15s; }
+.stat-box:active { transform: scale(0.97); }
+.stat-box.active { border-color: var(--accent); background: rgba(126,204,160,0.06); }
+
+.target-stat { cursor: pointer; transition: background 0.2s; }
+.target-stat:active { background: rgba(255,255,255,0.08); }
+
+/* ═══════════════════════════
+   DRILL-DOWN MODAL
+═══════════════════════════ */
+.drill-modal { max-height: 75vh; overflow-y: auto; }
+.drill-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+}
+.drill-icon { font-size: 1.5rem; }
+.drill-total {
+  font-family: 'DM Mono', monospace;
+  font-size: 1.6rem; font-weight: 500;
+  color: var(--text); line-height: 1;
+}
+.drill-sub { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+
+/* ═══════════════════════════
+   CATEGORY FILTER CHIPS
+═══════════════════════════ */
+.filter-chips {
+  display: flex; gap: 6px; overflow-x: auto; 
+  padding-bottom: 4px; margin-bottom: 12px;
+  scrollbar-width: none;
+}
+.filter-chips::-webkit-scrollbar { display: none; }
+.filter-chip {
+  font-size: 0.68rem; font-weight: 600;
+  padding: 5px 12px; border-radius: 99px;
+  white-space: nowrap; cursor: pointer;
+  border: 1.5px solid var(--border2);
+  background: transparent; color: var(--text2);
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s;
+}
+.filter-chip.active {
+  background: var(--accent); color: #0a0b0d;
+  border-color: var(--accent);
+}
+
+/* ═══════════════════════════
+   EARNINGS TIME FILTER
+═══════════════════════════ */
+.time-tabs {
+  display: flex; background: var(--s1);
+  border-radius: 10px; padding: 3px;
+  margin-bottom: 14px; gap: 2px;
+}
+.time-tab {
+  flex: 1; padding: 7px 4px;
+  background: transparent; border: none;
+  border-radius: 7px; color: var(--muted);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+}
+.time-tab.active { background: var(--accent); color: #0a0b0d; font-weight: 700; }
+
+/* ═══════════════════════════
+   COLOR CODED TRANSACTIONS
+═══════════════════════════ */
+.txn-row { border-left: 3px solid transparent; padding-left: 8px; transition: border-color 0.2s; }
+.txn-row.cat-income      { border-left-color: var(--green); }
+.txn-row.cat-food        { border-left-color: var(--orange); }
+.txn-row.cat-transportation { border-left-color: var(--blue); }
+.txn-row.cat-debt        { border-left-color: var(--red); }
+.txn-row.cat-entertainment { border-left-color: var(--purple); }
+.txn-row.cat-utilities   { border-left-color: var(--gold); }
+.txn-row.cat-shopping    { border-left-color: #f472b6; }
+
+/* ═══════════════════════════
+   SWIPE TO DELETE
+═══════════════════════════ */
+.swipe-item {
+  position: relative; overflow: hidden;
+  border-radius: var(--r-sm);
+}
+.swipe-delete-bg {
+  position: absolute; right: 0; top: 0; bottom: 0;
+  width: 80px; background: var(--red);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; color: white;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+}
+.swipe-content { background: var(--card); transition: transform 0.2s; }
+
+/* ═══════════════════════════
+   BREAK-EVEN TRACKER
+═══════════════════════════ */
+.breakeven-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 16px; margin-bottom: 12px;
+}
+.breakeven-bar {
+  height: 8px; background: rgba(255,255,255,0.06);
+  border-radius: 99px; overflow: hidden; margin: 10px 0 6px;
+}
+.breakeven-fill {
+  height: 100%; border-radius: 99px;
+  transition: width 0.8s ease;
+}
+
+/* ═══════════════════════════
+   BEST TIMES CARD
+═══════════════════════════ */
+.best-time-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
+  margin-top: 10px;
+}
+.best-time-col { text-align: center; }
+.best-time-bar-wrap {
+  height: 50px; display: flex; align-items: flex-end;
+  justify-content: center; margin-bottom: 4px;
+}
+.best-time-bar {
+  width: 100%; border-radius: 3px 3px 0 0;
+  background: var(--accent); opacity: 0.3;
+  transition: height 0.6s ease, opacity 0.3s;
+  min-height: 3px;
+}
+.best-time-bar.top { opacity: 1; }
+.best-time-day {
+  font-size: 0.55rem; color: var(--muted);
+  font-weight: 600; text-transform: uppercase;
+}
+.best-time-amt {
+  font-size: 0.55rem; color: var(--accent);
+  font-family: 'DM Mono', monospace;
+}
+
+/* ═══════════════════════════
+   GOAL CELEBRATION
+═══════════════════════════ */
+@keyframes celebrate {
+  0%   { transform: scale(1); }
+  25%  { transform: scale(1.08); }
+  50%  { transform: scale(1); }
+  75%  { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+.celebrating { animation: celebrate 0.6s ease; }
+
+@keyframes confetti-fall {
+  0%   { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(60px) rotate(360deg); opacity: 0; }
+}
+.confetti {
+  position: absolute; width: 8px; height: 8px;
+  border-radius: 2px; pointer-events: none;
+  animation: confetti-fall 1s ease forwards;
+}
+
+/* ═══════════════════════════
+   BUDGET PROGRESS BARS
+═══════════════════════════ */
+.budget-row {
+  margin-bottom: 14px;
+}
+.budget-header {
+  display: flex; justify-content: space-between;
+  align-items: center; margin-bottom: 5px;
+}
+.budget-label { font-size: 0.82rem; font-weight: 500; }
+.budget-amounts { font-size: 0.72rem; color: var(--muted); font-family: 'DM Mono', monospace; }
+.budget-bar {
+  height: 6px; background: rgba(255,255,255,0.06);
+  border-radius: 99px; overflow: hidden;
+}
+.budget-fill {
+  height: 100%; border-radius: 99px;
+  transition: width 0.8s ease;
+}
+
+/* ═══════════════════════════
+   NET WORTH / PROJECTION
+═══════════════════════════ */
+.projection-card {
+  background: linear-gradient(135deg, rgba(96,165,250,0.08), rgba(167,139,250,0.04));
+  border: 1px solid rgba(96,165,250,0.2);
+  border-radius: var(--r-lg); padding: 16px; margin-bottom: 12px;
+}
+.projection-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 1.8rem; font-weight: 500;
+  color: var(--blue); letter-spacing: -1px;
+}
+
+/* ═══════════════════════════
+   AI CHAT
+═══════════════════════════ */
+.chat-page { display: flex; flex-direction: column; height: calc(100vh - 160px); }
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.chat-bubble {
+  max-width: 85%; padding: 10px 14px;
+  border-radius: 18px; font-size: 0.85rem;
+  line-height: 1.5;
+}
+.chat-bubble.user {
+  background: var(--accent); color: #0a0b0d;
+  align-self: flex-end; border-radius: 18px 18px 4px 18px;
+  font-weight: 500;
+}
+.chat-bubble.ai {
+  background: var(--card2); color: var(--text);
+  align-self: flex-start; border-radius: 18px 18px 18px 4px;
+  border: 1px solid var(--border);
+}
+.chat-bubble.ai.loading {
+  display: flex; gap: 4px; align-items: center; padding: 12px 16px;
+}
+.chat-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--muted);
+  animation: chatDot 1.2s infinite;
+}
+.chat-dot:nth-child(2) { animation-delay: 0.2s; }
+.chat-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes chatDot { 0%,60%,100%{opacity:0.3;transform:scale(1)} 30%{opacity:1;transform:scale(1.2)} }
+
+.chat-suggestions {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 0 16px 8px;
+}
+.chat-suggestion {
+  font-size: 0.72rem; font-weight: 500;
+  padding: 6px 12px; border-radius: 99px;
+  background: var(--card2); color: var(--accent);
+  border: 1px solid rgba(126,204,160,0.2);
+  cursor: pointer; font-family: 'Inter', sans-serif;
+  transition: background 0.2s;
+}
+.chat-suggestion:active { background: rgba(126,204,160,0.15); }
+
+.chat-input-row {
+  display: flex; gap: 8px; padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.chat-input {
+  flex: 1; background: var(--s1);
+  border: 1.5px solid var(--border2);
+  border-radius: 99px; color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem; padding: 10px 16px;
+  outline: none;
+}
+.chat-input:focus { border-color: var(--accent); }
+.chat-send {
+  width: 40px; height: 40px;
+  background: var(--accent); border: none;
+  border-radius: 50%; color: #0a0b0d;
+  font-size: 1rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
 </style>
 </head>
 <body>
@@ -888,14 +1155,40 @@ body {
 
   <!-- This week + Month -->
   <div class="stat-grid">
-    <div class="stat-box">
+    <div class="stat-box" onclick="drillDown('week')">
       <div class="stat-val" id="statWeek" style="color:var(--accent)">$0</div>
-      <div class="stat-lbl">This Week</div>
+      <div class="stat-lbl">This Week ›</div>
     </div>
-    <div class="stat-box">
+    <div class="stat-box" onclick="drillDown('month')">
       <div class="stat-val" id="statMonth" style="color:var(--accent)">$0</div>
-      <div class="stat-lbl">This Month</div>
+      <div class="stat-lbl">This Month ›</div>
     </div>
+  </div>
+
+  <!-- Break-even tracker -->
+  <div class="breakeven-card" id="breakevenCard">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div class="card-label" style="margin-bottom:3px">Break-Even Tracker</div>
+        <div style="font-size:0.75rem;color:var(--text2)" id="breakevenStatus">Loading...</div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:500" id="breakevenPct">0%</div>
+    </div>
+    <div class="breakeven-bar">
+      <div class="breakeven-fill" id="breakevenFill" style="width:0%"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--muted)">
+      <span id="breakevenEarned">Earned: $0</span>
+      <span id="breakevenNeeded">Need: $0 to break even</span>
+    </div>
+  </div>
+
+  <!-- Budget progress -->
+  <div class="section-hdr">
+    <div class="section-title">Budget Status</div>
+  </div>
+  <div class="card" id="budgetBars">
+    <div class="empty">Syncing budget data...</div>
   </div>
 
   <!-- Upcoming bills -->
@@ -1002,9 +1295,32 @@ body {
       <div id="logMsg" style="font-size:0.75rem;margin-top:8px;color:var(--green)"></div>
     </div>
 
+    <!-- Best earning days -->
+    <div class="section-hdr">
+      <div class="section-title">Best Earning Days</div>
+    </div>
+    <div class="card" id="bestDaysCard">
+      <div class="best-time-grid" id="bestDaysGrid"></div>
+    </div>
+
+    <!-- Weekly projection -->
+    <div class="projection-card" id="projectionCard">
+      <div class="card-label" style="margin-bottom:6px">📈 Weekly Projection</div>
+      <div class="projection-val" id="projectionVal">$0</div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px" id="projectionSub"></div>
+    </div>
+
     <!-- Earnings history -->
     <div class="section-hdr">
       <div class="section-title">History</div>
+    </div>
+    <div style="padding:0 4px;margin-bottom:8px">
+      <div class="time-tabs">
+        <button class="time-tab active" onclick="filterEarnings('today',this)">Today</button>
+        <button class="time-tab" onclick="filterEarnings('week',this)">Week</button>
+        <button class="time-tab" onclick="filterEarnings('month',this)">Month</button>
+        <button class="time-tab" onclick="filterEarnings('all',this)">All</button>
+      </div>
     </div>
     <div class="card" style="padding:0 16px">
       <div id="earningsHistory"></div>
@@ -1082,6 +1398,7 @@ body {
     <div class="section-hdr">
       <div class="section-title">All Transactions</div>
     </div>
+    <div class="filter-chips" id="categoryChips"></div>
     <div class="card" style="padding:0 16px" id="allTxnsList">
       <div class="empty">No transactions yet</div>
     </div>
@@ -1207,6 +1524,27 @@ body {
   </div>
 </div>
 
+<!-- ═══ PAGE: CHAT ═══ -->
+<div class="page" id="page-chat">
+  <div class="chat-page">
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-bubble ai">Hey Avinash! 👋 I know your finances inside out. Ask me anything — earnings, spending, bills, or how to hit your goals faster.</div>
+    </div>
+    <div class="chat-suggestions" id="chatSuggestions">
+      <button class="chat-suggestion" onclick="sendSuggestion(this)">How am I doing this month?</button>
+      <button class="chat-suggestion" onclick="sendSuggestion(this)">What's my biggest expense?</button>
+      <button class="chat-suggestion" onclick="sendSuggestion(this)">Will I hit my goal?</button>
+      <button class="chat-suggestion" onclick="sendSuggestion(this)">How much did I earn today?</button>
+      <button class="chat-suggestion" onclick="sendSuggestion(this)">What should I focus on?</button>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" class="chat-input" id="chatInput" placeholder="Ask about your finances..." 
+        onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="chat-send" onclick="sendChat()">↑</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ BOTTOM NAV ═══ -->
 <nav class="bottom-nav">
   <button class="nav-item active" onclick="showPage('home')" id="nav-home">
@@ -1224,7 +1562,26 @@ body {
   <button class="nav-item" onclick="showPage('debts')" id="nav-debts">
     <span class="nav-icon">💸</span>Debts
   </button>
+  <button class="nav-item" onclick="showPage('chat')" id="nav-chat">
+    <span class="nav-icon">💬</span>Ask AI
+  </button>
 </nav>
+
+<!-- Drill Down Modal -->
+<div class="modal-overlay" id="drillModal">
+  <div class="modal drill-modal">
+    <div class="modal-handle"></div>
+    <div class="drill-header">
+      <div class="drill-icon" id="drillIcon">📊</div>
+      <div>
+        <div class="drill-total" id="drillTotal">$0</div>
+        <div class="drill-sub" id="drillSub">Transactions</div>
+      </div>
+    </div>
+    <div id="drillList"></div>
+    <button class="btn btn-ghost" style="width:100%;margin-top:12px" onclick="closeModal('drillModal')">Close</button>
+  </div>
+</div>
 
 <!-- Quick log FAB -->
 <button class="log-fab" onclick="openModal('quickLogModal')" title="Log Earning">+</button>
@@ -1512,7 +1869,7 @@ async function api(path, opts = {}) {
 // NAVIGATION
 // ═══════════════════════════════════════
 const PAGE_TITLES = {
-  home: 'Good morning', earnings: 'Earnings',
+  home: 'Good morning', earnings: 'Earnings', chat: 'Ask AI',
   spending: 'Spending', bills: 'Bills',
   debts: 'Debts', settings: 'Settings',
 };
@@ -1656,6 +2013,8 @@ function getDailyTarget() {
 // ═══════════════════════════════════════
 function renderHome() {
   renderAlerts();
+  renderBreakeven();
+  renderBudgetBars();
 
   const earned  = getTodayEarnings();
   const target  = getDailyTarget();
@@ -1668,6 +2027,7 @@ function renderHome() {
   document.getElementById('ringFill').style.strokeDashoffset = circ - (circ * pct / 100);
   document.getElementById('ringFill').style.stroke =
     pct >= 100 ? 'var(--green)' : pct >= 60 ? 'var(--gold)' : 'var(--accent)';
+  if (pct >= 100) checkCelebrate(earned, target);
   document.getElementById('ringPct').textContent = Math.round(pct) + '%';
   document.getElementById('earnedBig').textContent = fmt(earned);
   document.getElementById('targetSub').textContent =
@@ -1768,26 +2128,10 @@ function renderEarnings() {
   // Set default date
   document.getElementById('logDate').value = getTodayStr();
 
-  // History
-  const sorted = [...state.earnings].sort((a,b) => b.date.localeCompare(a.date)).slice(0,30);
-  const platformColors = { Uber:'var(--blue)', Lyft:'var(--purple)', Other:'var(--gold)' };
-  document.getElementById('earningsHistory').innerHTML = sorted.length
-    ? sorted.map((e,i) => `
-        <div class="txn-row">
-          <div class="txn-icon" style="background:${platformColors[e.platform]||'var(--card2)'}22">
-            ${e.platform==='Uber'?'🚗':e.platform==='Lyft'?'💜':'💰'}
-          </div>
-          <div class="txn-body">
-            <div class="txn-name">${e.platform}${e.note ? ' · '+e.note : ''}</div>
-            <div class="txn-meta">${e.date}</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <div class="txn-amt" style="color:var(--green)">+${fmt(e.amount)}</div>
-            <button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85rem"
-              onclick="deleteEarning(${i})">×</button>
-          </div>
-        </div>`).join('')
-    : '<div class="empty">No earnings logged yet</div>';
+  // History + best days + projection
+  renderEarningsHistory();
+  renderBestDays();
+  renderProjection();
 }
 
 // ═══════════════════════════════════════
@@ -1828,21 +2172,18 @@ function renderSpending() {
       }).join('')
     : '<div class="empty">Connect bank to see spending categories</div>';
 
-  // All transactions
-  const sorted = [...state.expenses].sort((a,b) => b.date.localeCompare(a.date));
-  document.getElementById('allTxnsList').innerHTML = sorted.length
-    ? sorted.map(t => `
-        <div class="txn-row">
-          <div style="display:flex;align-items:center;flex-shrink:0">
-            ${txnIconEl(t)}
-          </div>
-          <div class="txn-body">
-            <div class="txn-name">${t.label || t.description||t.name||'Transaction'}</div>
-            <div class="txn-meta">${t.date} · ${(t.category||'Other').charAt(0).toUpperCase()+(t.category||'other').slice(1)}${t.is_plaid?' · 🏦':''}</div>
-          </div>
-          <div class="txn-amt" style="color:var(--red)">-${fmt(t.amount)}</div>
-        </div>`).join('')
-    : '<div class="empty">No transactions yet</div>';
+  // Render category filter chips
+  const month2 = getTodayStr().slice(0,7);
+  const usedCats = [...new Set(state.expenses.filter(e=>e.date.startsWith(month2)).map(e=>e.category||'other'))];
+  const catIcons2 = { transportation:'🚗', food:'🍔', shopping:'🛍️', entertainment:'🎬', utilities:'💡', health:'💊', housing:'🏠', other:'📦', debt:'💳', income:'💰' };
+  const chips = document.getElementById('categoryChips');
+  if (chips) {
+    chips.innerHTML = '<button class="filter-chip active" data-cat="" onclick="filterByCategory(null,this)">All</button>' +
+      usedCats.map(c => `<button class="filter-chip" data-cat="${c}" onclick="filterByCategory('${c}',this)">${catIcons2[c]||'📦'} ${c.charAt(0).toUpperCase()+c.slice(1)}</button>`).join('');
+  }
+
+  // All transactions (color coded)
+  renderFilteredTransactions();
 
   // Plaid status
   if (state.plaidLinked) {
@@ -2124,11 +2465,11 @@ async function quickLog() {
   }
 }
 
-async function deleteEarning(index) {
-  const e = state.earnings[state.earnings.length - 1 - index];
-  if (!e || !e.id) return;
-  await api(`/api/earnings/${e.id}`, { method:'DELETE' });
-  state.earnings = state.earnings.filter(x => x.id !== e.id);
+async function deleteEarning(id) {
+  if (!id) return;
+  await api(`/api/earnings/${id}`, { method:'DELETE' });
+  state.earnings = state.earnings.filter(x => x.id !== id);
+  renderEarningsHistory();
   renderEarnings();
   saveLocal();
 }
@@ -2239,32 +2580,27 @@ async function openPlaidLink() {
 async function syncPlaid() {
   setSyncing(true);
   const res = await api('/api/plaid/transactions');
-  if (res?.transactions) {
-    let added = 0;
-    res.transactions.forEach(t => {
-      // Auto-import Uber/Lyft/income into earnings
-      if (t.is_income || t.category === 'income') {
-        const platform = (t.description||'').toLowerCase().includes('lyft') ? 'Lyft'
-          : (t.description||'').toLowerCase().includes('uber') ? 'Uber' : 'Other';
-        if (!state.earnings.some(e => e.plaid_id === t.plaid_id)) {
-          state.earnings.push({
-            plaid_id: t.plaid_id,
-            amount: t.amount,
-            platform,
-            date: t.date,
-            note: t.description,
-            is_manual: false,
-          });
+  if (res) {
+    // Load expense transactions
+    if (res.transactions) {
+      res.transactions.forEach(t => {
+        if (!state.expenses.some(e => e.plaid_id === t.plaid_id)) {
+          state.expenses.push(t);
         }
-        return; // don't add to expenses
-      }
-      // Add to expenses (spending)
-      if (state.expenses.some(e => e.plaid_id === t.plaid_id)) return;
-      state.expenses.push(t);
-      added++;
-    });
+      });
+    }
+    // Load Plaid earnings (Uber/Lyft auto-detected server-side)
+    if (res.plaidEarnings) {
+      res.plaidEarnings.forEach(e => {
+        if (!state.earnings.some(x => x.plaid_id === e.plaid_id || x.id === e.id)) {
+          state.earnings.push(e);
+        }
+      });
+    }
     state.plaidLinked = true;
-    if (added > 0) { saveLocal(); renderHome(); }
+    saveLocal();
+    renderHome();
+    renderEarnings();
   }
   setSyncing(false);
 }
@@ -2294,6 +2630,377 @@ function setSyncing(active) {
   if (active) { dot.className='sync-dot syncing'; label.textContent='Syncing...'; }
   else         { dot.className='sync-dot';         label.textContent='Live'; }
 }
+
+
+// ═══════════════════════════════════════
+// DRILL DOWN (clickable stats)
+// ═══════════════════════════════════════
+function drillDown(period) {
+  const catIcons = {
+    transportation:'🚗', food:'🍔', shopping:'🛍️', entertainment:'🎬',
+    utilities:'💡', health:'💊', housing:'🏠', other:'📦', debt:'💳', income:'💰'
+  };
+  let txns = [], title = '', icon = '📊';
+  const today = getTodayStr();
+  const month = today.slice(0,7);
+
+  if (period === 'today') {
+    txns = state.earnings.filter(e => e.date === today);
+    title = 'Today\'s Earnings'; icon = '⚡';
+  } else if (period === 'week') {
+    const now = new Date();
+    const mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay()+6)%7)); mon.setHours(0,0,0,0);
+    txns = state.earnings.filter(e => new Date(e.date) >= mon);
+    title = 'This Week'; icon = '📅';
+  } else if (period === 'month') {
+    txns = state.earnings.filter(e => e.date.startsWith(month));
+    title = 'This Month'; icon = '📆';
+  }
+
+  const total = txns.reduce((s,e) => s+e.amount, 0);
+  document.getElementById('drillIcon').textContent = icon;
+  document.getElementById('drillTotal').textContent = fmt(total);
+  document.getElementById('drillSub').textContent = `${txns.length} earnings · ${title}`;
+
+  const platformColors = { Uber:'var(--blue)', Lyft:'var(--purple)', Other:'var(--gold)' };
+  document.getElementById('drillList').innerHTML = txns.length
+    ? [...txns].sort((a,b) => b.date.localeCompare(a.date)).map(e => `
+        <div class="txn-row">
+          <div class="txn-icon" style="background:${platformColors[e.platform]||'var(--card2)'}22">
+            ${e.platform==='Uber'?'🚗':e.platform==='Lyft'?'💜':'💰'}
+          </div>
+          <div class="txn-body">
+            <div class="txn-name">${e.platform}${e.note?' · '+e.note:''}</div>
+            <div class="txn-meta">${e.date}</div>
+          </div>
+          <div class="txn-amt" style="color:var(--green)">+${fmt(e.amount)}</div>
+        </div>`).join('')
+    : '<div class="empty">No earnings for this period</div>';
+
+  openModal('drillModal');
+}
+
+// ═══════════════════════════════════════
+// EARNINGS TIME FILTER
+// ═══════════════════════════════════════
+let currentEarningsFilter = 'all';
+
+function filterEarnings(period, btn) {
+  currentEarningsFilter = period;
+  document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderEarningsHistory();
+}
+
+function renderEarningsHistory() {
+  const today = getTodayStr();
+  const month = today.slice(0,7);
+  const now = new Date();
+  const mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay()+6)%7)); mon.setHours(0,0,0,0);
+
+  let filtered = [...state.earnings];
+  if (currentEarningsFilter === 'today') filtered = filtered.filter(e => e.date === today);
+  else if (currentEarningsFilter === 'week') filtered = filtered.filter(e => new Date(e.date) >= mon);
+  else if (currentEarningsFilter === 'month') filtered = filtered.filter(e => e.date.startsWith(month));
+
+  filtered.sort((a,b) => b.date.localeCompare(a.date)).slice(0, 50);
+  const platformColors = { Uber:'var(--blue)', Lyft:'var(--purple)', Other:'var(--gold)' };
+
+  document.getElementById('earningsHistory').innerHTML = filtered.length
+    ? filtered.map((e, i) => `
+        <div class="txn-row">
+          <div class="txn-icon" style="background:${platformColors[e.platform]||'var(--card2)'}22">
+            ${e.platform==='Uber'?'🚗':e.platform==='Lyft'?'💜':'💰'}
+          </div>
+          <div class="txn-body">
+            <div class="txn-name">${e.platform}${e.note?' · '+e.note:''}</div>
+            <div class="txn-meta">${e.date}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="txn-amt" style="color:var(--green)">+${fmt(e.amount)}</div>
+            ${e.is_manual !== false ? `<button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;padding:4px 6px" onclick="deleteEarning('${e.id}')">×</button>` : ''}
+          </div>
+        </div>`).join('')
+    : '<div class="empty">No earnings for this period</div>';
+}
+
+// ═══════════════════════════════════════
+// BEST EARNING DAYS CHART
+// ═══════════════════════════════════════
+function renderBestDays() {
+  const days = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+  const totals = [0,0,0,0,0,0,0];
+  const counts = [0,0,0,0,0,0,0];
+
+  state.earnings.forEach(e => {
+    const d = new Date(e.date + 'T12:00:00');
+    const dow = (d.getDay() + 6) % 7; // 0=Mon
+    totals[dow] += e.amount;
+    counts[dow]++;
+  });
+
+  const avgs = totals.map((t, i) => counts[i] > 0 ? t / counts[i] : 0);
+  const maxAvg = Math.max(...avgs, 1);
+  const topIdx = avgs.indexOf(Math.max(...avgs));
+
+  const grid = document.getElementById('bestDaysGrid');
+  if (!grid) return;
+  grid.innerHTML = days.map((d, i) => `
+    <div class="best-time-col">
+      <div class="best-time-bar-wrap">
+        <div class="best-time-bar ${i===topIdx?'top':''}"
+          style="height:${Math.round((avgs[i]/maxAvg)*46)+4}px"></div>
+      </div>
+      <div class="best-time-day">${d}</div>
+      ${avgs[i]>0?`<div class="best-time-amt">$${Math.round(avgs[i])}</div>`:'<div class="best-time-amt" style="color:var(--muted)">-</div>'}
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════
+// WEEKLY PROJECTION
+// ═══════════════════════════════════════
+function renderProjection() {
+  const now = new Date();
+  const mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay()+6)%7)); mon.setHours(0,0,0,0);
+  const daysIntoWeek = Math.max(1, (now.getDay()+6)%7 + 1);
+  const weekEarned = getWeekEarnings();
+  const dailyAvg = weekEarned / daysIntoWeek;
+  const projected = dailyAvg * 7;
+
+  const el = document.getElementById('projectionVal');
+  const sub = document.getElementById('projectionSub');
+  if (el) el.textContent = fmt(projected);
+  if (sub) sub.textContent = `Based on ${fmt(dailyAvg)}/day avg · ${7-daysIntoWeek} days left this week`;
+}
+
+// ═══════════════════════════════════════
+// BREAK-EVEN TRACKER
+// ═══════════════════════════════════════
+function renderBreakeven() {
+  const todaySpend = getTodaySpending();
+  const todayEarn  = getTodayEarnings();
+  const pct = todaySpend > 0 ? Math.min(100, (todayEarn / todaySpend) * 100) : 100;
+  const profit = todayEarn - todaySpend;
+
+  const fill   = document.getElementById('breakevenFill');
+  const status = document.getElementById('breakevenStatus');
+  const pctEl  = document.getElementById('breakevenPct');
+  const earned = document.getElementById('breakevenEarned');
+  const needed = document.getElementById('breakevenNeeded');
+  if (!fill) return;
+
+  fill.style.width = pct + '%';
+  fill.style.background = profit >= 0 ? 'var(--green)' : 'var(--gold)';
+  if (pctEl) pctEl.textContent = Math.round(pct) + '%';
+  if (earned) earned.textContent = `Earned: ${fmt(todayEarn)}`;
+
+  if (profit >= 0) {
+    if (status) status.textContent = `✅ In profit by ${fmt(profit)} today`;
+    if (needed) needed.textContent = `Spending: ${fmt(todaySpend)}`;
+  } else {
+    if (status) status.textContent = `Need ${fmt(Math.abs(profit))} more to break even`;
+    if (needed) needed.textContent = `Spending: ${fmt(todaySpend)}`;
+  }
+}
+
+// ═══════════════════════════════════════
+// BUDGET PROGRESS BARS
+// ═══════════════════════════════════════
+const BUDGETS = {
+  food: 400, transportation: 600, shopping: 150,
+  entertainment: 50, utilities: 600, other: 300
+};
+
+function renderBudgetBars() {
+  const month = getTodayStr().slice(0,7);
+  const cats = {};
+  state.expenses.filter(e => e.date.startsWith(month) && e.category !== 'income').forEach(e => {
+    const c = e.category || 'other';
+    cats[c] = (cats[c] || 0) + e.amount;
+  });
+
+  const catIcons = {
+    transportation:'🚗', food:'🍔', shopping:'🛍️', entertainment:'🎬',
+    utilities:'💡', other:'📦'
+  };
+
+  const el = document.getElementById('budgetBars');
+  if (!el) return;
+
+  const rows = Object.entries(BUDGETS).map(([cat, budget]) => {
+    const spent = cats[cat] || 0;
+    const pct   = Math.min(100, (spent/budget)*100);
+    const color = pct >= 90 ? 'var(--red)' : pct >= 70 ? 'var(--gold)' : 'var(--accent)';
+    return `<div class="budget-row">
+      <div class="budget-header">
+        <span class="budget-label">${catIcons[cat]||'📦'} ${cat.charAt(0).toUpperCase()+cat.slice(1)}</span>
+        <span class="budget-amounts">${fmt(spent)} / ${fmt(budget)}</span>
+      </div>
+      <div class="budget-bar">
+        <div class="budget-fill" style="width:${pct}%;background:${color}"></div>
+      </div>
+    </div>`;
+  });
+
+  el.innerHTML = rows.join('') + `<div style="font-size:0.65rem;color:var(--muted);margin-top:8px">
+    Tap Settings to customize budgets</div>`;
+}
+
+// ═══════════════════════════════════════
+// GOAL CELEBRATION
+// ═══════════════════════════════════════
+let lastCelebrated = null;
+function checkCelebrate(earned, target) {
+  const today = getTodayStr();
+  if (earned >= target && lastCelebrated !== today) {
+    lastCelebrated = today;
+    localStorage.setItem('pb_celebrated', today);
+    celebrateGoal();
+  }
+}
+
+function celebrateGoal() {
+  const card = document.getElementById('targetCard');
+  if (!card) return;
+  card.classList.add('celebrating');
+  setTimeout(() => card.classList.remove('celebrating'), 700);
+
+  // Confetti
+  const colors = ['#7ecca0','#f0c060','#60a5fa','#a78bfa','#f0626a'];
+  for (let i = 0; i < 12; i++) {
+    setTimeout(() => {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.cssText = `left:${20+Math.random()*60}%;top:30%;background:${colors[i%colors.length]};animation-duration:${0.8+Math.random()*0.5}s;position:fixed;z-index:999`;
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 1500);
+    }, i * 60);
+  }
+}
+
+// ═══════════════════════════════════════
+// CATEGORY FILTER (Spending)
+// ═══════════════════════════════════════
+let activeFilter = null;
+
+function filterByCategory(cat) {
+  activeFilter = activeFilter === cat ? null : cat;
+  document.querySelectorAll('.filter-chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.cat === activeFilter);
+  });
+  renderFilteredTransactions();
+}
+
+function renderFilteredTransactions() {
+  const catIcons = {
+    transportation:'🚗', food:'🍔', shopping:'🛍️', entertainment:'🎬',
+    utilities:'💡', health:'💊', housing:'🏠', other:'📦', debt:'💳', income:'💰'
+  };
+  const sorted = [...state.expenses]
+    .filter(t => !activeFilter || t.category === activeFilter)
+    .sort((a,b) => b.date.localeCompare(a.date));
+
+  document.getElementById('allTxnsList').innerHTML = sorted.length
+    ? sorted.map(t => `
+        <div class="txn-row cat-${t.category||'other'}">
+          <div style="display:flex;align-items:center;flex-shrink:0">${txnIconEl(t)}</div>
+          <div class="txn-body">
+            <div class="txn-name">${t.label||t.description||t.name||'Transaction'}</div>
+            <div class="txn-meta">${t.date} · ${(t.category||'Other').charAt(0).toUpperCase()+(t.category||'other').slice(1)}</div>
+          </div>
+          <div class="txn-amt" style="color:var(--red)">-${fmt(t.amount)}</div>
+        </div>`).join('')
+    : '<div class="empty">No transactions for this category</div>';
+}
+
+// ═══════════════════════════════════════
+// AI CHAT
+// ═══════════════════════════════════════
+let chatHistory = [];
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg   = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  addChatBubble(msg, 'user');
+  document.getElementById('chatSuggestions').style.display = 'none';
+  await askAI(msg);
+}
+
+function sendSuggestion(btn) {
+  const msg = btn.textContent;
+  document.getElementById('chatInput').value = msg;
+  sendChat();
+}
+
+function addChatBubble(text, role) {
+  const msgs = document.getElementById('chatMessages');
+  const div  = document.createElement('div');
+  div.className = `chat-bubble ${role}`;
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function addLoadingBubble() {
+  const msgs = document.getElementById('chatMessages');
+  const div  = document.createElement('div');
+  div.className = 'chat-bubble ai loading';
+  div.innerHTML = '<div class="chat-dot"></div><div class="chat-dot"></div><div class="chat-dot"></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+async function askAI(question) {
+  const loading = addLoadingBubble();
+  try {
+    const today     = getTodayStr();
+    const month     = today.slice(0,7);
+    const todayEarn = getTodayEarnings();
+    const monthEarn = getMonthEarnings();
+    const weekEarn  = getWeekEarnings();
+    const monthSpend = getMonthSpending();
+    const goal       = state.settings.monthly_goal || 9500;
+    const remaining  = Math.max(0, goal - monthEarn);
+    const now        = new Date();
+    const daysLeft   = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate() - now.getDate() + 1;
+
+    const context = `You are a personal finance assistant for Avinash, a gig driver (Uber/Lyft) in San Diego.
+Today: ${today}
+Today's earnings: $${todayEarn.toFixed(2)}
+This week: $${weekEarn.toFixed(2)}
+This month earnings: $${monthEarn.toFixed(2)}
+Monthly goal: $${goal}
+Remaining to goal: $${remaining.toFixed(2)}
+Days left in month: ${daysLeft}
+This month spending: $${monthSpend.toFixed(2)}
+Daily target: $${getDailyTarget().toFixed(2)}
+Splitwise owed: $${state.splitwise.reduce((s,d)=>s+d.amount,0).toFixed(2)}
+Bills unpaid: $${state.bills.filter(b=>!b.paid).reduce((s,b)=>s+b.amount,0).toFixed(2)}
+Chat history: ${chatHistory.slice(-4).map(m=>m.role+': '+m.content).join(' | ')}
+
+Be concise, specific with numbers, and talk like a sharp financial coach. Max 3 sentences.`;
+
+    chatHistory.push({ role: 'user', content: question });
+
+    const res = await api('/api/ai/chat', {
+      method: 'POST',
+      body: { question, context }
+    });
+
+    loading.remove();
+    const answer = res?.answer || 'Sorry, I couldn\'t process that. Try again.';
+    chatHistory.push({ role: 'assistant', content: answer });
+    addChatBubble(answer, 'ai');
+  } catch(e) {
+    loading.remove();
+    addChatBubble('Something went wrong. Check your connection.', 'ai');
+  }
+}
+
 
 // ═══════════════════════════════════════
 // MISC HELPERS
