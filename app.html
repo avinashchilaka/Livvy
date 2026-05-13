@@ -3136,6 +3136,10 @@ async function openPlaidLink() {
         if (ex?.ok) {
           state.plaidLinked = true;
           await syncPlaid();
+          await loadPlaidAccounts();
+          if (document.getElementById('page-accounts')?.classList.contains('active')) {
+            renderAccounts();
+          }
         }
         setSyncing(false);
       },
@@ -3175,7 +3179,13 @@ async function syncPlaid() {
     state.plaidLinked = true;
     saveLocal();
     renderHome();
-    renderEarnings();
+    // Refresh accounts if on accounts page
+    if (document.getElementById('page-accounts')?.classList.contains('active')) {
+      renderAccounts();
+    }
+    if (document.getElementById('page-earnings')?.classList.contains('active')) {
+      renderEarnings();
+    }
   }
   setSyncing(false);
 }
@@ -4479,9 +4489,10 @@ function showMsg(id, msg, color) {
 }
 
 function logout() {
+  // Only clear auth tokens - keep financial data cache
+  // so data loads instantly after logging back in
   localStorage.removeItem('pb_token');
   localStorage.removeItem('pb_user');
-  localStorage.removeItem('pb_state');
   window.location.href = '/';
 }
 
@@ -4534,6 +4545,18 @@ function importData(input) {
 // INIT
 // ═══════════════════════════════════════
 async function init() {
+  // Check if returning from Splitwise OAuth
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('splitwise') === 'connected') {
+    // Clear URL params and reload Splitwise data
+    window.history.replaceState({}, '', '/app.html');
+    setTimeout(async () => {
+      await loadSplitwise();
+      renderAccounts();
+      renderHome();
+    }, 1000);
+  }
+
   // Load local cache first (instant)
   loadLocal();
 
@@ -4561,8 +4584,11 @@ async function init() {
   // Show cached briefing instantly if fresh, otherwise fetch
   const hasCached = showCachedBriefing();
 
-  // Render immediately from cache
+  // Render immediately from cache (shows zeros if no cache - that's ok)
   renderHome();
+  
+  // Show syncing indicator so user knows data is loading
+  setSyncing(true);
 
   // Then fetch fresh data from server
   setSyncing(true);

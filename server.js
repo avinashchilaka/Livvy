@@ -266,54 +266,26 @@ app.get('/api/plaid/transactions', auth, async (req, res) => {
         .update({ cursor }).eq('id', t.id);
     }
 
-    // Split into income (earnings) and expenses
-    const incomeItems = all.filter(t => t.is_income || t.category === 'income');
-    const expenseItems = all.filter(t => !t.is_income && t.category !== 'income');
-
-    // Auto-insert Uber/Lyft/income into earnings table
-    if (incomeItems.length) {
-      const earningsToInsert = incomeItems.map(t => {
-        const desc = (t.description || '').toLowerCase();
-        const platform = desc.includes('lyft') ? 'Lyft'
-          : (desc.includes('uber') || desc.includes('instantpay') || 
-             desc === 'trip' || desc === 'tips' || desc === 'miscellaneous' ||
-             desc.includes('uber pro card')) ? 'Uber'
-          : 'Other';
-        // Friendly display note
-        const noteMap = { 'trip': 'Fare', 'tips': 'Tip', 'miscellaneous': 'Misc earnings' };
-        const note = noteMap[desc] || t.description;
-        return {
-          user_id:   req.user.id,
-          amount:    t.amount,
-          platform,
-          date:      t.date,
-          note,
-          is_manual: false,
-          plaid_id:  t.plaid_id,
-        };
-      });
-      await supabase.from('earnings').upsert(earningsToInsert, { onConflict: 'plaid_id' });
-    }
-
-    // Store expense transactions in DB (upsert — no duplicates)
-    if (expenseItems.length) {
+    // ALL transactions go to transactions table (no auto-insert into earnings)
+    // Earnings tab is manual logs only - Plaid income shown in Budget tab only
+    if (all.length) {
       await supabase.from('transactions').upsert(
-        expenseItems.map(t => ({ ...t, user_id: req.user.id })),
+        all.map(t => ({ ...t, user_id: req.user.id })),
         { onConflict: 'plaid_id' }
       );
     }
 
-    // Return all user's Plaid expense transactions
+    // Return all user's Plaid transactions
     const { data: txns } = await supabase
       .from('transactions').select('*').eq('user_id', req.user.id)
       .eq('is_plaid', true).order('date', { ascending: false }).limit(300);
 
-    // Also return earnings pulled from Plaid
-    const { data: plaidEarnings } = await supabase
+    // Return manual earnings only (no plaid earnings)
+    const { data: manualEarnings } = await supabase
       .from('earnings').select('*').eq('user_id', req.user.id)
-      .eq('is_manual', false).order('date', { ascending: false }).limit(200);
+      .eq('is_manual', true).order('date', { ascending: false }).limit(200);
 
-    res.json({ transactions: txns || [], plaidEarnings: plaidEarnings || [] });
+    res.json({ transactions: txns || [], plaidEarnings: manualEarnings || [] });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: e.message });
