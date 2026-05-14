@@ -1224,6 +1224,20 @@ body {
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f5f5f7;
+    --s1: #e9e9eb;
+    --card: #ffffff;
+    --card2: rgba(0,0,0,0.03);
+    --text: #1a1a1a;
+    --text2: #3a3a3c;
+    --muted: #6e6e73;
+    --border: rgba(0,0,0,0.08);
+    --border2: rgba(0,0,0,0.15);
+  }
+}
 </style>
 </head>
 <body>
@@ -1512,13 +1526,6 @@ body {
     </div>
 
     <!-- Plaid sync button -->
-    <div class="card" style="display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-size:0.85rem;font-weight:600" id="plaidStatus">Connect Bank</div>
-        <div style="font-size:0.72rem;color:var(--muted);margin-top:2px" id="plaidLastSync"></div>
-      </div>
-      <button class="btn btn-ghost btn-sm" id="plaidBtn" onclick="openPlaidLink()">🏦 Connect</button>
-    </div>
 
     <!-- Donut Chart -->
     <div class="section-hdr">
@@ -1704,13 +1711,6 @@ body {
       <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
     </div>
 
-    <div class="card">
-      <div class="card-label">Connected Accounts</div>
-      <div id="connectedAccounts">
-        <div class="empty">No accounts connected</div>
-      </div>
-      <button class="btn btn-ghost" style="width:100%;margin-top:12px" onclick="openPlaidLink()">+ Connect Bank via Plaid</button>
-    </div>
 
     <div class="card">
       <div class="card-label">Backup & Data</div>
@@ -2149,7 +2149,10 @@ function txnIconEl(tx) {
 // ═══════════════════════════════════════
 async function loadBriefing() {
   try {
-    const r = await api('/api/ai/briefing');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const r = await api('/api/ai/briefing', { signal: controller.signal });
+    clearTimeout(timeoutId);
     const card    = document.getElementById('aiBriefingCard');
     const loading = document.getElementById('aiBriefingLoading');
     if (!r || r.error) { loading.style.display = 'none'; return; }
@@ -2620,6 +2623,7 @@ function renderHome() {
 
   // Build mixed earnings + spending feed
   const recentEarnings = [...state.earnings]
+    .filter(e => e.is_manual === true && !e.plaid_id)
     .sort((a,b) => b.date.localeCompare(a.date))
     .slice(0,5)
     .map(e => ({ ...e, _type: 'earning' }));
@@ -2875,8 +2879,6 @@ function drawCashFlowChart() {
 // BILLS RENDER
 // ═══════════════════════════════════════
 function renderBills() {
-  // Show auto-detected bill suggestions
-  showBillSuggestions();
 
   const total  = state.bills.reduce((s,b) => s+b.amount, 0);
   const unpaid = state.bills.filter(b=>!b.paid).reduce((s,b) => s+b.amount, 0);
@@ -3135,6 +3137,7 @@ async function openPlaidLink() {
         });
         if (ex?.ok) {
           state.plaidLinked = true;
+    showBillSuggestions();
           await syncPlaid();
           await loadPlaidAccounts();
           if (document.getElementById('page-accounts')?.classList.contains('active')) {
@@ -3151,8 +3154,8 @@ async function openPlaidLink() {
   }
 }
 
-async function syncPlaid() {
-  setSyncing(true);
+async function syncPlaid(isInit = false) {
+  if (!isInit) setSyncing(true);
   const res = await api('/api/plaid/transactions');
   if (res) {
     // Load expense transactions (apply rules to clean categories)
@@ -3177,6 +3180,7 @@ async function syncPlaid() {
       });
     }
     state.plaidLinked = true;
+    showBillSuggestions();
     saveLocal();
     renderHome();
     // Refresh accounts if on accounts page
@@ -3690,7 +3694,7 @@ function renderAccounts() {
             </div>
           </div>`;
         } else {
-          const color = bal > 0 ? 'var(--accent)' : 'var(--muted)';
+          const color = bal > 0 ? 'var(--green)' : 'var(--muted)';
           return `<div class="txn-row">
             <div class="txn-icon">${icon}</div>
             <div class="txn-body">
@@ -4598,26 +4602,25 @@ async function init() {
       api('/api/debts'),
       api('/api/settings'),
     ]);
-    if (earnings?.data) state.earnings = earnings.data.filter(e => e.is_manual === true);
+    if (earnings?.data) state.earnings = earnings.data;
     if (bills?.data)    state.bills    = bills.data;
     if (debts?.data)    state.debts    = debts.data;
     if (settings)       state.settings = { ...state.settings, ...settings };
 
     // Sync Plaid + Splitwise + Accounts in parallel
-    await Promise.allSettled([ syncPlaid(), loadSplitwise(), loadPlaidAccounts() ]);
+    await Promise.allSettled([ syncPlaid(true), loadSplitwise(), loadPlaidAccounts() ]);
 
     saveLocal();
 
     // Re-render all pages with fresh data
     renderHome();
-    if (document.getElementById('page-bills')?.classList.contains('active'))    renderBills();
-    if (document.getElementById('page-accounts')?.classList.contains('active')) renderAccounts();
-    if (document.getElementById('page-budget')?.classList.contains('active'))   renderBudget();
-    if (document.getElementById('page-spending')?.classList.contains('active')) renderSpending();
+    renderBills();
+    renderAccounts();
+    renderBudget();
+    renderSpending();
 
     // Load AI briefing after data ready
     if (!hasCached) {
-      document.getElementById('aiBriefingLoading').style.display = 'block';
       loadBriefing();
     }
 

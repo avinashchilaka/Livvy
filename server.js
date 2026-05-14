@@ -253,13 +253,24 @@ app.get('/api/plaid/transactions', auth, async (req, res) => {
     for (const t of tokens) {
       let cursor = t.cursor || null, hasMore = true;
       while (hasMore) {
-        const r = await plaid.transactionsSync({
-          access_token: t.access_token,
-          ...(cursor ? { cursor } : {}),
-        });
-        r.data.added.forEach(tx => { const mapped = mapTx(tx, t.institution); if (mapped) all.push(mapped); });
-        cursor  = r.data.next_cursor;
-        hasMore = r.data.has_more;
+        try {
+          const r = await plaid.transactionsSync({
+            access_token: t.access_token,
+            ...(cursor ? { cursor } : {}),
+          });
+          r.data.added.forEach(tx => { const mapped = mapTx(tx, t.institution); if (mapped) all.push(mapped); });
+          cursor  = r.data.next_cursor;
+          hasMore = r.data.has_more;
+        } catch (err) {
+          console.error('Plaid sync error:', err?.response?.data || err.message);
+          const errCode = err?.response?.data?.error_code;
+          if (errCode === 'INVALID_ACCESS_TOKEN' || errCode === 'ITEM_LOGIN_REQUIRED') {
+            // Token is invalid, skip it and don't try to sync again for this token
+            hasMore = false;
+          } else {
+            throw err;
+          }
+        }
       }
       // Save cursor for next sync
       await supabase.from('plaid_tokens')
