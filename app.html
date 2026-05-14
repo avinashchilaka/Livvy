@@ -4584,13 +4584,12 @@ async function init() {
   // Show cached briefing instantly if fresh, otherwise fetch
   const hasCached = showCachedBriefing();
 
-  // Render immediately from cache (shows zeros if no cache - that's ok)
+  // Render immediately from cache
   renderHome();
-  
-  // Show syncing indicator so user knows data is loading
-  setSyncing(true);
+  if (lastPage === 'bills') renderBills();
+  if (lastPage === 'accounts') renderAccounts();
 
-  // Then fetch fresh data from server
+  // Fetch fresh data from server
   setSyncing(true);
   try {
     const [earnings, bills, debts, settings] = await Promise.all([
@@ -4599,32 +4598,31 @@ async function init() {
       api('/api/debts'),
       api('/api/settings'),
     ]);
-    if (earnings?.data) state.earnings  = earnings.data;
-    if (bills?.data)    state.bills     = bills.data;
-    if (debts?.data)    state.debts     = debts.data;
-    if (settings)       state.settings  = { ...state.settings, ...settings };
+    if (earnings?.data) state.earnings = earnings.data.filter(e => e.is_manual === true);
+    if (bills?.data)    state.bills    = bills.data;
+    if (debts?.data)    state.debts    = debts.data;
+    if (settings)       state.settings = { ...state.settings, ...settings };
 
-    // Sync Plaid + Splitwise + Accounts
+    // Sync Plaid + Splitwise + Accounts in parallel
     await Promise.allSettled([ syncPlaid(), loadSplitwise(), loadPlaidAccounts() ]);
 
-    // AI categorize any uncategorized transactions
-    if (state.expenses.length) {
-      state.expenses = await aiCategorizeTransactions(state.expenses);
-    }
-
     saveLocal();
-    renderHome();
 
-    // Load AI briefing (after data is ready, if not cached)
+    // Re-render all pages with fresh data
+    renderHome();
+    if (document.getElementById('page-bills')?.classList.contains('active'))    renderBills();
+    if (document.getElementById('page-accounts')?.classList.contains('active')) renderAccounts();
+    if (document.getElementById('page-budget')?.classList.contains('active'))   renderBudget();
+    if (document.getElementById('page-spending')?.classList.contains('active')) renderSpending();
+
+    // Load AI briefing after data ready
     if (!hasCached) {
-      // Show loader now that server is confirmed awake
       document.getElementById('aiBriefingLoading').style.display = 'block';
       loadBriefing();
     }
 
   } catch(e) {
     console.error('Init error:', e);
-    // Don't show briefing if server had errors
   }
   setSyncing(false);
 }
