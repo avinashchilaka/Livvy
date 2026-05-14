@@ -3195,7 +3195,7 @@ async function syncPlaid(isInit = false) {
       renderEarnings();
     }
   }
-  setSyncing(false);
+  if (!isInit) setSyncing(false);
 }
 
 // ═══════════════════════════════════════
