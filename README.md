@@ -1,84 +1,89 @@
-# PBTrack — Gig Driver Finance Dashboard
+# PBTrack v3 — Gig Driver Finance Dashboard
 
-A personal finance dashboard built specifically for gig drivers (Uber/Lyft). Tracks earnings, auto-imports bank transactions via Plaid, manages bills and debts, and calculates a smart dynamic daily target based on your real financial situation.
-
-Live at: **pbtrack.onrender.com**
-
----
-
-## What it does
-
-### 🏠 Home
-- **Smart Daily Target** — calculates exactly how much you need to earn today based on upcoming bills, available bank balance, cash on hand, and your 7-day average daily spending. Updates in real time as you log earnings and pay bills.
-- **Today's Progress Ring** — visual progress toward daily target (manual logs only, no bank confusion)
-- **Break-Even Tracker** — shows if today's earnings cover today's spending
-- **Budget Status** — quick view of monthly spending vs limits per category
-- **Upcoming Bills** — next bills due with days remaining
-- **Recent Activity** — mixed feed of earnings (green) and spending (red)
-- **Smart Alerts** — overdue bills, bills due soon, daily goal progress. Dismissable. Resets daily.
-
-### ⚡ Earnings
-- **Editable Daily Log** — one entry per platform per day (Uber/Lyft/Cash/Other). Tap + to update throughout the day instead of logging multiple times.
-- **Best Earning Days** — bar chart showing which day of the week you earn most based on historical data
-- **Weekly Projection** — based on your current week's daily average
-- **Time Filters** — Yesterday, Week, Month, All, or pick a specific date
-- **Monthly Goal Progress** — progress bar toward your monthly earnings goal
-
-### 💳 Spending
-- **Donut Chart** — visual category breakdown
-- **Daily Cash Flow Chart** — green earnings vs red spending bars for last 7 days
-- **Category Filter Chips** — tap any category to filter transactions
-- **Color-Coded Transactions** — green border = income, blue = transport, orange = food, red = debt
-- **All Transactions** — full list with merchant logos via Clearbit
-
-### 📋 Bills
-- **Auto-Detection** — scans Plaid transactions and suggests recurring charges to add as bills
-- **Sorted by Due Date** — overdue bills appear first with 🚨 urgent badge
-- **Editable** — tap ✏️ on any bill to change amount, due date, or category
-- **Pay/Undo** — mark bills paid with one tap
-- **Ordinal Dates** — shows 1st, 2nd, 3rd, 21st (not 21th)
-
-### 🏦 Accounts
-- **Financial Overview** — earned vs spent vs net for the month
-- **Bank Account Balances** — all Plaid-connected accounts with live balances (debit/savings/credit)
-- **Cash on Hand** — manually track cash, included in daily target calculation
-- **Splitwise Debts** — who you owe and how much
-- **Manual Debts** — add personal debts with payoff progress
-- **Payoff Timeline** — snowball method projection for debt freedom
-
-### 📊 Budget
-- **Monthly Income vs Spending** — full picture separate from driving progress
-- **Target Breakdown** — shows bills coverage + daily essentials + available funds = real daily target
-- **Income by Source** — Uber, Lyft, Cash, bank deposits broken out
-- **Category Breakdown** — spending by category with progress bars
-- **Editable Budget Limits** — set your own monthly limits per category
-
-### 💬 Ask AI
-- **Chat with Claude** — ask anything about your finances
-- **Pre-loaded suggestions** — "How am I doing this month?", "What's my biggest expense?", "Will I hit my goal?"
-- **Context-aware** — Claude knows your earnings, spending, bills, and goals before you ask
+> Personal finance command center built specifically for Uber/Lyft drivers.  
+> Tracks daily earnings manually, auto-imports bank spending via Plaid,  
+> calculates a smart daily target based on real bills and debts, and uses  
+> Claude AI for briefings, chat, and budget suggestions.
 
 ---
 
-## Smart Daily Target Formula
+## What This App Does
+
+PBTrack is a full-stack web app accessible from any device via a URL.  
+It is **not** a generic finance app — every feature is designed around  
+the reality of gig driving: variable income, daily targets, shift tracking,  
+and managing multiple debts alongside monthly bills.
+
+### Core Features
+
+**Home Tab**
+- Smart daily target ring — shows exactly how much to earn today
+- Target is calculated from overdue bills + upcoming bills + one-time payments + next month rent + daily ops ($86.37) + Splitwise debts — updated in real time
+- AI morning briefing from Claude — personalized daily insights
+- Dismissable alerts for overdue bills, bills due soon, and goal hits
+- Break-even tracker — are you in profit or deficit today?
+- Upcoming bills preview + recent Plaid transactions
+
+**Earnings Tab — Manual Logs Only**
+- Log Uber, Lyft, Cash, Other earnings manually
+- Shift timer — start/stop with live hours + $/hr display
+- Editable shift log — set exact start/end times if you forgot to start
+- Best earning days chart (Mon–Sun average)
+- Weekly projection based on current daily average
+- Monthly goal progress bar
+- Full earnings history with edit and delete
+
+**Spending Tab — Plaid Transactions Only**
+- All bank transactions auto-imported from Plaid
+- Donut chart showing spending breakdown by category
+- 7-day cash flow bar chart (earnings vs spending side by side)
+- AI budget suggestions — Claude analyzes 3 months of history and suggests limits per category AND flags high-spend merchants (e.g. Starbucks $120/mo)
+- Budget progress bars with color-coded limits
+- Category filter chips — tap to see only food, transport, etc.
+- Tap any transaction to edit its category
+- Merchant rules — when you change a category, choose to apply it to ALL past, present, and future transactions from that merchant permanently
+
+**Bills Tab — All Obligations**
+- Recurring monthly bills (rent, Tesla, insurance, subscriptions)
+- One-time payments (vehicle registration, borrowed money, tires, repairs)
+- Both types shown in one list sorted by due date
+- Pay / Skip / Undo skip / Edit on every item
+- Paying a bill immediately recalculates the home target
+- Auto-detection of recurring charges from Plaid transactions
+
+**More Tab**
+- Bank accounts from Plaid with live balances
+- Splitwise balances (who you owe)
+- Manual debts (Eddie, personal loans)
+- AI Chat — ask anything about your finances
+- Settings — monthly goal, daily quota
+- Backup and restore data
+
+---
+
+## Architecture
 
 ```
-Step 1: Total upcoming bills (next 30 days)
-        MINUS current debit/savings bank balance
-        MINUS cash on hand
-        = Gap (what you still need to earn)
-
-Step 2: Gap ÷ days until earliest bill due
-        = Bills portion of daily target
-
-Step 3: Average daily spending from last 7 days (Plaid)
-        = Dynamic essentials estimate
-
-Step 4: Bills portion + Dynamic essentials
-        = YOUR REAL DAILY TARGET
+Browser (app.html)
+    │
+    ├── Manual earnings → S.earnings[] (never touched by Plaid)
+    ├── Plaid transactions → S.expenses[] (never touched by manual log)
+    ├── Bills + one-time → S.bills[] + S.onetime[]
+    └── Merchant rules → S.rules{} (applied on every sync)
+    │
+    ↓
+Node.js server (server.js) on Render
+    │
+    ├── Supabase (PostgreSQL) — stores all user data
+    ├── Plaid API — bank transaction sync (production mode)
+    ├── Splitwise API — debt balances
+    └── Anthropic Claude API — briefing, chat, budget suggestions
 ```
 
-This updates automatically every time you log earnings, pay a bill, or your bank balance changes.
+**Critical rule enforced in both frontend and backend:**  
+`earnings[]` = manual logs ONLY — Plaid NEVER writes here  
+`expenses[]` = Plaid ONLY — manual logs NEVER go here  
+Daily target reads from `bills[]` and `debts[]` ONLY
 
 ---
 
@@ -86,170 +91,190 @@ This updates automatically every time you log earnings, pay a bill, or your bank
 
 | Layer | Technology |
 |---|---|
-| Frontend | Vanilla HTML/CSS/JS (single file) |
-| Backend | Node.js + Express |
+| Frontend | Single-file HTML/CSS/JS (app.html) |
+| Backend | Node.js + Express (server.js) |
 | Database | Supabase (PostgreSQL) |
-| Auth | JWT (90-day tokens) |
-| Bank Sync | Plaid API (production) |
-| Debt Tracking | Splitwise OAuth API |
-| AI Features | Anthropic Claude (claude-sonnet-4-5) |
-| Merchant Logos | Clearbit Logo API (free) |
+| Auth | JWT (bcryptjs + jsonwebtoken) |
+| Bank sync | Plaid (production mode) |
+| Debt tracking | Splitwise OAuth API |
+| AI | Anthropic Claude (claude-sonnet-4-20250514) |
 | Hosting | Render (free tier) |
+| Fonts | Syne + DM Mono + Inter (Google Fonts) |
+| Merchant logos | Clearbit Logo API (free) |
+
+---
+
+## Files in This Repo
+
+| File | Purpose |
+|---|---|
+| `app.html` | Complete dashboard — all 5 tabs, all features, all JS logic |
+| `index.html` | Login and signup page |
+| `server.js` | Backend API — auth, earnings, bills, Plaid, Splitwise, AI |
+| `package.json` | Node.js dependencies |
+| `database.sql` | Supabase schema — run once to create all tables |
+| `.env.example` | Template for environment variables — copy to `.env` |
+| `.gitignore` | Keeps `.env` and `node_modules` out of GitHub |
+| `README.md` | This file |
 
 ---
 
 ## Environment Variables
 
-```env
-# Supabase
-SUPABASE_URL=https://xxxx.supabase.co
-SUPABASE_SERVICE_KEY=your_service_role_key
+Copy `.env.example` to `.env` and fill in all values.  
+Never commit `.env` to GitHub — it is in `.gitignore`.
 
-# Auth
-JWT_SECRET=any_long_random_string
-
-# Plaid (use 'production' for real banks)
-PLAID_CLIENT_ID=your_client_id
-PLAID_SECRET=your_production_secret
-PLAID_ENV=production
-
-# Splitwise
-SPLITWISE_CONSUMER_KEY=your_key
-SPLITWISE_CONSUMER_SECRET=your_secret
-
-# App
-APP_URL=https://pbtrack.onrender.com
-
-# Anthropic (for AI features)
-ANTHROPIC_API_KEY=sk-ant-your_key
+```
+SUPABASE_URL           = https://xxxx.supabase.co
+SUPABASE_SERVICE_KEY   = eyJ... (service_role key — NOT anon key)
+JWT_SECRET             = any long random string (32+ chars)
+PLAID_CLIENT_ID        = from dashboard.plaid.com → Developers → Keys
+PLAID_SECRET           = production secret from Plaid dashboard
+PLAID_ENV              = production
+SPLITWISE_CONSUMER_KEY = from splitwise.com/apps
+SPLITWISE_CONSUMER_SECRET = from splitwise.com/apps
+ANTHROPIC_API_KEY      = sk-ant-... from console.anthropic.com
+APP_URL                = https://pbtrack.onrender.com
+PORT                   = 3000
 ```
 
 ---
 
-## Setup (do this once)
+## Database Tables
 
-### Step 1 — Supabase database
+| Table | What it stores |
+|---|---|
+| `users` | Accounts, settings, budget limits, merchant rules |
+| `earnings` | Manual earnings only (Uber/Lyft/Cash) — is_manual always true |
+| `bills` | Recurring monthly bills |
+| `onetime_payments` | One-time payments with a specific due date |
+| `debts` | Manual debts (Eddie, loans) |
+| `transactions` | Plaid bank transactions only — expenses, never earnings |
+| `plaid_tokens` | Plaid access tokens per institution |
+| `splitwise_tokens` | Splitwise OAuth access token |
+| `shifts` | Shift log history (start time, end time, hours, earnings) |
 
-1. Go to **supabase.com** → create a new project named `pbtrack`
-2. Go to **SQL Editor** → paste contents of `database.sql` → Run
-3. Run this additional SQL to add the plaid_id column:
-```sql
-ALTER TABLE earnings ADD COLUMN IF NOT EXISTS plaid_id TEXT;
-CREATE UNIQUE INDEX IF NOT EXISTS earnings_plaid_id_idx 
-ON earnings(plaid_id) WHERE plaid_id IS NOT NULL;
-```
+---
 
-### Step 2 — Plaid account
+## Setup Instructions (First Time)
 
-1. Go to **dashboard.plaid.com** → sign up
-2. Get your Client ID and Production secret from **Team → Keys**
-3. Apply for Production access if needed (or use Development for up to 100 accounts)
+### 1. Supabase
+1. Go to supabase.com and create a free project named `pbtrack`
+2. Go to SQL Editor → New Query
+3. Paste the entire contents of `database.sql` and click Run
+4. Go to Settings → API and copy:
+   - Project URL → `SUPABASE_URL`
+   - service_role key (the long one) → `SUPABASE_SERVICE_KEY`
 
-### Step 3 — Anthropic API key
+### 2. Plaid (Production)
+1. Go to dashboard.plaid.com → Developers → Keys
+2. Copy Client ID → `PLAID_CLIENT_ID`
+3. Copy Production secret → `PLAID_SECRET`
+4. Set `PLAID_ENV=production`
 
-1. Go to **console.anthropic.com** → sign up
-2. Create an API key
-3. Add to Render environment as `ANTHROPIC_API_KEY`
+### 3. Splitwise
+1. Go to splitwise.com → Apps → Register your application
+2. App name: PBTrack
+3. Homepage URL: https://pbtrack.onrender.com
+4. Callback URL: https://pbtrack.onrender.com/api/splitwise/callback
+5. Copy Consumer Key and Secret
 
-### Step 4 — Deploy to Render
+### 4. Anthropic
+1. Go to console.anthropic.com
+2. API Keys → Create Key → name it PBTrack
+3. Copy the key → `ANTHROPIC_API_KEY`
+4. Add $5 credit minimum to your account
 
-1. Push this repo to GitHub
-2. Go to **render.com** → New → Web Service
-3. Connect your GitHub repo
-4. Settings:
+### 5. GitHub
+1. Push all files to github.com/avinashchilaka/PBTrack
+2. Do not push `.env` — it is gitignored
+
+### 6. Render
+1. Go to render.com → New Web Service
+2. Connect github.com/avinashchilaka/PBTrack
+3. Settings:
    - Build Command: `npm install`
    - Start Command: `node server.js`
    - Plan: Free
-5. Add all environment variables
-6. Deploy — live in ~2 minutes
+4. Add all environment variables from your `.env` file
+5. Click Deploy Web Service
+6. App goes live at https://pbtrack.onrender.com
 
 ---
 
-## Using the app
+## Updating the App
 
-1. Open your app URL → create an account
-2. Go to **Settings** → set your monthly earnings goal
-3. Go to **Spending** → tap **Connect Bank** → link your bank via Plaid
-4. Go to **Accounts** → tap **Connect** next to Splitwise
-5. Go to **Bills** → tap **Add All** when recurring charges are detected
-6. Tap **+** on home screen every day to log your earnings
-7. Check **Home** each morning for your real daily target
+When you want to add new features or fix something:
+1. Make changes to files
+2. Upload to GitHub (or use Jules to push via PR)
+3. Render auto-detects the GitHub change and redeploys
+4. New version is live in 3-5 minutes
 
 ---
 
-## Transaction Rules
+## Connecting Banks (After Deploy)
 
-The app automatically categorizes transactions:
+1. Open pbtrack.onrender.com
+2. Go to Spending tab
+3. Tap Connect Bank
+4. Plaid Link opens — log in with your real bank credentials
+5. Transactions start importing automatically
+6. Merchant rules apply on every future sync
 
-| Pattern | Category |
-|---|---|
-| WUVISAAFT | Family Support (transfers) |
-| Tesla Supercharger | Transportation |
-| Tesla Subscription | Subscription |
-| Tesla Insurance | Auto |
-| AT&T | Utilities |
-| Crunchyroll, Cloaked, SmartCredit | Subscription |
-| Apple Cash, Cash App sends | Transfers |
-| Save Your Change, Backup Balance | Hidden (internal) |
-| Lyft deposits, Uber InstantPay | Income |
-| Trip, Tips (from Uber Pro Card) | Uber earnings |
+Banks to connect:
+- Varo Bank
+- Uber Debit Card
+- Discover Card
+- Capital One (if applicable)
 
 ---
 
-## Plaid Sandbox Testing
+## Smart Daily Target Formula
 
-Before using real banks:
-- Username: `user_good`
-- Password: `pass_good`
+The home target ring is calculated using this 6-part formula:
 
-Switch back to production: set `PLAID_ENV=production` in Render environment.
+```
+1. Overdue bills (past due, unpaid) ÷ days left in month
+2. Each upcoming bill ÷ days until that bill is due
+3. One-time payments ÷ days until each payment is due
+4. Next month rent ($2,084) ÷ days left in month
+5. Splitwise debts total ÷ 90 days
+6. Daily ops ($86.37/day fixed)
 
----
-
-## Files
-
-| File | Purpose |
-|---|---|
-| `index.html` | Login / Signup page |
-| `app.html` | Main dashboard (all 6 tabs) |
-| `server.js` | Backend API (auth, Plaid, Splitwise, Claude AI) |
-| `package.json` | Dependencies |
-| `database.sql` | Database setup — run once in Supabase |
-| `.env.example` | Environment variable template |
-| `.gitignore` | Keeps .env private |
-
----
-
-## Dependencies
-
-```json
-{
-  "express": "^4.18.2",
-  "cors": "^2.8.5",
-  "dotenv": "^16.3.1",
-  "bcryptjs": "^2.4.3",
-  "jsonwebtoken": "^9.0.2",
-  "@supabase/supabase-js": "^2.39.0",
-  "plaid": "^14.0.0",
-  "node-fetch": "^2.7.0",
-  "@anthropic-ai/sdk": "^0.20.0"
-}
+Total per day - today's earnings already logged + today's spending
+= Your real target for today
 ```
 
----
-
-## Roadmap
-
-- [ ] Shift tracker (start/end shift, hourly earnings)
-- [ ] Manual earnings smart dedup with Plaid transactions
-- [ ] Push notifications for bill reminders
-- [ ] Monthly PDF report
-- [ ] Tax estimator (quarterly self-employment)
-- [ ] Mileage tracker
-- [ ] Net worth tracker over time
-- [ ] Dark/light mode toggle
-- [ ] Apple/Google Pay integration
+If you're behind (overdue bills) the number goes up automatically.  
+If you log earnings, the number goes down in real time.  
+Paying a bill immediately recalculates the target.
 
 ---
 
-Built for gig drivers who want real financial clarity. 💚
+## Merchant Rules
+
+When you tap a Plaid transaction and change its category:
+- A popup asks: "Apply to ALL transactions from this merchant?"
+- If yes: every past, present, and future transaction from that merchant gets the new category
+- Rules are saved to the database and re-applied on every Plaid sync
+- Example: Change "Tesla Supercharger" from "other" to "transportation" once — it stays forever
+
+---
+
+## Version History
+
+| Version | Description |
+|---|---|
+| v1.x | Original single HTML file, localStorage only, no backend |
+| v2.x | Added backend + Plaid + AI but broke daily target formula |
+| v3.0 | Complete rebuild — strict data separation, all features working |
+
+---
+
+## Live URL
+
+**https://pbtrack.onrender.com**
+
+Note: Free Render tier sleeps after 15 minutes of inactivity.  
+First load after sleep takes 30-60 seconds to wake up.  
+All subsequent loads are instant.
