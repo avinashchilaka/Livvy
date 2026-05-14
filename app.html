@@ -2415,6 +2415,8 @@ function getMonthSpending() {
 }
 
 function getDailyTarget() {
+  return state.realDailyTarget || 400;
+/*
   const today    = new Date();
   const todayDay = today.getDate();
 
@@ -2477,6 +2479,8 @@ function getDynamicEssentials() {
 }
 
 function getTargetBreakdown() {
+  return state.targetBreakdown || {};
+/*
   const today    = new Date();
   const todayDay = today.getDate();
 
@@ -2508,6 +2512,7 @@ function getTargetBreakdown() {
 // ═══════════════════════════════════════
 // HOME RENDER
 // ═══════════════════════════════════════
+*/
 function renderHome() {
   renderAlerts();
   renderBreakeven();
@@ -2533,7 +2538,7 @@ function renderHome() {
     targetSubText = `🎉 Target crushed! +${fmt(earned - target)} over`;
   } else {
     const stillNeed = Math.max(0, target - earned);
-    targetSubText = `Need ${fmt(stillNeed)} more · ${fmt(Math.round(bd.essentials))}/day essentials`;
+    targetSubText = `Need ${fmt(stillNeed)} more · ${fmt(Math.round(bd.dailyBurn || 95))}/day operating burn`;
   }
   document.getElementById('targetSub').textContent = targetSubText;
 
@@ -2542,23 +2547,22 @@ function renderHome() {
   if (bdCard) {
     bdCard.innerHTML = `
       <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:4px">
-        <span style="color:var(--muted)">📅 Bills coverage</span>
-        <span style="font-family:'DM Mono',monospace;color:var(--gold)">${fmt(Math.round(bd.billsPerDay))}/day</span>
+        <span style="color:var(--muted)">📅 Overdue & Upcoming (7 days)</span>
+        <span style="font-family:'DM Mono',monospace;color:var(--gold)">${fmt((bd.overdueBills||0) + (bd.upcomingBills||0))}</span>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:4px">
-        <span style="color:var(--muted)">⛽ Daily essentials (7-day avg)</span>
-        <span style="font-family:'DM Mono',monospace;color:var(--blue)">${fmt(Math.round(bd.essentials))}/day</span>
+        <span style="color:var(--muted)">⛽ Daily operating burn</span>
+        <span style="font-family:'DM Mono',monospace;color:var(--blue)">${fmt(bd.dailyBurn || 95)}/day</span>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:8px">
         <span style="color:var(--muted)">🏦 Available funds</span>
-        <span style="font-family:'DM Mono',monospace;color:var(--green)">${fmt(bd.totalAvailable)}</span>
+        <span style="font-family:'DM Mono',monospace;color:var(--green)">${fmt(bd.currentBankBalance || 0)}</span>
       </div>
       <div style="height:1px;background:var(--border);margin-bottom:8px"></div>
       <div style="display:flex;justify-content:space-between;font-size:0.8rem;font-weight:600">
         <span>🎯 Real daily target</span>
-        <span style="font-family:'DM Mono',monospace;color:var(--accent)">${fmt(Math.round(bd.target))}</span>
+        <span style="font-family:'DM Mono',monospace;color:var(--accent)">${fmt(Math.round(state.realDailyTarget || 0))}</span>
       </div>
-      ${bd.nextBill ? `<div style="font-size:0.68rem;color:var(--muted);margin-top:6px">Next: ${bd.nextBill.name} ${fmt(bd.nextBill.amount)} in ${bd.nextBill.daysUntil === 0 ? 'TODAY' : bd.daysUntilFirst + ' days'}</div>` : ''}
     `;
   }
 
@@ -3943,7 +3947,7 @@ function renderBudget() {
       </div>
       <div style="display:flex;justify-content:space-between;font-size:0.85rem;font-weight:600;padding-top:8px;border-top:1px solid var(--border)">
         <span>🎯 Real daily target</span>
-        <span style="font-family:'DM Mono',monospace;color:var(--accent)">${fmt(Math.round(bd.target))}/day</span>
+        <span style="font-family:'DM Mono',monospace;color:var(--accent)">${fmt(Math.round(state.realDailyTarget || 0))}</span>
       </div>
       ${bd.nextBill ? `<div style="font-size:0.68rem;color:var(--muted);margin-top:6px">⚡ Next: ${bd.nextBill.name} ${fmt(bd.nextBill.amount)} due in ${bd.daysUntilFirst} days</div>` : ''}
     `;
@@ -4596,12 +4600,17 @@ async function init() {
   // Fetch fresh data from server
   setSyncing(true);
   try {
-    const [earnings, bills, debts, settings] = await Promise.all([
+    const [earnings, bills, debts, settings, summary] = await Promise.all([
       api('/api/earnings'),
       api('/api/bills'),
       api('/api/debts'),
       api('/api/settings'),
+      api('/api/dashboard/summary'),
     ]);
+    if (summary) {
+      state.realDailyTarget = summary.realDailyTarget;
+      state.targetBreakdown = summary.breakdown;
+    }
     if (earnings?.data) state.earnings = earnings.data;
     if (bills?.data)    state.bills    = bills.data;
     if (debts?.data)    state.debts    = debts.data;

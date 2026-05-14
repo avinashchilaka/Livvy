@@ -647,6 +647,78 @@ app.get('/api/splitwise/balances', auth, async (req, res) => {
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/app', (req, res) => res.sendFile(path.join(__dirname, 'app.html')));
 
+
+app.get('/api/dashboard/summary', auth, async (req, res) => {
+  try {
+    // 1. Fetch Plaid balances
+    let currentBankBalance = 0;
+    const { data: tokens } = await supabase.from('plaid_tokens').select('access_token').eq('user_id', req.user.id);
+    if (tokens?.length) {
+      for (const t of tokens) {
+        try {
+          const accs = await plaid.accountsGet({ access_token: t.access_token });
+          accs.data.accounts.forEach(a => {
+            if (a.type === 'depository') {
+              currentBankBalance += (a.balances.available || a.balances.current || 0);
+            }
+          });
+        } catch (e) {
+          console.error('Error fetching plaid balances for summary:', e.message);
+        }
+      }
+    }
+
+    // 2. Fetch Bills
+    const { data: bills } = await supabase.from('bills').select('*').eq('user_id', req.user.id);
+    let overdueBills = 0;
+    let upcomingBills = 0;
+    const today = new Date();
+    const todayDay = today.getDate();
+    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+
+    if (bills?.length) {
+      bills.forEach(b => {
+        if (!b.paid) {
+          // Overdue if due_day < todayDay
+          if (b.due_day < todayDay) {
+            overdueBills += b.amount;
+          }
+          // Upcoming in next 7 days
+          else if (b.due_day >= todayDay && b.due_day <= todayDay + 7) {
+            upcomingBills += b.amount;
+          }
+          // Handle end of month rollover
+          else if (todayDay + 7 > daysInMonth) {
+            const rolloverDay = (todayDay + 7) - daysInMonth;
+            if (b.due_day <= rolloverDay) {
+              upcomingBills += b.amount;
+            }
+          }
+        }
+      });
+    }
+
+    // 3. Daily Operating Burn (Tesla charging + food)
+    const dailyBurn = 95;
+
+    // Formula: (Overdue + Weekly Bills + Daily Burn) - (Current Bank Balance)
+    const realDailyTarget = (overdueBills + upcomingBills + dailyBurn) - currentBankBalance;
+
+    res.json({
+      realDailyTarget: Math.max(0, realDailyTarget), // Return 0 if balance covers everything
+      breakdown: {
+        currentBankBalance,
+        overdueBills,
+        upcomingBills,
+        dailyBurn
+      }
+    });
+  } catch (err) {
+    console.error('Summary API error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`✅ PBTrack running at http://localhost:${PORT}`);
 });
