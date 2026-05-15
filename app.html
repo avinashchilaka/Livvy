@@ -194,15 +194,20 @@ body{
 .tamt{font-size:.83rem;font-weight:700;flex-shrink:0;}
 
 /* ── BILLS ── */
-.brow{display:flex;align-items:center;gap:7px;padding:11px 0;border-bottom:1px solid var(--border);}
+.brow{padding:12px 0;border-bottom:1px solid var(--border);}
 .brow:last-child{border-bottom:none;}
+.brow-top{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.brow-bot{display:flex;align-items:center;justify-content:space-between;padding-left:40px;}
 .bicon{width:32px;height:32px;border-radius:8px;background:var(--s1);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;}
 .bbody{flex:1;min-width:0;}
-.bname{font-size:.83rem;font-weight:600;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.bsub{font-size:.63rem;color:var(--text3);}
-.bright{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
-.bamt{font-size:.83rem;font-weight:700;color:var(--red);}
-.bactions{display:flex;gap:3px;}
+.bname{font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bsub{font-size:.63rem;color:var(--text3);margin-top:1px;}
+.bamt{font-size:.9rem;font-weight:800;font-variant-numeric:tabular-nums;}
+.bactions{display:flex;gap:5px;align-items:center;}
+.bact-btn{font-size:.68rem;font-weight:600;padding:5px 11px;border-radius:var(--r-pill);border:1.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all .12s;}
+.bact-btn:active{opacity:.7;}
+.bact-btn.pay{background:var(--green);color:#000;border-color:var(--green);font-weight:700;}
+.bact-btn.undo{background:var(--s1);}
 .chip{font-size:.54rem;font-weight:700;letter-spacing:.3px;padding:3px 7px;border-radius:var(--r-pill);text-transform:uppercase;white-space:nowrap;}
 .chip-ov{background:var(--red-bg);color:var(--red);}
 .chip-sn{background:var(--gold-bg);color:var(--gold);}
@@ -645,10 +650,11 @@ body{
 
   <div class="shdr"><div class="stitle">Settings</div></div>
   <div class="card">
-    <div class="irow" style="margin-bottom:10px">
+    <div class="irow" style="margin-bottom:8px">
       <div class="iwrap" style="margin:0"><label>Monthly Goal ($)</label><input type="number" id="setGoal" placeholder="9500"></div>
       <div class="iwrap" style="margin:0"><label>Daily Quota ($)</label><input type="number" id="setQuota" placeholder="400"></div>
     </div>
+    <div class="iwrap" style="margin-bottom:10px"><label>Monthly Splitwise Contribution ($) <span style="font-weight:400;color:var(--text3)">— how much you plan to pay toward debts/month</span></label><input type="number" id="setSwMonthly" placeholder="0" step="50"></div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-p" style="flex:1" onclick="saveSettings()">Save</button>
       <button class="btn btn-g" style="flex:1" onclick="exportData()">📥 Backup</button>
@@ -973,12 +979,15 @@ function calcDailyTarget() {
 
   // 4. Next month rent ($2,084) — only if rent not already in bills
   // Prevents double-counting when rent is added as a bill
-  const hasRentBill = S.bills.some(b => b.name.toLowerCase().includes('rent'));
-  const NEXT_RENT = hasRentBill ? 0 : 2084;
+  const hasRentInBills = S.bills.some(b => b.name.toLowerCase().includes('rent'));
+  const NEXT_RENT = hasRentInBills ? 0 : 2084;
   const rentPerDay = NEXT_RENT / daysLeft;
 
-  // 5. Splitwise debts — spread over 90 days
-  const swPerDay = S.splitwise.reduce((s,d)=>s+d.amount,0) / 90;
+  // 5. Splitwise — use monthly contribution setting (default $0)
+  // We do NOT auto-spread Splitwise total — these are long-term personal loans
+  // User sets a monthly Splitwise contribution in settings
+  const swMonthly = S.settings.sw_monthly || 0;
+  const swPerDay = swMonthly / 30;
 
   // 6. Daily ops — (1191 + 400 + 1000) / 30 = $86.37/day
   const dailyOps = (1191 + 400 + 1000) / 30;
@@ -998,8 +1007,7 @@ function getBreakdown() {
   const overdue   = S.bills.filter(b=>!b.paid&&!b.skipped&&b.due_day<day).reduce((s,b)=>s+b.amount,0);
   const upcoming  = S.bills.filter(b=>!b.paid&&!b.skipped&&b.due_day>=day).reduce((s,b)=>s+b.amount,0);
   const onetime   = S.onetime.filter(p=>!p.paid).reduce((s,p)=>s+p.amount,0);
-  const sw        = S.splitwise.reduce((s,d)=>s+d.amount,0);
-  return { overdue, upcoming, onetime, sw, daysLeft };
+  return { overdue, upcoming, onetime, daysLeft };
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1130,7 +1138,7 @@ function renderHome() {
     <div class="bdrow"><span class="bdlbl">📅 Upcoming bills</span><span>${fmt(bd.upcoming)}</span></div>
     ${bd.onetime>0?`<div class="bdrow"><span class="bdlbl">⚡ One-time payments</span><span>${fmt(bd.onetime)}</span></div>`:''}
     <div class="bdrow"><span class="bdlbl">🏠 Next month rent ÷ ${bd.daysLeft}d</span><span>${fmt(2084/bd.daysLeft)}/day</span></div>
-    <div class="bdrow"><span class="bdlbl">💸 Splitwise ÷ 90d</span><span>${fmt(bd.sw/90)}/day</span></div>
+    ${S.settings.sw_monthly>0?`<div class="bdrow"><span class="bdlbl">💸 Splitwise contribution</span><span>${fmt(S.settings.sw_monthly||0)}/mo</span></div>`:''}
     <div class="bdrow"><span class="bdlbl">⛽ Daily ops</span><span>$86.37/day</span></div>
     <div class="bdrow"><span class="bdlbl">🎯 Your target today</span><span>${fmt(target)}</span></div>`;
 
@@ -1477,8 +1485,9 @@ function filterByCat(cat,btn) {
 
 function renderTxnList() {
   let list=[...S.expenses];
-  if(_isModeCur==='income') list=list.filter(t=>t.is_income||t.category==='income');
-  else if(_isModeCur==='spending') list=list.filter(t=>!t.is_income&&t.category!=='income');
+  // Income = transactions marked is_income OR category 'income' OR deposits (negative amounts from Plaid)
+  if(_isModeCur==='income') list=list.filter(t=>t.is_income||t.category==='income'||t.amount<0);
+  else if(_isModeCur==='spending') list=list.filter(t=>!t.is_income&&t.category!=='income'&&t.amount>=0);
   if(_catFilter) list=list.filter(t=>(t.category||'other')===_catFilter);
   list=list.sort((a,b)=>sortTxns(a,b));
   document.getElementById('allTxns').innerHTML=list.length
@@ -1556,27 +1565,35 @@ function renderBills() {
         const chip=b.paid?'chip-pd':b.skipped?'chip-sk':b._days<0?'chip-ov':b._days<=3?'chip-sn':b._ot?'chip-ot':'chip-up';
         const lbl=b.paid?'✓ Paid':b.skipped?'Skipped':b._days<0?'🚨 Overdue':b._days===0?'Today!':
           b._ot?new Date(b.due_date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):b.due_day+'th';
-        const dueLabel = b._days<0?'Overdue':b._days===0?'Today':
-          b._ot ? new Date(b.due_date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})
-          : `${b.due_day}${[,'st','nd','rd'][b.due_day%10]||'th'}`;
+        const dueLabel = b._days<0
+          ? (b._days<-7?'Carried Over':'Overdue')
+          : b._days===0?'Due Today'
+          : b._ot ? new Date(b.due_date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})
+          : `Due ${b.due_day}${[,'st','nd','rd'][b.due_day%10]||'th'}`;
+        const amtColor = b.paid?'var(--green)':b._days<0&&!b.paid?'var(--red)':'var(--text)';
         return `<div class="brow">
-          <div class="bicon">${catIcons[b.category||'other']||'📦'}</div>
-          <div class="bbody">
-            <div class="bname">${b.name}</div>
-            <div class="bsub">${b._ot?'One-time':'Monthly'} · <span style="color:${b._days<0&&!b.paid?'var(--red)':b._days<=3&&!b.paid?'var(--gold)':'var(--text3)'}">${dueLabel}</span>${b._days<-7&&!b.paid?' <span style="font-size:.55rem;color:var(--red);font-weight:700">CARRIED OVER</span>':''}</div>
+          <div class="brow-top">
+            <div class="bicon">${catIcons[b.category||'other']||'📦'}</div>
+            <div class="bbody">
+              <div class="bname">${b.name}</div>
+              <div class="bsub">${b._ot?'One-time':'Monthly'} · ${ttc(b.category||'Other')}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div class="bamt" style="color:${amtColor}">${fmt(b.amount)}</div>
+              <span class="chip ${chip}" style="margin-top:3px;display:inline-block">${lbl}</span>
+            </div>
           </div>
-          <div class="bright">
-            <div class="bamt" style="color:${b.paid?'var(--green)':b._days<0?'var(--red)':'var(--text)'}">${fmt(b.amount)}</div>
-            <span class="chip ${chip}">${lbl}</span>
+          <div class="brow-bot">
+            <div style="font-size:.63rem;color:${b._days<0&&!b.paid?'var(--red)':b._days<=3&&!b.paid?'var(--gold)':'var(--text3)'};font-weight:600">${dueLabel}</div>
             <div class="bactions">
               ${b.skipped
-                ?`<button class="bicon" onclick="unskipBill('${b.id}','${b._ot?'ot':'bill'}')">Undo</button>`
+                ?`<button class="bact-btn undo" onclick="unskipBill('${b.id}','${b._ot?'ot':'bill'}')">Undo Skip</button>`
                 :!b.paid
-                  ?`<button class="bicon" style="color:var(--green);font-weight:700" onclick="payBill('${b.id}','${b._ot?'ot':'bill'}')">Pay</button>
-                    <button class="bicon" onclick="skipBill('${b.id}','${b._ot?'ot':'bill'}')">Skip</button>`
-                  :`<button class="bicon" onclick="unpayBill('${b.id}','${b._ot?'ot':'bill'}')">Undo</button>`
+                  ?`<button class="bact-btn pay" onclick="payBill('${b.id}','${b._ot?'ot':'bill'}')">✓ Mark Paid</button>
+                    <button class="bact-btn" onclick="skipBill('${b.id}','${b._ot?'ot':'bill'}')">Skip</button>`
+                  :`<button class="bact-btn undo" onclick="unpayBill('${b.id}','${b._ot?'ot':'bill'}')">Undo Paid</button>`
               }
-              <button class="bicon" style="padding:5px 7px" onclick="openEditBillMod('${b.id}','${b._ot?'ot':'bill'}')">✎</button>
+              <button class="bact-btn" style="padding:5px 9px" onclick="openEditBillMod('${b.id}','${b._ot?'ot':'bill'}')">✎</button>
             </div>
           </div>
         </div>`;
@@ -1641,6 +1658,7 @@ function renderMore() {
   document.getElementById('moreEmail').textContent=u.email||'';
   document.getElementById('setGoal').value=S.settings.monthly_goal||9500;
   document.getElementById('setQuota').value=S.settings.daily_quota||400;
+  document.getElementById('setSwMonthly').value=S.settings.sw_monthly||0;
 
   document.getElementById('acctsList').innerHTML=S.accounts.length
     ?S.accounts.map(a=>`<div class="acct-row">
@@ -1882,7 +1900,8 @@ async function addDebt() {
 async function saveSettings() {
   const goal=parseFloat(document.getElementById('setGoal').value)||9500;
   const quota=parseFloat(document.getElementById('setQuota').value)||400;
-  S.settings={monthly_goal:goal,daily_quota:quota};
+  const swM=parseFloat(document.getElementById('setSwMonthly').value)||0;
+  S.settings={monthly_goal:goal,daily_quota:quota,sw_monthly:swM};
   await req('/api/settings',{method:'PUT',body:S.settings});
   saveLocal();renderHome();alert('✅ Settings saved');
 }
