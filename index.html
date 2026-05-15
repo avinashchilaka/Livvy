@@ -2,430 +2,302 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PBTrack — Gig Driver Finance</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Livvy</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'Inter', sans-serif;
-  background: #0a0b0d;
-  color: #eef0f5;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  -webkit-font-smoothing: antialiased;
+body{
+  font-family:'Inter',sans-serif;
+  background:#0a0a0a;
+  color:#f0f0f0;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px 20px;
+  -webkit-font-smoothing:antialiased;
 }
 
-.container {
-  width: 100%;
-  max-width: 400px;
+.wrap{width:100%;max-width:380px;}
+
+/* ── LOGO ── */
+.logo{text-align:center;margin-bottom:36px;}
+
+.logo-mark{
+  width:64px;height:64px;
+  background:#f0f0f0;
+  border-radius:18px;
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:14px;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.08),0 8px 32px rgba(0,0,0,0.5);
 }
 
-.logo {
-  text-align: center;
-  margin-bottom: 40px;
+.logo-mark svg{width:34px;height:34px;}
+
+.logo-name{
+  font-size:2rem;font-weight:800;
+  letter-spacing:-1px;font-style:italic;
+  color:#f0f0f0;line-height:1;margin-bottom:5px;
 }
 
-.logo-icon {
-  width: 56px;
-  height: 56px;
-  background: linear-gradient(135deg, #7ecca0, #4db885);
-  border-radius: 16px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.6rem;
-  margin-bottom: 16px;
-  box-shadow: 0 8px 24px rgba(126,204,160,0.25);
+.logo-sub{
+  font-size:0.78rem;color:#555;font-weight:500;
+  letter-spacing:0.2px;
 }
 
-.logo h1 {
-  font-size: 1.6rem;
-  font-weight: 700;
-  letter-spacing: -0.3px;
-  color: #eef0f5;
+/* ── CARD ── */
+.card{
+  background:#141414;
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:20px;
+  padding:24px 22px;
+  box-shadow:0 8px 40px rgba(0,0,0,0.6);
 }
 
-.logo p {
-  font-size: 0.82rem;
-  color: #616878;
-  margin-top: 4px;
+/* ── TABS ── */
+.tabs{
+  display:flex;background:#0a0a0a;
+  border-radius:10px;padding:3px;
+  margin-bottom:22px;gap:3px;
+}
+.tab{
+  flex:1;padding:9px;background:transparent;border:none;
+  border-radius:8px;color:#555;
+  font-family:'Inter',sans-serif;font-size:0.83rem;font-weight:600;
+  cursor:pointer;transition:all 0.15s;
+}
+.tab.active{background:#f0f0f0;color:#0a0a0a;font-weight:700;}
+
+/* ── FORM ── */
+.fg{margin-bottom:14px;}
+.fg label{
+  display:block;font-size:0.58rem;font-weight:700;
+  letter-spacing:0.6px;text-transform:uppercase;
+  color:#555;margin-bottom:5px;
+}
+.fg input{
+  width:100%;background:#0a0a0a;
+  border:1.5px solid rgba(255,255,255,0.08);
+  border-radius:10px;color:#f0f0f0;
+  font-family:'Inter',sans-serif;font-size:0.92rem;
+  padding:11px 13px;outline:none;
+  transition:border-color 0.15s;
+  -webkit-appearance:none;
+}
+.fg input:focus{border-color:rgba(255,255,255,0.3);}
+.fg input::placeholder{color:#444;}
+
+/* ── BUTTONS ── */
+.btn-main{
+  width:100%;padding:13px;
+  background:#f0f0f0;
+  border:none;border-radius:12px;
+  color:#0a0a0a;
+  font-family:'Inter',sans-serif;
+  font-size:0.92rem;font-weight:800;
+  cursor:pointer;
+  transition:opacity 0.15s,transform 0.1s;
+  margin-top:6px;letter-spacing:-0.2px;
+}
+.btn-main:active{transform:scale(0.98);opacity:0.85;}
+.btn-main:disabled{opacity:0.35;cursor:not-allowed;}
+
+.divider{
+  display:flex;align-items:center;gap:10px;
+  margin:18px 0;color:#444;font-size:0.72rem;
+}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.06);}
+
+.btn-google{
+  width:100%;padding:12px;
+  background:transparent;
+  border:1.5px solid rgba(255,255,255,0.1);
+  border-radius:12px;color:#aaa;
+  font-family:'Inter',sans-serif;
+  font-size:0.85rem;font-weight:500;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  transition:background 0.15s,border-color 0.15s;
+}
+.btn-google:hover{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.15);}
+
+/* ── MESSAGES ── */
+.err{
+  background:rgba(248,113,113,0.08);
+  border:1px solid rgba(248,113,113,0.25);
+  border-radius:8px;padding:9px 12px;
+  font-size:0.78rem;color:#f87171;
+  margin-bottom:14px;display:none;
+}
+.suc{
+  background:rgba(74,222,128,0.08);
+  border:1px solid rgba(74,222,128,0.2);
+  border-radius:8px;padding:9px 12px;
+  font-size:0.78rem;color:#4ade80;
+  margin-bottom:14px;display:none;
 }
 
-.card {
-  background: #16181c;
-  border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 20px;
-  padding: 28px 24px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+.footer{
+  text-align:center;font-size:0.7rem;
+  color:#333;margin-top:18px;line-height:1.7;
 }
 
-.tabs {
-  display: flex;
-  background: #0a0b0d;
-  border-radius: 10px;
-  padding: 4px;
-  margin-bottom: 24px;
-  gap: 4px;
+.spin{
+  display:inline-block;width:14px;height:14px;
+  border:2px solid rgba(10,10,10,0.2);
+  border-top-color:#0a0a0a;border-radius:50%;
+  animation:spin 0.6s linear infinite;
+  vertical-align:middle;margin-right:5px;
 }
+@keyframes spin{to{transform:rotate(360deg)}}
 
-.tab-btn {
-  flex: 1;
-  padding: 9px;
-  background: transparent;
-  border: none;
-  border-radius: 7px;
-  color: #616878;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.tab-btn.active {
-  background: #7ecca0;
-  color: #0a0b0d;
-  font-weight: 600;
-}
-
-.form-group {
-  margin-bottom: 16px;
-}
-
-.form-group label {
-  display: block;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: #616878;
-  margin-bottom: 6px;
-}
-
-.form-group input {
-  width: 100%;
-  background: #0a0b0d;
-  border: 1.5px solid rgba(255,255,255,0.08);
-  border-radius: 10px;
-  color: #eef0f5;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
-  padding: 12px 14px;
-  outline: none;
-  transition: border-color 0.2s;
-  -webkit-appearance: none;
-}
-
-.form-group input:focus {
-  border-color: #7ecca0;
-}
-
-.form-group input::placeholder {
-  color: #616878;
-}
-
-.btn-primary {
-  width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, #7ecca0, #4db885);
-  border: none;
-  border-radius: 12px;
-  color: #0a0b0d;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.2s, transform 0.1s;
-  margin-top: 8px;
-  box-shadow: 0 4px 16px rgba(126,204,160,0.3);
-}
-
-.btn-primary:active {
-  transform: scale(0.98);
-  opacity: 0.9;
-}
-
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 20px 0;
-  color: #616878;
-  font-size: 0.78rem;
-}
-
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: rgba(255,255,255,0.07);
-}
-
-.btn-google {
-  width: 100%;
-  padding: 13px;
-  background: transparent;
-  border: 1.5px solid rgba(255,255,255,0.1);
-  border-radius: 12px;
-  color: #eef0f5;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.88rem;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: background 0.2s, border-color 0.2s;
-}
-
-.btn-google:hover {
-  background: rgba(255,255,255,0.05);
-  border-color: rgba(255,255,255,0.15);
-}
-
-.error-msg {
-  background: rgba(240,98,106,0.1);
-  border: 1px solid rgba(240,98,106,0.3);
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 0.82rem;
-  color: #f0626a;
-  margin-bottom: 16px;
-  display: none;
-}
-
-.success-msg {
-  background: rgba(126,204,160,0.1);
-  border: 1px solid rgba(126,204,160,0.3);
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 0.82rem;
-  color: #7ecca0;
-  margin-bottom: 16px;
-  display: none;
-}
-
-.footer-text {
-  text-align: center;
-  font-size: 0.75rem;
-  color: #616878;
-  margin-top: 20px;
-  line-height: 1.6;
-}
-
-.loading {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(10,11,13,0.3);
-  border-top-color: #0a0b0d;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  vertical-align: middle;
-  margin-right: 6px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-#loginForm, #signupForm { display: none; }
-#loginForm.active, #signupForm.active { display: block; }
+#loginForm,#signupForm{display:none;}
+#loginForm.active,#signupForm.active{display:block;}
 </style>
 </head>
 <body>
 
-<div class="container">
+<div class="wrap">
+
+  <!-- LOGO -->
   <div class="logo">
-    <div class="logo-icon">💰</div>
-    <h1>Livvy</h1>
-    <p>Gig Driver Finance Dashboard</p>
+    <div class="logo-mark">
+      <!-- L monogram for Livvy -->
+      <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <text x="4" y="27" font-family="Inter,sans-serif" font-size="26" font-weight="800" font-style="italic" fill="#0a0a0a">L</text>
+        <circle cx="27" cy="24" r="4" fill="#0a0a0a" opacity="0.6"/>
+      </svg>
+    </div>
+    <div class="logo-name">Livvy</div>
+    <div class="logo-sub">Gig Driver Finance Dashboard</div>
   </div>
 
+  <!-- CARD -->
   <div class="card">
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('login')">Sign In</button>
-      <button class="tab-btn" onclick="switchTab('signup')">Create Account</button>
+      <button class="tab active" onclick="switchTab('login')">Sign In</button>
+      <button class="tab" onclick="switchTab('signup')">Create Account</button>
     </div>
 
-    <div id="errorMsg" class="error-msg"></div>
-    <div id="successMsg" class="success-msg"></div>
+    <div id="errMsg" class="err"></div>
+    <div id="sucMsg" class="suc"></div>
 
-    <!-- LOGIN FORM -->
+    <!-- LOGIN -->
     <div id="loginForm" class="active">
-      <div class="form-group">
+      <div class="fg">
         <label>Email</label>
         <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
       </div>
-      <div class="form-group">
+      <div class="fg">
         <label>Password</label>
-        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')handleLogin()">
       </div>
-      <button class="btn-primary" id="loginBtn" onclick="handleLogin()">
-        Sign In
-      </button>
+      <button class="btn-main" id="loginBtn" onclick="handleLogin()">Sign In</button>
       <div class="divider">or</div>
       <button class="btn-google" onclick="handleGoogleAuth()">
-        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/></svg>
+        <svg width="17" height="17" viewBox="0 0 18 18">
+          <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+          <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+          <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/>
+          <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
+        </svg>
         Continue with Google
       </button>
     </div>
 
-    <!-- SIGNUP FORM -->
+    <!-- SIGNUP -->
     <div id="signupForm">
-      <div class="form-group">
+      <div class="fg">
         <label>Full Name</label>
-        <input type="text" id="signupName" placeholder="Avinash" autocomplete="name">
+        <input type="text" id="signupName" placeholder="Your name" autocomplete="name">
       </div>
-      <div class="form-group">
+      <div class="fg">
         <label>Email</label>
         <input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email">
       </div>
-      <div class="form-group">
+      <div class="fg">
         <label>Password</label>
         <input type="password" id="signupPassword" placeholder="Min 8 characters" autocomplete="new-password">
       </div>
-      <div class="form-group">
+      <div class="fg">
         <label>Monthly Earnings Goal ($)</label>
         <input type="number" id="signupGoal" placeholder="e.g. 9500" min="0">
       </div>
-      <button class="btn-primary" id="signupBtn" onclick="handleSignup()">
-        Create Account
-      </button>
+      <button class="btn-main" id="signupBtn" onclick="handleSignup()">Create Account</button>
     </div>
   </div>
 
-  <p class="footer-text">
-    Your data is encrypted and private.<br>
-    Built for gig drivers. 💚
-  </p>
+  <p class="footer">Your data is encrypted and private.</p>
 </div>
 
 <script>
-  const API = window.location.origin;
+const API = window.location.origin;
 
-  function switchTab(tab) {
-    document.querySelectorAll('.tab-btn').forEach((b,i) => {
-      b.classList.toggle('active', (tab==='login'&&i===0)||(tab==='signup'&&i===1));
-    });
-    document.getElementById('loginForm').classList.toggle('active', tab==='login');
-    document.getElementById('signupForm').classList.toggle('active', tab==='signup');
-    hideMessages();
-  }
-
-  function showError(msg) {
-    const el = document.getElementById('errorMsg');
-    el.textContent = msg;
-    el.style.display = 'block';
-    document.getElementById('successMsg').style.display = 'none';
-  }
-
-  function showSuccess(msg) {
-    const el = document.getElementById('successMsg');
-    el.textContent = msg;
-    el.style.display = 'block';
-    document.getElementById('errorMsg').style.display = 'none';
-  }
-
-  function hideMessages() {
-    document.getElementById('errorMsg').style.display = 'none';
-    document.getElementById('successMsg').style.display = 'none';
-  }
-
-  function setLoading(btnId, loading) {
-    const btn = document.getElementById(btnId);
-    if (loading) {
-      btn.disabled = true;
-      btn.innerHTML = '<span class="loading"></span> Please wait...';
-    } else {
-      btn.disabled = false;
-      btn.innerHTML = btnId === 'loginBtn' ? 'Sign In' : 'Create Account';
-    }
-  }
-
-  async function handleLogin() {
-    const email    = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
-    if (!email || !password) return showError('Please fill in all fields.');
-    setLoading('loginBtn', true);
-    try {
-      const res  = await fetch(`${API}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Login failed');
-      localStorage.setItem('pb_token', data.token);
-      localStorage.setItem('pb_user', JSON.stringify(data.user));
-      window.location.href = '/app.html';
-    } catch(e) {
-      showError(e.message);
-      setLoading('loginBtn', false);
-    }
-  }
-
-  async function handleSignup() {
-    const name     = document.getElementById('signupName').value.trim();
-    const email    = document.getElementById('signupEmail').value.trim();
-    const password = document.getElementById('signupPassword').value;
-    const goal     = parseFloat(document.getElementById('signupGoal').value) || 9500;
-    if (!name || !email || !password) return showError('Please fill in all fields.');
-    if (password.length < 8) return showError('Password must be at least 8 characters.');
-    setLoading('signupBtn', true);
-    try {
-      const res  = await fetch(`${API}/api/auth/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, monthly_goal: goal })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Signup failed');
-      localStorage.setItem('pb_token', data.token);
-      localStorage.setItem('pb_user', JSON.stringify(data.user));
-      window.location.href = '/app.html';
-    } catch(e) {
-      showError(e.message);
-      setLoading('signupBtn', false);
-    }
-  }
-
-  async function handleGoogleAuth() {
-    try {
-      const res  = await fetch(`${API}/api/auth/google-url`);
-      const data = await res.json();
-      window.location.href = data.url;
-    } catch(e) {
-      showError('Google sign-in unavailable right now.');
-    }
-  }
-
-  // Enter key support
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      const loginActive = document.getElementById('loginForm').classList.contains('active');
-      if (loginActive) handleLogin();
-      else handleSignup();
-    }
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((b,i)=>{
+    b.classList.toggle('active',(tab==='login'&&i===0)||(tab==='signup'&&i===1));
   });
+  document.getElementById('loginForm').classList.toggle('active',tab==='login');
+  document.getElementById('signupForm').classList.toggle('active',tab==='signup');
+  hide();
+}
 
-  // Already logged in? Go straight to app
-  if (localStorage.getItem('pb_token')) {
-    window.location.href = '/app.html';
-  }
+function showErr(msg){const e=document.getElementById('errMsg');e.textContent=msg;e.style.display='block';document.getElementById('sucMsg').style.display='none';}
+function showSuc(msg){const e=document.getElementById('sucMsg');e.textContent=msg;e.style.display='block';document.getElementById('errMsg').style.display='none';}
+function hide(){document.getElementById('errMsg').style.display='none';document.getElementById('sucMsg').style.display='none';}
+
+function setLoad(id,on){
+  const b=document.getElementById(id);
+  if(on){b.disabled=true;b.innerHTML='<span class="spin"></span>Please wait...';}
+  else{b.disabled=false;b.innerHTML=id==='loginBtn'?'Sign In':'Create Account';}
+}
+
+async function handleLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const password=document.getElementById('loginPassword').value;
+  if(!email||!password) return showErr('Please fill in all fields.');
+  setLoad('loginBtn',true);
+  try{
+    const r=await fetch(`${API}/api/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||'Login failed');
+    localStorage.setItem('pb_token',d.token);
+    localStorage.setItem('pb_user',JSON.stringify(d.user));
+    window.location.href='/app.html';
+  }catch(e){showErr(e.message);setLoad('loginBtn',false);}
+}
+
+async function handleSignup(){
+  const name=document.getElementById('signupName').value.trim();
+  const email=document.getElementById('signupEmail').value.trim();
+  const password=document.getElementById('signupPassword').value;
+  const goal=parseFloat(document.getElementById('signupGoal').value)||9500;
+  if(!name||!email||!password) return showErr('Please fill in all fields.');
+  if(password.length<8) return showErr('Password must be at least 8 characters.');
+  setLoad('signupBtn',true);
+  try{
+    const r=await fetch(`${API}/api/auth/signup`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,password,monthly_goal:goal})});
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||'Signup failed');
+    localStorage.setItem('pb_token',d.token);
+    localStorage.setItem('pb_user',JSON.stringify(d.user));
+    window.location.href='/app.html';
+  }catch(e){showErr(e.message);setLoad('signupBtn',false);}
+}
+
+async function handleGoogleAuth(){
+  try{const r=await fetch(`${API}/api/auth/google-url`);const d=await r.json();window.location.href=d.url;}
+  catch(e){showErr('Google sign-in unavailable right now.');}
+}
+
+if(localStorage.getItem('pb_token')) window.location.href='/app.html';
 </script>
 </body>
 </html>
