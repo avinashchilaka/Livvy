@@ -539,7 +539,10 @@ body{
 
   <div class="card" style="display:flex;align-items:center;justify-content:space-between">
     <div><div style="font-size:.83rem;font-weight:700" id="plaidStatus">Connect Bank</div><div style="font-size:.65rem;color:var(--text3);margin-top:1px">Link via Plaid for auto-sync</div></div>
-    <button class="bicon" id="plaidBtn" onclick="openPlaidLink()">🏦 Connect</button>
+    <div style="display:flex;gap:5px">
+      <button class="bicon" id="plaidResetBtn" onclick="fullResync()" style="display:none;color:var(--gold)" title="Re-fetch all transactions including deposits">↺ Full Sync</button>
+      <button class="bicon" id="plaidBtn" onclick="openPlaidLink()">🏦 Connect</button>
+    </div>
   </div>
 
   <!-- Donut -->
@@ -1377,8 +1380,10 @@ function renderSpend() {
   document.getElementById('sMonth').textContent=fmt(monthSpending());
   if(S.accounts.length) {
     document.getElementById('plaidStatus').textContent='🏦 Bank Connected';
-    document.getElementById('plaidBtn').textContent='↺ Sync';
+    document.getElementById('plaidBtn').textContent='Sync';
     document.getElementById('plaidBtn').onclick=syncPlaid;
+    const rb=document.getElementById('plaidResetBtn');
+    if(rb) rb.style.display='block';
   }
   drawDonut(); drawFlow(); renderBudBars(); renderCatChips(); renderTxnList();
 }
@@ -1970,6 +1975,23 @@ async function openPlaidLink() {
   });
   handler.open();
 }
+async function fullResync() {
+  if(!confirm('This will re-fetch ALL transactions from your banks including deposits. Takes 10-20 seconds. Continue?')) return;
+  setSyncing(true);
+  document.getElementById('syncLbl').textContent='Full sync...';
+  try {
+    // Reset cursor and clear old transactions
+    await req('/api/plaid/reset-sync', {method:'POST'});
+    // Clear local cache
+    S.expenses=[];
+    saveLocal();
+    // Re-sync from scratch
+    await syncPlaid();
+    alert('✅ Full sync complete! Check Income tab for deposits.');
+  } catch(e) { alert('Sync failed. Try again.'); }
+  setSyncing(false);
+}
+
 async function syncPlaid() {
   setSyncing(true);
   const r=await req('/api/plaid/transactions');

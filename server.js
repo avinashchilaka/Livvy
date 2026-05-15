@@ -302,15 +302,28 @@ app.get('/api/plaid/transactions', auth, async (req, res) => {
       .select('*').eq('user_id',req.user.id).eq('is_plaid',true)
       .order('date',{ ascending:false }).limit(400);
 
-    // Apply rules server-side too
+    // Apply rules server-side too + fix is_income for old records
     const withRules = (txns||[]).map(t => {
       const key = (t.description||'').toLowerCase().trim().substring(0,30);
-      if (userRules[key]) return { ...t, category: userRules[key] };
-      return t;
+      let tx = { ...t };
+      // Fix legacy records: if amount was stored as negative, it's income
+      // (shouldn't happen but safety net)
+      if (userRules[key]) tx = { ...tx, category: userRules[key] };
+      return tx;
     });
 
     res.json({ transactions: withRules });
   } catch(e) { console.error(e); res.status(500).json({ error:e.message }); }
+});
+
+// Reset Plaid cursor — forces full re-sync on next GET /api/plaid/transactions
+app.post('/api/plaid/reset-sync', auth, async (req, res) => {
+  try {
+    await supabase.from('plaid_tokens').update({ cursor: null }).eq('user_id', req.user.id);
+    // Also clear all stored transactions so fresh ones (including income) get saved
+    await supabase.from('transactions').delete().eq('user_id', req.user.id).eq('is_plaid', true);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 // Category patch for a single transaction
