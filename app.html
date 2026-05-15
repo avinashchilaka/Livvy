@@ -451,7 +451,13 @@ body{
 
   <!-- Latest Transactions with sort -->
   <div style="display:flex;justify-content:space-between;align-items:center;margin:13px 0 7px;position:relative">
-    <div class="stitle">Latest Transactions</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="stitle">Latest Transactions</div>
+      <div style="display:flex;background:var(--s1);border-radius:var(--r-pill);padding:2px;gap:1px">
+        <button id="homeTxnSpend" onclick="setHomeTxnMode('spending')" style="font-size:.56rem;font-weight:700;padding:3px 7px;border-radius:var(--r-pill);border:none;background:var(--text);color:var(--bg);cursor:pointer;font-family:'Inter',sans-serif">Spend</button>
+        <button id="homeTxnAll" onclick="setHomeTxnMode('all')" style="font-size:.56rem;font-weight:600;padding:3px 7px;border-radius:var(--r-pill);border:none;background:transparent;color:var(--text3);cursor:pointer;font-family:'Inter',sans-serif">All</button>
+      </div>
+    </div>
     <div style="position:relative">
       <button class="bicon" onclick="toggleSort()" id="sortBtn">Sort ▾</button>
       <div id="sortMenu" style="display:none;position:absolute;right:0;top:100%;margin-top:4px;background:var(--card);border:1px solid var(--border2);border-radius:var(--r-sm);padding:5px;z-index:150;min-width:170px;box-shadow:0 8px 24px var(--shadow)">
@@ -484,7 +490,7 @@ body{
     <div class="sbox" onclick="drillEarn('today')"><div class="sval" id="eToday" style="color:var(--green)">$0</div><div class="slbl">Today ›</div></div>
     <div class="sbox" onclick="drillEarn('week')"><div class="sval" id="eWeek" style="color:var(--green)">$0</div><div class="slbl">This Week ›</div></div>
     <div class="sbox" onclick="drillEarn('month')"><div class="sval" id="eMonth" style="color:var(--green)">$0</div><div class="slbl">This Month ›</div></div>
-    <div class="sbox"><div class="sval" id="eTarget" style="color:var(--gold)">$0</div><div class="slbl">Daily Target</div></div>
+    <div class="sbox" onclick="openModal('targetBreakMod')" style="position:relative"><div class="sval" id="eTarget" style="color:var(--gold)">$0</div><div class="slbl">Daily Target ›</div></div>
   </div>
 
   <div class="card">
@@ -844,6 +850,17 @@ body{
 </div>
 
 <!-- Drill -->
+<!-- Target Breakdown Modal -->
+<div class="ov" id="targetBreakMod">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h2>Daily Target Breakdown</h2>
+    <div class="msub" id="targetBreakDate"></div>
+    <div id="targetBreakBody" style="margin-top:4px"></div>
+    <button class="btn btn-g" style="width:100%;margin-top:14px" onclick="closeModal('targetBreakMod')">Close</button>
+  </div>
+</div>
+
 <div class="ov" id="drillMod">
   <div class="modal">
     <div class="mhandle"></div>
@@ -923,6 +940,7 @@ let _earnFilter = 'week';
 let _catFilter  = null;
 let _isMode     = 'spending';
 let _sortMode   = 'newest';
+let _homeTxnMode = 'spending'; // home shows spending by default
 let _pendingSort= 'newest';
 let _pendingTxn = null;
 let _pendingRule= null;
@@ -1013,6 +1031,45 @@ function getBreakdown() {
   return { overdue, upcoming, onetime, daysLeft };
 }
 
+function populateTargetBreak() {
+  refreshDate();
+  const bd=getBreakdown();
+  const target=calcDailyTarget();
+  const todayE=todayEarnings(), todayS=todaySpending();
+  document.getElementById('targetBreakDate').textContent=
+    _now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})
+    +' · '+getDaysLeft()+' days left this month';
+  const rows=[
+    {icon:'📋',label:'Overdue bills (past due, unpaid)',val:bd.overdue,color:bd.overdue>0?'var(--red)':null,note:'Spread across '+getDaysLeft()+' days left'},
+    {icon:'📅',label:'Upcoming bills this month',val:bd.upcoming,note:'Each bill ÷ days until due'},
+    {icon:'⚡',label:'One-time payments',val:bd.onetime,note:'Each ÷ days until due',hide:bd.onetime===0},
+    {icon:'🏠',label:'Next month rent',val:hasRentInBillsCheck()?0:2084/getDaysLeft(),note:hasRentInBillsCheck()?'Already in your bills':'$2,084 ÷ '+getDaysLeft()+' days',perDay:true},
+    {icon:'⛽',label:'Daily ops (charging + road + living)',val:86.37,note:'$2,591/mo ÷ 30 days',perDay:true},
+    {icon:'💰',label:'Today earned so far',val:-todayE,color:'var(--green)',note:'Subtracted from target'},
+    {icon:'💸',label:'Today spent so far',val:todayS,note:'Added back to target',hide:todayS===0},
+  ];
+  const filtered=rows.filter(r=>!r.hide);
+  document.getElementById('targetBreakBody').innerHTML=
+    filtered.map(r=>`
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border)">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.8rem;font-weight:600">${r.icon} ${r.label}</div>
+          <div style="font-size:.63rem;color:var(--text3);margin-top:2px">${r.note||''}</div>
+        </div>
+        <div style="font-size:.85rem;font-weight:800;color:${r.color||'var(--text)'};flex-shrink:0;margin-left:10px;font-variant-numeric:tabular-nums">
+          ${r.val<0?'-':''}${fmt(Math.abs(r.val))}${r.perDay?'/day':''}
+        </div>
+      </div>`).join('')
+    +`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;margin-top:2px">
+        <div style="font-size:.88rem;font-weight:800">🎯 Your target today</div>
+        <div style="font-size:1.1rem;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums">${fmt(target)}</div>
+      </div>`;
+}
+
+function hasRentInBillsCheck() {
+  return S.bills.some(b=>b.name.toLowerCase().includes('rent'));
+}
+
 // ═══════════════════════════════════════════════════════
 // CALCULATIONS
 // ═══════════════════════════════════════════════════════
@@ -1054,7 +1111,10 @@ function openAI() {
 // ═══════════════════════════════════════════════════════
 // MODALS
 // ═══════════════════════════════════════════════════════
-function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  if(id==='targetBreakMod') populateTargetBreak();
+}
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.ov').forEach(el=>{
   el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); });
@@ -1175,8 +1235,10 @@ function renderHome() {
       }).join('')
     :'<div class="empty">No upcoming bills</div>';
 
-  // Latest transactions sorted
-  let txns=[...S.expenses].sort((a,b)=>sortTxns(a,b)).slice(0,8);
+  // Latest transactions — filtered by home mode
+  let txns=[...S.expenses];
+  if(_homeTxnMode==='spending') txns=txns.filter(t=>!t.is_income&&t.category!=='income'&&t.amount>=0);
+  txns=txns.sort((a,b)=>sortTxns(a,b)).slice(0,8);
   document.getElementById('latestTxns').innerHTML=txns.length
     ?txns.map(t=>txnRow(t,S.expenses.indexOf(t))).join('')
     :'<div class="empty">Transactions from your bank appear here</div>';
@@ -1223,6 +1285,17 @@ function openFundsDetail(type) {
 // ═══════════════════════════════════════════════════════
 // SORT
 // ═══════════════════════════════════════════════════════
+function setHomeTxnMode(mode) {
+  _homeTxnMode=mode;
+  const sp=document.getElementById('homeTxnSpend');
+  const al=document.getElementById('homeTxnAll');
+  if(sp&&al){
+    if(mode==='spending'){sp.style.background='var(--text)';sp.style.color='var(--bg)';sp.style.fontWeight='700';al.style.background='transparent';al.style.color='var(--text3)';al.style.fontWeight='600';}
+    else{al.style.background='var(--text)';al.style.color='var(--bg)';al.style.fontWeight='700';sp.style.background='transparent';sp.style.color='var(--text3)';sp.style.fontWeight='600';}
+  }
+  renderHome();
+}
+
 function toggleSort() { const m=document.getElementById('sortMenu'); m.style.display=m.style.display==='none'?'block':'none'; }
 function pickSort(mode,el) {
   _pendingSort=mode;

@@ -276,9 +276,10 @@ app.get('/api/plaid/transactions', auth, async (req, res) => {
           ...(cursor?{cursor}:{}),
         });
         r.data.added.forEach(tx => {
-          // STRICT: income/transfers go to is_income flag, everything else is expense
+          // Save ALL transactions — spending AND income (deposits/credits)
+          // is_income flag on each record distinguishes them in the frontend
           const mapped = mapTransaction(tx, t.institution);
-          if (!mapped.is_income) all.push(mapped); // only push expenses
+          all.push(mapped);
         });
         cursor  = r.data.next_cursor;
         hasMore = r.data.has_more;
