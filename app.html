@@ -455,6 +455,7 @@ body{
       <div class="stitle">Latest Transactions</div>
       <div style="display:flex;background:var(--s1);border-radius:var(--r-pill);padding:2px;gap:1px">
         <button id="homeTxnSpend" onclick="setHomeTxnMode('spending')" style="font-size:.56rem;font-weight:700;padding:3px 7px;border-radius:var(--r-pill);border:none;background:var(--text);color:var(--bg);cursor:pointer;font-family:'Inter',sans-serif">Spend</button>
+        <button id="homeTxnIncome" onclick="setHomeTxnMode('income')" style="font-size:.56rem;font-weight:600;padding:3px 7px;border-radius:var(--r-pill);border:none;background:transparent;color:var(--text3);cursor:pointer;font-family:'Inter',sans-serif">Income</button>
         <button id="homeTxnAll" onclick="setHomeTxnMode('all')" style="font-size:.56rem;font-weight:600;padding:3px 7px;border-radius:var(--r-pill);border:none;background:transparent;color:var(--text3);cursor:pointer;font-family:'Inter',sans-serif">All</button>
       </div>
     </div>
@@ -1033,37 +1034,61 @@ function getBreakdown() {
 
 function populateTargetBreak() {
   refreshDate();
-  const bd=getBreakdown();
-  const target=calcDailyTarget();
+  const dL=getDaysLeft();
+  const day=_todayDay;
   const todayE=todayEarnings(), todayS=todaySpending();
+  const hasRent=S.bills.some(b=>b.name.toLowerCase().includes('rent'));
+
+  // Calculate each component as /day contribution
+  const overdueBills=S.bills.filter(b=>!b.paid&&!b.skipped&&b.due_day<day).reduce((s,b)=>s+b.amount,0);
+  const urgentPerDay=overdueBills/Math.max(1,dL);
+
+  let upcomingPerDay=0;
+  const upcomingDetails=[];
+  S.bills.filter(b=>!b.paid&&!b.skipped&&b.due_day>=day).forEach(b=>{
+    const d=Math.max(1,b.due_day-day);
+    upcomingPerDay+=b.amount/d;
+    upcomingDetails.push(`${b.name}: ${fmt(b.amount)} ÷ ${d}d = ${fmt(b.amount/d)}/day`);
+  });
+
+  let otPerDay=0;
+  S.onetime.filter(p=>!p.paid).forEach(p=>{
+    const d=Math.max(1,Math.ceil((new Date(p.due_date+'T12:00:00')-_now)/86400000));
+    otPerDay+=p.amount/d;
+  });
+
+  const rentPerDay=hasRent?0:2084/dL;
+  const swPerDay=(S.settings.sw_monthly||0)/30;
+  const dailyOps=86.37;
+  const totalPerDay=urgentPerDay+upcomingPerDay+otPerDay+rentPerDay+swPerDay+dailyOps;
+  const target=Math.max(S.settings.daily_quota||400, totalPerDay-todayE+todayS);
+
   document.getElementById('targetBreakDate').textContent=
     _now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})
-    +' · '+getDaysLeft()+' days left this month';
-  const rows=[
-    {icon:'📋',label:'Overdue bills (past due, unpaid)',val:bd.overdue,color:bd.overdue>0?'var(--red)':null,note:'Spread across '+getDaysLeft()+' days left'},
-    {icon:'📅',label:'Upcoming bills this month',val:bd.upcoming,note:'Each bill ÷ days until due'},
-    {icon:'⚡',label:'One-time payments',val:bd.onetime,note:'Each ÷ days until due',hide:bd.onetime===0},
-    {icon:'🏠',label:'Next month rent',val:hasRentInBillsCheck()?0:2084/getDaysLeft(),note:hasRentInBillsCheck()?'Already in your bills':'$2,084 ÷ '+getDaysLeft()+' days',perDay:true},
-    {icon:'⛽',label:'Daily ops (charging + road + living)',val:86.37,note:'$2,591/mo ÷ 30 days',perDay:true},
-    {icon:'💰',label:'Today earned so far',val:-todayE,color:'var(--green)',note:'Subtracted from target'},
-    {icon:'💸',label:'Today spent so far',val:todayS,note:'Added back to target',hide:todayS===0},
-  ];
-  const filtered=rows.filter(r=>!r.hide);
+    +' · '+dL+' days left';
+
+  const row=(icon,label,val,color,note)=>`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="flex:1;min-width:0"><div style="font-size:.78rem;font-weight:600">${icon} ${label}</div>${note?`<div style="font-size:.6rem;color:var(--text3);margin-top:1px">${note}</div>`:''}</div>
+      <div style="font-size:.82rem;font-weight:800;color:${color||'var(--text)'};flex-shrink:0;margin-left:8px;font-variant-numeric:tabular-nums">${val}</div>
+    </div>`;
+
   document.getElementById('targetBreakBody').innerHTML=
-    filtered.map(r=>`
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border)">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:.8rem;font-weight:600">${r.icon} ${r.label}</div>
-          <div style="font-size:.63rem;color:var(--text3);margin-top:2px">${r.note||''}</div>
-        </div>
-        <div style="font-size:.85rem;font-weight:800;color:${r.color||'var(--text)'};flex-shrink:0;margin-left:10px;font-variant-numeric:tabular-nums">
-          ${r.val<0?'-':''}${fmt(Math.abs(r.val))}${r.perDay?'/day':''}
-        </div>
-      </div>`).join('')
-    +`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;margin-top:2px">
-        <div style="font-size:.88rem;font-weight:800">🎯 Your target today</div>
-        <div style="font-size:1.1rem;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums">${fmt(target)}</div>
-      </div>`;
+    row('📋','Overdue bills',fmt(urgentPerDay)+'/day',urgentPerDay>0?'var(--red)':'var(--green)',
+        overdueBills>0?`${fmt(overdueBills)} total ÷ ${dL} days`:'No overdue bills ✓')
+   +row('📅','Upcoming bills',fmt(upcomingPerDay)+'/day',null,
+        upcomingDetails.length?upcomingDetails.join(' · '):'No upcoming bills')
+   +(otPerDay>0?row('⚡','One-time payments',fmt(otPerDay)+'/day',null,'Each payment ÷ days until due'):'')
+   +(!hasRent?row('🏠','Next month rent',fmt(rentPerDay)+'/day',null,`$2,084 ÷ ${dL} days`):
+              row('🏠','Rent','In bills ✓','var(--green)','Counted in upcoming bills above'))
+   +(swPerDay>0?row('💸','Splitwise contribution',fmt(swPerDay)+'/day',null,`${fmt(S.settings.sw_monthly)}/mo ÷ 30`):'')
+   +row('⛽','Daily ops',fmt(dailyOps)+'/day',null,'Charging + road + living')
+   +(todayE>0?row('✅','Already earned today','-'+fmt(todayE),'var(--green)','Subtracted from target'):'')
+   +(todayS>0?row('💸','Spent today','+'+fmt(todayS),null,'Added back to target'):'')
+   +`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;margin-top:2px">
+      <div style="font-size:.9rem;font-weight:800">🎯 Your target today</div>
+      <div style="font-size:1.15rem;font-weight:800;color:var(--gold)">${fmt(target)}</div>
+    </div>`;
 }
 
 function hasRentInBillsCheck() {
@@ -1196,14 +1221,15 @@ function renderHome() {
   // Breakdown
   const bd=getBreakdown();
   document.getElementById('bdTarget').textContent=fmt(target);
+  const _hasRent=S.bills.some(b=>b.name.toLowerCase().includes('rent'));
   document.getElementById('bdBody').innerHTML=`
-    <div class="bdrow"><span class="bdlbl">📋 Overdue bills</span><span style="color:var(--red)">${fmt(bd.overdue)}</span></div>
-    <div class="bdrow"><span class="bdlbl">📅 Upcoming bills</span><span>${fmt(bd.upcoming)}</span></div>
+    ${bd.overdue>0?`<div class="bdrow"><span class="bdlbl">📋 Overdue bills (unpaid)</span><span style="color:var(--red)">${fmt(bd.overdue)} ÷ ${bd.daysLeft}d = ${fmt(bd.overdue/bd.daysLeft)}/day</span></div>`:'<div class="bdrow"><span class="bdlbl">📋 Overdue bills</span><span style="color:var(--green)">None ✓</span></div>'}
+    ${bd.upcoming>0?`<div class="bdrow"><span class="bdlbl">📅 Upcoming bills</span><span>${fmt(bd.upcoming)} total this month</span></div>`:''}
     ${bd.onetime>0?`<div class="bdrow"><span class="bdlbl">⚡ One-time payments</span><span>${fmt(bd.onetime)}</span></div>`:''}
-    <div class="bdrow"><span class="bdlbl">🏠 Next month rent ÷ ${bd.daysLeft}d</span><span>${fmt(2084/bd.daysLeft)}/day</span></div>
-    ${S.settings.sw_monthly>0?`<div class="bdrow"><span class="bdlbl">💸 Splitwise contribution</span><span>${fmt(S.settings.sw_monthly||0)}/mo</span></div>`:''}
+    ${!_hasRent?`<div class="bdrow"><span class="bdlbl">🏠 Next month rent</span><span>${fmt(2084/bd.daysLeft)}/day</span></div>`:''}
+    ${(S.settings.sw_monthly||0)>0?`<div class="bdrow"><span class="bdlbl">💸 Splitwise contribution</span><span>${fmt((S.settings.sw_monthly||0)/30)}/day</span></div>`:''}
     <div class="bdrow"><span class="bdlbl">⛽ Daily ops</span><span>$86.37/day</span></div>
-    <div class="bdrow"><span class="bdlbl">🎯 Your target today</span><span>${fmt(target)}</span></div>`;
+    <div class="bdrow" style="font-weight:800;padding-top:8px"><span class="bdlbl" style="color:var(--text)">🎯 Your target today</span><span style="color:var(--gold)">${fmt(target)}</span></div>`;
 
   // Break-even
   const bePct=spent>0?Math.min(100,(earned/spent)*100):100;
@@ -1238,7 +1264,9 @@ function renderHome() {
   // Latest transactions — filtered by home mode
   let txns=[...S.expenses];
   if(_homeTxnMode==='spending') txns=txns.filter(t=>!t.is_income&&t.category!=='income'&&t.amount>=0);
-  txns=txns.sort((a,b)=>sortTxns(a,b)).slice(0,8);
+  else if(_homeTxnMode==='income') txns=txns.filter(t=>t.is_income||t.category==='income'||t.amount<0);
+  // 'all' shows everything
+  txns=txns.sort((a,b)=>sortTxns(a,b)).slice(0,10);
   document.getElementById('latestTxns').innerHTML=txns.length
     ?txns.map(t=>txnRow(t,S.expenses.indexOf(t))).join('')
     :'<div class="empty">Transactions from your bank appear here</div>';
@@ -1287,12 +1315,13 @@ function openFundsDetail(type) {
 // ═══════════════════════════════════════════════════════
 function setHomeTxnMode(mode) {
   _homeTxnMode=mode;
-  const sp=document.getElementById('homeTxnSpend');
-  const al=document.getElementById('homeTxnAll');
-  if(sp&&al){
-    if(mode==='spending'){sp.style.background='var(--text)';sp.style.color='var(--bg)';sp.style.fontWeight='700';al.style.background='transparent';al.style.color='var(--text3)';al.style.fontWeight='600';}
-    else{al.style.background='var(--text)';al.style.color='var(--bg)';al.style.fontWeight='700';sp.style.background='transparent';sp.style.color='var(--text3)';sp.style.fontWeight='600';}
-  }
+  ['homeTxnSpend','homeTxnIncome','homeTxnAll'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    const isActive=(id==='homeTxnSpend'&&mode==='spending')||(id==='homeTxnIncome'&&mode==='income')||(id==='homeTxnAll'&&mode==='all');
+    el.style.background=isActive?'var(--text)':'transparent';
+    el.style.color=isActive?'var(--bg)':'var(--text3)';
+    el.style.fontWeight=isActive?'700':'600';
+  });
   renderHome();
 }
 
@@ -1440,11 +1469,33 @@ function setIsMode(mode,btn) {
   document.querySelectorAll('.istab').forEach(t=>t.classList.remove('active'));
   if(btn) btn.classList.add('active');
   renderTxnList();
+  // Update today/month stats to reflect current mode
+  refreshDate();
   const isInc=mode==='income';
-  ['sToday','sMonth'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.style.color=isInc?'var(--green)':'var(--red)';
-  });
+  const isAll=mode==='all';
+  if(isInc) {
+    // Show income totals
+    const incToday=S.expenses.filter(e=>e.date===_todayStr&&(e.is_income||e.amount<0)).reduce((s,e)=>s+Math.abs(e.amount),0);
+    const incMonth=S.expenses.filter(e=>e.date.startsWith(_monthStr)&&(e.is_income||e.amount<0)).reduce((s,e)=>s+Math.abs(e.amount),0);
+    document.getElementById('sToday').textContent=fmt(incToday);
+    document.getElementById('sToday').style.color='var(--green)';
+    document.getElementById('sMonth').textContent=fmt(incMonth);
+    document.getElementById('sMonth').style.color='var(--green)';
+  } else if(isAll) {
+    // Net: income minus spending
+    const allToday=S.expenses.filter(e=>e.date===_todayStr);
+    const netToday=allToday.filter(e=>e.is_income||e.amount<0).reduce((s,e)=>s+Math.abs(e.amount),0)
+                  -allToday.filter(e=>!e.is_income&&e.amount>=0).reduce((s,e)=>s+e.amount,0);
+    document.getElementById('sToday').textContent=(netToday>=0?'+':'')+fmt(netToday);
+    document.getElementById('sToday').style.color=netToday>=0?'var(--green)':'var(--red)';
+    document.getElementById('sMonth').textContent=fmt(monthSpending());
+    document.getElementById('sMonth').style.color='var(--red)';
+  } else {
+    document.getElementById('sToday').textContent=fmt(todaySpending());
+    document.getElementById('sToday').style.color='var(--red)';
+    document.getElementById('sMonth').textContent=fmt(monthSpending());
+    document.getElementById('sMonth').style.color='var(--red)';
+  }
 }
 
 function renderSpend() {
