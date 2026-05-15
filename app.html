@@ -117,44 +117,46 @@ body{
 
 /* ── HOME TARGET RING CARD ── */
 .tcard{
-  background:var(--text);color:var(--bg);
+  background:var(--card);color:var(--text);
+  border:1px solid var(--border2);
   border-radius:var(--r);padding:18px 15px;margin-bottom:10px;
   transition:background .3s,color .3s;
 }
+/* Ring track uses border color */
+.ring-bg{fill:none;stroke:var(--border2);stroke-width:8;}
 .tcard-top{display:flex;align-items:center;gap:16px;margin-bottom:14px;}
 .ring-wrap{position:relative;width:96px;height:96px;flex-shrink:0;}
 .ring-svg{width:100%;height:100%;transform:rotate(-90deg);}
-.ring-bg{fill:none;stroke:rgba(128,128,128,.2);stroke-width:8;}
 .ring-fg{fill:none;stroke-width:8;stroke-linecap:round;stroke-dasharray:264;stroke-dashoffset:264;transition:stroke-dashoffset 1s ease,stroke .4s;}
 .ring-mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .ring-pct{font-size:1.25rem;font-weight:800;line-height:1;}
-.ring-sub{font-size:.48rem;font-weight:700;letter-spacing:.8px;opacity:.5;margin-top:2px;}
+.ring-sub{font-size:.48rem;font-weight:700;letter-spacing:.8px;color:var(--text3);margin-top:2px;}
 .tcard-info{flex:1;min-width:0;}
-.tcard-lbl{font-size:.58rem;font-weight:700;letter-spacing:.8px;opacity:.5;margin-bottom:3px;}
+.tcard-lbl{font-size:.58rem;font-weight:700;letter-spacing:.8px;color:var(--text3);margin-bottom:3px;}
 .earned-big{font-size:1.9rem;font-weight:800;letter-spacing:-1px;line-height:1;margin-bottom:3px;}
-.target-sub{font-size:.7rem;opacity:.6;line-height:1.4;}
+.target-sub{font-size:.7rem;color:var(--text2);line-height:1.4;}
 
 /* Platform pills */
 .pills{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
-.pill{display:flex;align-items:center;gap:5px;background:rgba(128,128,128,.12);border-radius:var(--r-pill);padding:5px 10px;}
+.pill{display:flex;align-items:center;gap:5px;background:var(--s1);border:1px solid var(--border);border-radius:var(--r-pill);padding:5px 10px;}
 .pill-val{font-size:.78rem;font-weight:700;}
 .pill-lbl{font-size:.56rem;opacity:.55;font-weight:600;}
 
 /* Funds row */
 .funds-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;}
-.fund-box{background:rgba(128,128,128,.1);border-radius:var(--r-sm);padding:8px 10px;cursor:pointer;}
+.fund-box{background:var(--s1);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 10px;cursor:pointer;}
 .fund-val{font-size:.9rem;font-weight:800;margin-bottom:1px;}
 .fund-lbl{font-size:.52rem;opacity:.5;font-weight:700;letter-spacing:.3px;text-transform:uppercase;}
 
 /* Breakdown */
 .bdtoggle{
-  border-top:1px solid rgba(128,128,128,.15);margin-top:10px;padding-top:8px;
+  border-top:1px solid var(--border);margin-top:10px;padding-top:8px;
   display:flex;justify-content:space-between;cursor:pointer;
 }
 .bdtoggle span{font-size:.65rem;opacity:.55;}
 .bdbody{display:none;}
 .bdbody.open{display:block;margin-top:8px;}
-.bdrow{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(128,128,128,.08);font-size:.68rem;}
+.bdrow{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);font-size:.68rem;}
 .bdrow:last-child{border:none;font-weight:700;padding-top:5px;}
 .bdlbl{opacity:.6;}
 
@@ -306,7 +308,7 @@ body{
 .acct-bal{font-size:.86rem;font-weight:700;text-align:right;flex-shrink:0;}
 
 /* ── CHAT ── */
-.chat-w{display:flex;flex-direction:column;height:calc(100vh - 220px);min-height:360px;}
+.chat-w{display:flex;flex-direction:column;height:340px;}
 .chat-msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:9px;padding:3px 0;}
 .bubble{max-width:86%;padding:9px 12px;border-radius:15px;font-size:.8rem;line-height:1.55;}
 .bubble.user{background:var(--text);color:var(--bg);align-self:flex-end;border-radius:15px 15px 4px 15px;font-weight:600;}
@@ -597,9 +599,9 @@ body{
 
   <div class="shdr">
     <div class="stitle">All Bills & Payments</div>
-    <div style="display:flex;gap:5px">
-      <button class="bicon" onclick="openModal('addBillMod')">+ Recurring</button>
-      <button class="bicon" onclick="openModal('addOTMod')">+ One-Time</button>
+    <div style="display:flex;gap:5px;flex-shrink:0">
+      <button class="bicon" style="white-space:nowrap" onclick="openModal('addBillMod')">+ Recurring</button>
+      <button class="bicon" style="white-space:nowrap" onclick="openModal('addOTMod')">+ One-Time</button>
     </div>
   </div>
   <div class="card" style="padding:0 13px" id="billsList"><div class="empty">No bills yet</div></div>
@@ -643,17 +645,16 @@ body{
 
   <div class="shdr"><div class="stitle">Settings</div></div>
   <div class="card">
-    <div class="iwrap"><label>Monthly Earnings Goal ($)</label><input type="number" id="setGoal" placeholder="9500"></div>
-    <div class="iwrap"><label>Daily Quota ($)</label><input type="number" id="setQuota" placeholder="400"></div>
-    <button class="btn btn-p" onclick="saveSettings()">Save Settings</button>
-  </div>
-
-  <div class="card">
-    <div style="display:flex;flex-direction:column;gap:6px">
-      <button class="btn btn-g" onclick="exportData()">📥 Export Backup</button>
-      <button class="btn btn-g" onclick="document.getElementById('impInput').click()">📤 Import Backup</button>
-      <input type="file" id="impInput" style="display:none" accept=".json" onchange="importData(this)">
+    <div class="irow" style="margin-bottom:10px">
+      <div class="iwrap" style="margin:0"><label>Monthly Goal ($)</label><input type="number" id="setGoal" placeholder="9500"></div>
+      <div class="iwrap" style="margin:0"><label>Daily Quota ($)</label><input type="number" id="setQuota" placeholder="400"></div>
     </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-p" style="flex:1" onclick="saveSettings()">Save</button>
+      <button class="btn btn-g" style="flex:1" onclick="exportData()">📥 Backup</button>
+      <button class="btn btn-g" style="flex:1" onclick="document.getElementById('impInput').click()">📤 Restore</button>
+    </div>
+    <input type="file" id="impInput" style="display:none" accept=".json" onchange="importData(this)">
   </div>
   <div class="card"><button class="btn btn-r" style="width:100%" onclick="logout()">Sign Out</button></div>
 </div>
@@ -970,8 +971,10 @@ function calcDailyTarget() {
     oneTimePerDay += p.amount / daysUntil;
   });
 
-  // 4. Next month rent ($2,084) spread across days left
-  const NEXT_RENT = 2084;
+  // 4. Next month rent ($2,084) — only if rent not already in bills
+  // Prevents double-counting when rent is added as a bill
+  const hasRentBill = S.bills.some(b => b.name.toLowerCase().includes('rent'));
+  const NEXT_RENT = hasRentBill ? 0 : 2084;
   const rentPerDay = NEXT_RENT / daysLeft;
 
   // 5. Splitwise debts — spread over 90 days
@@ -1137,8 +1140,9 @@ function renderHome() {
   const fill=document.getElementById('beFill');
   fill.style.width=bePct+'%'; fill.style.background=net>=0?'var(--green)':'var(--gold)';
   document.getElementById('bePct').textContent=Math.round(bePct)+'%';
-  document.getElementById('beEarned').textContent=`Earned ${fmt(earned)}`;
-  document.getElementById('beSpent').textContent=`Spent ${fmt(spent)}`;
+  const beMsg = earned===0 && spent===0 ? 'Start driving to track today' : `Earned ${fmt(earned)}`;
+  document.getElementById('beEarned').textContent=beMsg;
+  document.getElementById('beSpent').textContent=earned===0&&spent===0 ? '' : `Spent ${fmt(spent)}`;
 
   // Upcoming bills
   const combined=[
@@ -1552,21 +1556,27 @@ function renderBills() {
         const chip=b.paid?'chip-pd':b.skipped?'chip-sk':b._days<0?'chip-ov':b._days<=3?'chip-sn':b._ot?'chip-ot':'chip-up';
         const lbl=b.paid?'✓ Paid':b.skipped?'Skipped':b._days<0?'🚨 Overdue':b._days===0?'Today!':
           b._ot?new Date(b.due_date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):b.due_day+'th';
+        const dueLabel = b._days<0?'Overdue':b._days===0?'Today':
+          b._ot ? new Date(b.due_date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})
+          : `${b.due_day}${[,'st','nd','rd'][b.due_day%10]||'th'}`;
         return `<div class="brow">
           <div class="bicon">${catIcons[b.category||'other']||'📦'}</div>
-          <div class="bbody"><div class="bname">${b.name}</div><div class="bsub">${b._ot?'One-time':'Recurring'} · ${ttc(b.category||'Other')}</div></div>
+          <div class="bbody">
+            <div class="bname">${b.name}</div>
+            <div class="bsub">${b._ot?'One-time':'Monthly'} · <span style="color:${b._days<0&&!b.paid?'var(--red)':b._days<=3&&!b.paid?'var(--gold)':'var(--text3)'}">${dueLabel}</span>${b._days<-7&&!b.paid?' <span style="font-size:.55rem;color:var(--red);font-weight:700">CARRIED OVER</span>':''}</div>
+          </div>
           <div class="bright">
-            <div class="bamt">${fmt(b.amount)}</div>
+            <div class="bamt" style="color:${b.paid?'var(--green)':b._days<0?'var(--red)':'var(--text)'}">${fmt(b.amount)}</div>
             <span class="chip ${chip}">${lbl}</span>
             <div class="bactions">
               ${b.skipped
-                ?`<button class="bicon" onclick="unskipBill('${b.id}','${b._ot?'ot':'bill'}')">↩ Undo</button>`
+                ?`<button class="bicon" onclick="unskipBill('${b.id}','${b._ot?'ot':'bill'}')">Undo</button>`
                 :!b.paid
-                  ?`<button class="bicon" style="color:var(--green)" onclick="payBill('${b.id}','${b._ot?'ot':'bill'}')">✓ Pay</button>
+                  ?`<button class="bicon" style="color:var(--green);font-weight:700" onclick="payBill('${b.id}','${b._ot?'ot':'bill'}')">Pay</button>
                     <button class="bicon" onclick="skipBill('${b.id}','${b._ot?'ot':'bill'}')">Skip</button>`
-                  :`<button class="bicon" onclick="unpayBill('${b.id}','${b._ot?'ot':'bill'}')">↩ Undo</button>`
+                  :`<button class="bicon" onclick="unpayBill('${b.id}','${b._ot?'ot':'bill'}')">Undo</button>`
               }
-              <button class="bicon" onclick="openEditBillMod('${b.id}','${b._ot?'ot':'bill'}')">✏️</button>
+              <button class="bicon" style="padding:5px 7px" onclick="openEditBillMod('${b.id}','${b._ot?'ot':'bill'}')">✎</button>
             </div>
           </div>
         </div>`;
@@ -1719,10 +1729,18 @@ function startShift() {
 }
 function endShift() {
   const start=parseInt(localStorage.getItem('pb_shift')||0);
-  const startE=parseFloat(localStorage.getItem('pb_shift_e')||0);
   const el=Date.now()-start, hours=el/3600000;
-  const earned=Math.max(0,todayEarnings()-startE);
+  const h=Math.floor(hours),m=Math.floor((hours-h)*60);
   clearInterval(_shiftInterval);_shiftInterval=null;
+  // Prompt user to enter earnings — auto-calc was unreliable
+  const earnedStr=prompt(`Shift ended: ${h}h ${m}m\nHow much did you earn this shift? ($)`,'0');
+  if(earnedStr===null){
+    // User cancelled — restart timer
+    _shiftInterval=setInterval(tickShift,1000);tickShift();
+    localStorage.setItem('pb_shift',start);
+    return;
+  }
+  const earned=Math.max(0,parseFloat(earnedStr)||0);
   localStorage.removeItem('pb_shift');localStorage.removeItem('pb_shift_e');
   const shift={id:Date.now()+'',date:_todayStr,start:new Date(start).toTimeString().slice(0,5),end:new Date().toTimeString().slice(0,5),hours:Math.round(hours*10)/10,earned:Math.round(earned*100)/100,perHour:hours>.05?Math.round(earned/hours*100)/100:0};
   S.shifts.unshift(shift);if(S.shifts.length>50)S.shifts.pop();
@@ -1732,8 +1750,7 @@ function endShift() {
   document.getElementById('shiftStatLine').style.display='none';
   document.getElementById('shiftDisp').textContent='00:00:00';
   document.getElementById('shiftCard').style.background='';
-  const h=Math.floor(hours),m=Math.floor((hours-h)*60);
-  alert(`✅ Shift done!\n${h}h ${m}m · ${fmt(earned)} earned · ${fmt(shift.perHour)}/hr`);
+  alert(`✅ Shift saved!\n${h}h ${m}m · ${fmt(earned)} earned · ${fmt(shift.perHour)}/hr`);
 }
 function tickShift() {
   const start=parseInt(localStorage.getItem('pb_shift')||0); if(!start) return;
@@ -1939,9 +1956,16 @@ async function syncPlaid() {
   const r=await req('/api/plaid/transactions');
   if(r?.transactions) {
     r.transactions.forEach(t=>{
-      if(t.is_income) return; // STRICT: income never goes to expenses
+      // Income/deposits ARE included in expenses with is_income:true
+      // so they show in the Income tab on the Spend page
+      // They are excluded from spending totals by the !e.is_income filter elsewhere
       const key=getMKey(t.description);
       if(S.rules[key]) t.category=S.rules[key];
+      // Auto-categorize transfers
+      const desc=(t.description||'').toLowerCase();
+      if(!S.rules[key] && (desc.includes('save your change')||desc.includes('backup balance')||desc.includes('transfer')||desc.includes('zelle'))) {
+        t.category='transfers'; t.is_income=false;
+      }
       if(!S.expenses.some(e=>e.plaid_id===t.plaid_id)) S.expenses.push(t);
       else{const idx=S.expenses.findIndex(e=>e.plaid_id===t.plaid_id);if(idx>=0&&S.rules[key])S.expenses[idx].category=t.category;}
     });
