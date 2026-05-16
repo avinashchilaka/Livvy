@@ -9,346 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-/* ─────────────────────────────────────────
-   LIVVY — DESIGN SYSTEM
-   Night: pure black | Day: clean white
-   Earnings: green | Expenses: red
-   Auto switches at 6am / 6pm local time
-───────────────────────────────────────── */
-:root {
-  /* NIGHT (default) */
-  --bg:#0a0a0a; --s1:#111; --card:#161616; --card2:#1c1c1c;
-  --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.13);
-  --text:#f0f0f0; --text2:#aaa; --text3:#555;
-  --shadow:rgba(0,0,0,0.5);
-  --green:#4ade80; --green-bg:rgba(74,222,128,0.08);
-  --red:#f87171;   --red-bg:rgba(248,113,113,0.08);
-  --gold:#fbbf24;  --gold-bg:rgba(251,191,36,0.08);
-  --blue:#60a5fa;  --blue-bg:rgba(96,165,250,0.08);
-  --r:16px; --r-sm:10px; --r-pill:99px;
-}
-:root.day {
-  /* DAY — Uber white */
-  --bg:#ffffff; --s1:#f5f5f5; --card:#ffffff; --card2:#f0f0f0;
-  --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.14);
-  --text:#0a0a0a; --text2:#555; --text3:#999;
-  --shadow:rgba(0,0,0,0.1);
-  --green:#16a34a; --green-bg:rgba(22,163,74,0.07);
-  --red:#dc2626;   --red-bg:rgba(220,38,38,0.07);
-  --gold:#d97706;  --gold-bg:rgba(217,119,6,0.07);
-  --blue:#2563eb;  --blue-bg:rgba(37,99,235,0.07);
-}
-
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{
-  font-family:'Inter',sans-serif;
-  background:var(--bg);color:var(--text);
-  min-height:100vh;padding-bottom:90px;
-  -webkit-font-smoothing:antialiased;
-  transition:background .3s,color .3s;
-}
-::-webkit-scrollbar{width:2px;}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px;}
-
-/* ── PAGES ── */
-.page{display:none;padding:14px;max-width:540px;margin:0 auto;}
-.page.active{display:block;animation:fadeUp .18s ease;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-
-/* ── TOPBAR ── */
-.topbar{
-  position:sticky;top:0;z-index:60;
-  background:var(--bg);border-bottom:1px solid var(--border);
-  padding:0 14px;height:50px;
-  display:flex;align-items:center;justify-content:space-between;
-  max-width:540px;margin:0 auto;
-  transition:background .3s;
-}
-.logo{font-size:1.1rem;font-weight:800;font-style:italic;letter-spacing:-.5px;color:var(--text);}
-.topbar-r{display:flex;align-items:center;gap:8px;}
-.sync-pill{
-  display:flex;align-items:center;gap:4px;
-  font-size:.6rem;font-weight:600;letter-spacing:.3px;
-  background:var(--s1);border:1px solid var(--border);
-  border-radius:var(--r-pill);padding:3px 8px;color:var(--text3);
-}
-.sync-dot{width:5px;height:5px;border-radius:50%;background:var(--green);}
-.sync-dot.syncing{background:var(--gold);animation:blink .8s infinite;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.avatar{
-  width:28px;height:28px;border-radius:50%;
-  background:var(--text);color:var(--bg);
-  border:none;cursor:pointer;font-size:.62rem;font-weight:800;
-  display:flex;align-items:center;justify-content:center;
-  transition:background .3s,color .3s;
-}
-
-/* ── FLOATING NAV ── */
-.fnav{
-  position:fixed;bottom:14px;left:50%;transform:translateX(-50%);
-  background:var(--text);border-radius:var(--r-pill);
-  display:flex;align-items:center;padding:6px 10px;gap:2px;
-  z-index:100;box-shadow:0 8px 32px var(--shadow);
-  transition:background .3s;
-}
-.nb{
-  display:flex;flex-direction:column;align-items:center;
-  padding:7px 13px;border:none;background:none;
-  color:var(--bg);opacity:.4;
-  font-family:'Inter',sans-serif;font-size:.58rem;font-weight:600;
-  gap:3px;cursor:pointer;border-radius:var(--r-pill);transition:all .15s;
-}
-.nb.active{background:var(--bg);color:var(--text);opacity:1;}
-.nb-icon{font-size:1rem;line-height:1;}
-.nb-lbl{display:none;}
-.nb.active .nb-lbl{display:block;}
-
-/* ── DUAL FABS ── */
-.fabs{position:fixed;bottom:82px;right:14px;z-index:90;display:flex;flex-direction:column;align-items:center;gap:8px;}
-.fab{width:46px;height:46px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px var(--shadow);transition:transform .15s;}
-.fab:active{transform:scale(.92);}
-.fab-ai{background:var(--text);color:var(--bg);font-size:.95rem;font-weight:700;}
-.fab-log{background:var(--green);color:#fff;font-size:1.3rem;}
-
-/* ── CARDS ── */
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:15px;margin-bottom:10px;transition:background .3s,border-color .3s;}
-.clbl{font-size:.58rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:7px;}
-
-/* ── HOME TARGET RING CARD ── */
-.tcard{
-  background:var(--card);color:var(--text);
-  border:1px solid var(--border2);
-  border-radius:var(--r);padding:18px 15px;margin-bottom:10px;
-  transition:background .3s,color .3s;
-}
-/* Ring track uses border color */
-.ring-bg{fill:none;stroke:var(--border2);stroke-width:8;}
-.tcard-top{display:flex;align-items:center;gap:16px;margin-bottom:14px;}
-.ring-wrap{position:relative;width:96px;height:96px;flex-shrink:0;}
-.ring-svg{width:100%;height:100%;transform:rotate(-90deg);}
-.ring-fg{fill:none;stroke-width:8;stroke-linecap:round;stroke-dasharray:264;stroke-dashoffset:264;transition:stroke-dashoffset 1s ease,stroke .4s;}
-.ring-mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-.ring-pct{font-size:1.25rem;font-weight:800;line-height:1;}
-.ring-sub{font-size:.48rem;font-weight:700;letter-spacing:.8px;color:var(--text3);margin-top:2px;}
-.tcard-info{flex:1;min-width:0;}
-.tcard-lbl{font-size:.58rem;font-weight:700;letter-spacing:.8px;color:var(--text3);margin-bottom:3px;}
-.earned-big{font-size:1.9rem;font-weight:800;letter-spacing:-1px;line-height:1;margin-bottom:3px;}
-.target-sub{font-size:.7rem;color:var(--text2);line-height:1.4;}
-
-/* Platform pills */
-.pills{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
-.pill{display:flex;align-items:center;gap:5px;background:var(--s1);border:1px solid var(--border);border-radius:var(--r-pill);padding:5px 10px;}
-.pill-val{font-size:.78rem;font-weight:700;}
-.pill-lbl{font-size:.56rem;opacity:.55;font-weight:600;}
-
-/* Funds row */
-.funds-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;}
-.fund-box{background:var(--s1);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 10px;cursor:pointer;}
-.fund-val{font-size:.9rem;font-weight:800;margin-bottom:1px;}
-.fund-lbl{font-size:.52rem;opacity:.5;font-weight:700;letter-spacing:.3px;text-transform:uppercase;}
-
-/* Breakdown */
-.bdtoggle{
-  border-top:1px solid var(--border);margin-top:10px;padding-top:8px;
-  display:flex;justify-content:space-between;cursor:pointer;
-}
-.bdtoggle span{font-size:.65rem;opacity:.55;}
-.bdbody{display:none;}
-.bdbody.open{display:block;margin-top:8px;}
-.bdrow{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);font-size:.68rem;}
-.bdrow:last-child{border:none;font-weight:700;padding-top:5px;}
-.bdlbl{opacity:.6;}
-
-/* ── STAT GRID ── */
-.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
-.sbox{background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;cursor:pointer;transition:background .1s,border-color .3s;}
-.sbox:active{background:var(--card2);}
-.sval{font-size:1.15rem;font-weight:800;line-height:1;margin-bottom:3px;}
-.slbl{font-size:.58rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);}
-
-/* ── ALERTS ── */
-.alert{border-radius:var(--r-sm);padding:10px 13px;margin-bottom:7px;border-left:3px solid;position:relative;animation:sIn .2s ease;}
-@keyframes sIn{from{opacity:0;transform:translateX(-5px)}to{opacity:1;transform:translateX(0)}}
-.alert.red{background:var(--red-bg);border-color:var(--red);}
-.alert.gold{background:var(--gold-bg);border-color:var(--gold);}
-.alert.green{background:var(--green-bg);border-color:var(--green);}
-.alert-t{font-size:.76rem;font-weight:700;margin-bottom:2px;}
-.alert-b{font-size:.68rem;color:var(--text2);line-height:1.4;}
-.alert-x{position:absolute;top:7px;right:8px;background:none;border:none;color:var(--text3);font-size:1rem;cursor:pointer;padding:2px 5px;line-height:1;}
-
-/* ── SECTION HEADER ── */
-.shdr{display:flex;justify-content:space-between;align-items:center;margin:13px 0 7px;}
-.stitle{font-size:.6rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);}
-.slink{font-size:.7rem;color:var(--text2);background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;}
-
-/* ── TRANSACTIONS ── */
-.txn{display:flex;align-items:center;gap:9px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;}
-.txn:last-child{border-bottom:none;}
-.txn:active{opacity:.7;}
-.tlogo{width:34px;height:34px;border-radius:9px;background:var(--s1);display:flex;align-items:center;justify-content:center;font-size:.88rem;flex-shrink:0;overflow:hidden;}
-.tlogo img{width:100%;height:100%;object-fit:contain;border-radius:9px;}
-.tbody{flex:1;min-width:0;}
-.tname{font-size:.83rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;}
-.tmeta{font-size:.65rem;color:var(--text3);}
-.tamt{font-size:.83rem;font-weight:700;flex-shrink:0;}
-
-/* ── BILLS ── */
-.brow{padding:12px 0;border-bottom:1px solid var(--border);}
-.brow:last-child{border-bottom:none;}
-.brow-top{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
-.brow-bot{display:flex;align-items:center;justify-content:space-between;padding-left:40px;}
-.bicon{width:32px;height:32px;border-radius:8px;background:var(--s1);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;}
-.bbody{flex:1;min-width:0;}
-.bname{font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.bsub{font-size:.63rem;color:var(--text3);margin-top:1px;}
-.bamt{font-size:.9rem;font-weight:800;font-variant-numeric:tabular-nums;}
-.bactions{display:flex;gap:5px;align-items:center;}
-.bact-btn{font-size:.68rem;font-weight:600;padding:5px 11px;border-radius:var(--r-pill);border:1.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all .12s;}
-.bact-btn:active{opacity:.7;}
-.bact-btn.pay{background:var(--green);color:#000;border-color:var(--green);font-weight:700;}
-.bact-btn.undo{background:var(--s1);}
-.chip{font-size:.54rem;font-weight:700;letter-spacing:.3px;padding:3px 7px;border-radius:var(--r-pill);text-transform:uppercase;white-space:nowrap;}
-.chip-ov{background:var(--red-bg);color:var(--red);}
-.chip-sn{background:var(--gold-bg);color:var(--gold);}
-.chip-up{background:var(--blue-bg);color:var(--blue);}
-.chip-pd{background:var(--green-bg);color:var(--green);}
-.chip-sk{background:var(--s1);color:var(--text3);}
-.chip-ot{background:rgba(139,92,246,.08);color:#7c3aed;}
-
-/* ── SHIFT ── */
-.shift-timer{font-size:2.4rem;font-weight:800;letter-spacing:3px;text-align:center;margin:10px 0;line-height:1;color:var(--text);}
-
-/* ── CHARTS ── */
-.dgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:10px;}
-.dcol{text-align:center;}
-.dbar-w{height:40px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:3px;}
-.dbar{width:100%;border-radius:3px 3px 0 0;min-height:2px;}
-.dday{font-size:.5rem;font-weight:700;color:var(--text3);text-transform:uppercase;}
-.damt{font-size:.46rem;color:var(--text3);margin-top:1px;}
-
-.donut-w{display:flex;align-items:center;gap:13px;}
-.dlegend{flex:1;min-width:0;}
-.dleg-row{display:flex;align-items:center;gap:5px;margin-bottom:5px;cursor:pointer;}
-.dleg-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0;}
-.dleg-lbl{font-size:.7rem;color:var(--text2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;}
-.dleg-pct{font-size:.65rem;color:var(--text3);font-weight:600;}
-
-/* ── BUDGET BARS ── */
-.budrow{margin-bottom:11px;}
-.budhdr{display:flex;justify-content:space-between;margin-bottom:3px;}
-.budname{font-size:.78rem;font-weight:600;}
-.budnums{font-size:.66rem;color:var(--text3);}
-.budbar{height:4px;background:var(--s1);border-radius:99px;overflow:hidden;}
-.budfill{height:100%;border-radius:99px;transition:width .8s ease;}
-
-/* ── SPEND TABS ── */
-.istabs{display:flex;background:var(--s1);border-radius:var(--r-pill);padding:3px;margin-bottom:11px;gap:2px;}
-.istab{flex:1;padding:7px;background:transparent;border:none;border-radius:var(--r-pill);color:var(--text3);font-family:'Inter',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .15s;text-align:center;}
-.istab.active{background:var(--text);color:var(--bg);}
-
-/* ── CATEGORY CHIPS ── */
-.chips{display:flex;gap:4px;overflow-x:auto;padding-bottom:2px;margin-bottom:9px;scrollbar-width:none;}
-.chips::-webkit-scrollbar{display:none;}
-.cchip{font-size:.65rem;font-weight:600;padding:4px 10px;border-radius:var(--r-pill);border:1.5px solid var(--border2);background:transparent;color:var(--text3);white-space:nowrap;cursor:pointer;font-family:'Inter',sans-serif;transition:all .12s;}
-.cchip.active{background:var(--text);color:var(--bg);border-color:var(--text);}
-
-/* ── TIME TABS ── */
-.ttabs{display:flex;background:var(--s1);border-radius:10px;padding:3px;margin-bottom:11px;gap:2px;}
-.ttab{flex:1;padding:6px 4px;background:transparent;border:none;border-radius:7px;color:var(--text3);font-family:'Inter',sans-serif;font-size:.66rem;font-weight:600;cursor:pointer;transition:all .12s;}
-.ttab.active{background:var(--text);color:var(--bg);font-weight:700;}
-
-/* ── AI BRIEFING ── */
-.briefcard{background:var(--s1);border:1px solid var(--border2);border-radius:var(--r);padding:13px;margin-bottom:10px;position:relative;}
-.briefbar{position:absolute;top:0;left:0;right:0;height:2px;background:var(--text);border-radius:var(--r) var(--r) 0 0;}
-.brief-hdr{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;}
-.brief-emoji{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
-.brief-head{font-size:.86rem;font-weight:700;line-height:1.3;}
-.brief-body{font-size:.74rem;color:var(--text2);line-height:1.6;margin-bottom:7px;}
-.brief-tip{background:var(--card2);border-radius:7px;padding:6px 9px;font-size:.66rem;color:var(--text2);font-weight:500;}
-
-/* ── BREAKEVEN ── */
-.bebar{height:4px;background:var(--s1);border-radius:99px;overflow:hidden;margin:7px 0 4px;}
-.befill{height:100%;border-radius:99px;transition:width .8s ease;}
-
-/* ── INPUTS ── */
-.iwrap{margin-bottom:11px;}
-.iwrap label{display:block;font-size:.57rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);margin-bottom:4px;}
-.iwrap input,.iwrap select{width:100%;background:var(--s1);border:1.5px solid var(--border2);border-radius:var(--r-sm);color:var(--text);font-family:'Inter',sans-serif;font-size:.88rem;padding:9px 11px;outline:none;transition:border-color .15s,background .3s,color .3s;-webkit-appearance:none;}
-.iwrap input:focus,.iwrap select:focus{border-color:var(--text);}
-.irow{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
-
-/* ── BUTTONS ── */
-.btn{font-family:'Inter',sans-serif;font-weight:700;font-size:.83rem;padding:10px 15px;border:none;border-radius:var(--r-sm);cursor:pointer;transition:opacity .15s,transform .1s;}
-.btn:active{transform:scale(.97);}
-.btn-p{background:var(--text);color:var(--bg);width:100%;padding:12px;border-radius:var(--r);font-size:.88rem;}
-.btn-g{background:transparent;border:1.5px solid var(--border2);color:var(--text2);}
-.btn-r{background:var(--red);color:#fff;}
-.btn-sm{font-size:.68rem;padding:5px 9px;border-radius:8px;}
-.bicon{background:var(--s1);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:.7rem;padding:5px 8px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;transition:background .12s;}
-.bicon:active{background:var(--card2);}
-
-/* ── MODAL ── */
-.ov{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;}
-.ov.open{display:flex;}
-.modal{background:var(--card);border:1px solid var(--border2);border-radius:var(--r) var(--r) 0 0;padding:13px 17px 32px;width:100%;max-width:540px;max-height:88vh;overflow-y:auto;animation:slideUp .22s ease;transition:background .3s;}
-@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
-.mhandle{width:30px;height:3px;background:var(--border2);border-radius:99px;margin:0 auto 13px;}
-.modal h2{font-size:.97rem;font-weight:800;margin-bottom:3px;}
-.msub{font-size:.7rem;color:var(--text3);margin-bottom:13px;}
-
-/* ── DRILL ── */
-.dhdr{display:flex;align-items:center;gap:9px;margin-bottom:11px;}
-.dicon{font-size:1.3rem;}
-.dtotal{font-size:1.4rem;font-weight:800;line-height:1;}
-.dsub{font-size:.66rem;color:var(--text3);margin-top:2px;}
-
-/* ── ACCTS ── */
-.acct-row{display:flex;align-items:center;gap:9px;padding:10px 0;border-bottom:1px solid var(--border);}
-.acct-row:last-child{border-bottom:none;}
-.acct-icon{width:32px;height:32px;border-radius:8px;background:var(--s1);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;}
-.acct-body{flex:1;min-width:0;}
-.acct-name{font-size:.83rem;font-weight:600;margin-bottom:1px;}
-.acct-sub{font-size:.63rem;color:var(--text3);}
-.acct-bal{font-size:.86rem;font-weight:700;text-align:right;flex-shrink:0;}
-
-/* ── CHAT ── */
-.chat-w{display:flex;flex-direction:column;height:340px;}
-.chat-msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:9px;padding:3px 0;}
-.bubble{max-width:86%;padding:9px 12px;border-radius:15px;font-size:.8rem;line-height:1.55;}
-.bubble.user{background:var(--text);color:var(--bg);align-self:flex-end;border-radius:15px 15px 4px 15px;font-weight:600;}
-.bubble.ai{background:var(--s1);color:var(--text);align-self:flex-start;border-radius:15px 15px 15px 4px;border:1px solid var(--border);}
-.bubble.loading{display:flex;gap:4px;align-items:center;padding:11px 13px;}
-.dot{width:5px;height:5px;border-radius:50%;background:var(--text3);animation:dots 1.2s infinite;}
-.dot:nth-child(2){animation-delay:.2s;}.dot:nth-child(3){animation-delay:.4s;}
-@keyframes dots{0%,60%,100%{opacity:.3;transform:scale(1)}30%{opacity:1;transform:scale(1.1)}}
-.chat-suggests{display:flex;flex-wrap:wrap;gap:4px;padding:7px 0;}
-.csug{font-size:.66rem;font-weight:600;padding:4px 10px;border-radius:var(--r-pill);background:var(--s1);color:var(--text2);border:1px solid var(--border2);cursor:pointer;font-family:'Inter',sans-serif;}
-.chat-in-row{display:flex;gap:7px;padding:9px 0;border-top:1px solid var(--border);}
-.chat-in{flex:1;background:var(--s1);border:1.5px solid var(--border2);border-radius:var(--r-pill);color:var(--text);font-family:'Inter',sans-serif;font-size:.83rem;padding:8px 13px;outline:none;}
-.chat-in:focus{border-color:var(--text);}
-.chat-send{width:36px;height:36px;border-radius:50%;background:var(--text);border:none;color:var(--bg);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-
-/* ── MISC ── */
-.empty{text-align:center;padding:22px 14px;color:var(--text3);font-size:.78rem;line-height:1.6;}
-.spinner{width:13px;height:13px;border:2px solid var(--border2);border-top-color:var(--text);border-radius:50%;animation:spin .6s linear infinite;display:inline-block;}
-@keyframes spin{to{transform:rotate(360deg)}}
-.lrow{display:flex;align-items:center;gap:7px;padding:16px;color:var(--text3);font-size:.76rem;}
-.divider{height:1px;background:var(--border);margin:12px 0;}
-
-/* ── RULE BOX ── */
-.rulebox{background:var(--s1);border:1px solid var(--border2);border-radius:var(--r-sm);padding:11px;margin-top:9px;}
-.rulebox p{font-size:.76rem;color:var(--text2);line-height:1.5;margin-bottom:9px;}
-.rulebtns{display:flex;gap:7px;}
-
-/* ── CELEBRATE ── */
-@keyframes pop{0%{transform:scale(1)}30%{transform:scale(1.05)}60%{transform:scale(.98)}100%{transform:scale(1)}}
-.celebrating{animation:pop .45s ease;}
-@keyframes fall{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(70px) rotate(360deg);opacity:0}}
-.confetti{position:fixed;width:6px;height:6px;border-radius:2px;pointer-events:none;animation:fall .85s ease forwards;z-index:999;}
-
-@media(max-width:360px){.ring-wrap{width:82px;height:82px;}.earned-big{font-size:1.6rem;}.shift-timer{font-size:2rem;}.nb{padding:7px 10px;}}
-</style>
+<link rel="stylesheet" href="./styles.css">
 </head>
 <body>
 
@@ -426,8 +87,8 @@ body{
 
   <!-- Stats -->
   <div class="sgrid">
-    <div class="sbox" onclick="drillEarn('week')"><div class="sval" id="hWeek" style="color:var(--green)">$0</div><div class="slbl">This Week ›</div></div>
-    <div class="sbox" onclick="drillEarn('month')"><div class="sval" id="hMonth" style="color:var(--green)">$0</div><div class="slbl">This Month ›</div></div>
+    <div class="sbox" onclick="drillEarn('week')"><div class="sval text-green" id="hWeek">$0</div><div class="slbl">This Week ›</div></div>
+    <div class="sbox" onclick="drillEarn('month')"><div class="sval text-green" id="hMonth">$0</div><div class="slbl">This Month ›</div></div>
   </div>
 
   <!-- Break-even -->
@@ -447,7 +108,7 @@ body{
     <div class="stitle">Upcoming Bills</div>
     <button class="slink" onclick="showPage('bills')">See all</button>
   </div>
-  <div class="card" style="padding:0 13px" id="upcomingHome"><div class="lrow"><div class="spinner"></div> Loading...</div></div>
+  <div class="card card-list" id="upcomingHome"><div class="lrow"><div class="spinner"></div> Loading...</div></div>
 
   <!-- Latest Transactions with sort -->
   <div style="display:flex;justify-content:space-between;align-items:center;margin:13px 0 7px;position:relative">
@@ -473,7 +134,7 @@ body{
       </div>
     </div>
   </div>
-  <div class="card" style="padding:0 13px" id="latestTxns"><div class="empty">Connect bank in Accounts</div></div>
+  <div class="card card-list" id="latestTxns"><div class="empty">Connect bank in Accounts</div></div>
 </div>
 
 <!-- ═══ EARNINGS ═══ -->
@@ -488,10 +149,10 @@ body{
   </div>
 
   <div class="sgrid">
-    <div class="sbox" onclick="drillEarn('today')"><div class="sval" id="eToday" style="color:var(--green)">$0</div><div class="slbl">Today ›</div></div>
-    <div class="sbox" onclick="drillEarn('week')"><div class="sval" id="eWeek" style="color:var(--green)">$0</div><div class="slbl">This Week ›</div></div>
-    <div class="sbox" onclick="drillEarn('month')"><div class="sval" id="eMonth" style="color:var(--green)">$0</div><div class="slbl">This Month ›</div></div>
-    <div class="sbox" onclick="openModal('targetBreakMod')" style="position:relative"><div class="sval" id="eTarget" style="color:var(--gold)">$0</div><div class="slbl">Daily Target ›</div></div>
+    <div class="sbox" onclick="drillEarn('today')"><div class="sval text-green" id="eToday">$0</div><div class="slbl">Today ›</div></div>
+    <div class="sbox" onclick="drillEarn('week')"><div class="sval text-green" id="eWeek">$0</div><div class="slbl">This Week ›</div></div>
+    <div class="sbox" onclick="drillEarn('month')"><div class="sval text-green" id="eMonth">$0</div><div class="slbl">This Month ›</div></div>
+    <div class="sbox" onclick="openModal('targetBreakMod')" style="position:relative"><div class="sval text-gold" id="eTarget">$0</div><div class="slbl">Daily Target ›</div></div>
   </div>
 
   <div class="card">
@@ -528,7 +189,7 @@ body{
     <button class="ttab" onclick="filterEarn('month',this)">Month</button>
     <button class="ttab" onclick="filterEarn('all',this)">All</button>
   </div>
-  <div class="card" style="padding:0 13px" id="earnHist"></div>
+  <div class="card card-list" id="earnHist"></div>
 </div>
 
 <!-- ═══ SPEND ═══ -->
@@ -540,8 +201,8 @@ body{
   </div>
 
   <div class="sgrid">
-    <div class="sbox"><div class="sval" id="sToday" style="color:var(--red)">$0</div><div class="slbl">Today</div></div>
-    <div class="sbox"><div class="sval" id="sMonth" style="color:var(--red)">$0</div><div class="slbl">This Month</div></div>
+    <div class="sbox"><div class="sval text-red" id="sToday">$0</div><div class="slbl">Today</div></div>
+    <div class="sbox"><div class="sval text-red" id="sMonth">$0</div><div class="slbl">This Month</div></div>
   </div>
 
   <div class="card" style="display:flex;align-items:center;justify-content:space-between">
@@ -584,7 +245,7 @@ body{
     <div style="font-size:.7rem;color:var(--text3);margin-bottom:9px">Based on your last 3 months. Tap ✓ to approve.</div>
     <div id="aiBudRows"></div>
     <button class="btn btn-p" style="margin-top:11px" onclick="applyApprovedBudgets()">Save Approved Limits</button>
-    <button class="btn btn-g btn-sm" style="width:100%;margin-top:5px" onclick="document.getElementById('aiBudCard').style.display='none'">Dismiss</button>
+    <button class="btn btn-g btn-sm btn-cancel" onclick="document.getElementById('aiBudCard').style.display='none'">Dismiss</button>
   </div>
 
   <!-- Budget bars -->
@@ -600,14 +261,14 @@ body{
   </div>
 
   <div class="chips" id="catChips"></div>
-  <div class="card" style="padding:0 13px" id="allTxns"><div class="empty">Connect bank to see transactions</div></div>
+  <div class="card card-list" id="allTxns"><div class="empty">Connect bank to see transactions</div></div>
 </div>
 
 <!-- ═══ BILLS ═══ -->
 <div class="page" id="page-bills">
   <div class="sgrid">
-    <div class="sbox"><div class="sval" id="billTotal" style="color:var(--red)">$0</div><div class="slbl">Monthly Total</div></div>
-    <div class="sbox"><div class="sval" id="billUnpaid" style="color:var(--gold)">$0</div><div class="slbl">Unpaid</div></div>
+    <div class="sbox"><div class="sval text-red" id="billTotal">$0</div><div class="slbl">Monthly Total</div></div>
+    <div class="sbox"><div class="sval text-gold" id="billUnpaid">$0</div><div class="slbl">Unpaid</div></div>
   </div>
 
   <div id="billSugCard" style="display:none" class="card"></div>
@@ -615,11 +276,11 @@ body{
   <div class="shdr">
     <div class="stitle">All Bills & Payments</div>
     <div style="display:flex;gap:5px;flex-shrink:0">
-      <button class="bicon" style="white-space:nowrap" onclick="openModal('addBillMod')">+ Recurring</button>
-      <button class="bicon" style="white-space:nowrap" onclick="openModal('addOTMod')">+ One-Time</button>
+      <button class="bicon no-wrap" onclick="openModal('addBillMod')">+ Recurring</button>
+      <button class="bicon no-wrap" onclick="openModal('addOTMod')">+ One-Time</button>
     </div>
   </div>
-  <div class="card" style="padding:0 13px" id="billsList"><div class="empty">No bills yet</div></div>
+  <div class="card card-list" id="billsList"><div class="empty">No bills yet</div></div>
 </div>
 
 <!-- ═══ MORE ═══ -->
@@ -633,13 +294,13 @@ body{
   </div>
 
   <div class="shdr"><div class="stitle">Bank Accounts</div><button class="bicon" onclick="openPlaidLink()">+ Connect</button></div>
-  <div class="card" style="padding:0 13px" id="acctsList"><div class="empty">No accounts connected</div></div>
+  <div class="card card-list" id="acctsList"><div class="empty">No accounts connected</div></div>
 
   <div class="shdr"><div class="stitle">Splitwise</div><button class="bicon" onclick="connectSplitwise()">Connect</button></div>
-  <div class="card" style="padding:0 13px" id="swList"><div class="empty">Connect Splitwise to see balances</div></div>
+  <div class="card card-list" id="swList"><div class="empty">Connect Splitwise to see balances</div></div>
 
   <div class="shdr"><div class="stitle">Manual Debts</div><button class="bicon" onclick="openModal('addDebtMod')">+ Add</button></div>
-  <div class="card" style="padding:0 13px" id="debtsList"><div class="empty">No manual debts</div></div>
+  <div class="card card-list" id="debtsList"><div class="empty">No manual debts</div></div>
 
   <div class="shdr"><div class="stitle">Ask AI</div></div>
   <div class="card chat-w" style="padding:13px">
@@ -690,13 +351,6 @@ body{
   <button class="fab fab-log" onclick="openModal('quickMod')" title="Quick Log">+</button>
 </div>
 
-<!-- ═══ SORT STYLE ═══ -->
-<style>
-.sort-opt{padding:7px 9px;border-radius:7px;cursor:pointer;font-size:.76rem;font-weight:500;color:var(--text2);transition:background .1s;}
-.sort-opt:hover{background:var(--s1);}
-.sort-opt.active{font-weight:700;color:var(--text);}
-</style>
-
 <!-- ═══ MODALS ═══ -->
 
 <!-- Quick Log -->
@@ -709,7 +363,7 @@ body{
     </div>
     <div class="iwrap"><label>Note (optional)</label><input type="text" id="qNote" placeholder="SAN airport, surge..."></div>
     <button class="btn btn-p" onclick="quickLog()">+ Log Now</button>
-    <button class="btn btn-g" style="width:100%;margin-top:5px" onclick="closeModal('quickMod')">Cancel</button>
+    <button class="btn btn-g btn-cancel" onclick="closeModal('quickMod')">Cancel</button>
   </div>
 </div>
 
@@ -725,7 +379,7 @@ body{
     <div class="iwrap"><label>Earnings ($)</label><input type="number" id="sEarned" placeholder="0.00" step="0.01"></div>
     <div class="iwrap"><label>Notes</label><input type="text" id="sNotes" placeholder="SAN airport, surge..."></div>
     <button class="btn btn-p" onclick="saveManualShift()">Save Shift</button>
-    <button class="btn btn-g" style="width:100%;margin-top:5px" onclick="closeModal('editShiftMod')">Cancel</button>
+    <button class="btn btn-g btn-cancel" onclick="closeModal('editShiftMod')">Cancel</button>
   </div>
 </div>
 
@@ -743,7 +397,7 @@ body{
       <div class="iwrap"><label>Note</label><input type="text" id="editEarnNote"></div>
     </div>
     <button class="btn btn-p" onclick="saveEditEarn()">Save</button>
-    <button class="btn btn-g" style="width:100%;margin-top:5px" onclick="closeModal('editEarnMod')">Cancel</button>
+    <button class="btn btn-g btn-cancel" onclick="closeModal('editEarnMod')">Cancel</button>
   </div>
 </div>
 
@@ -758,7 +412,7 @@ body{
     </div>
     <div class="iwrap"><label>Category</label><select id="bCat"><option value="housing">🏠 Housing</option><option value="vehicle">🚗 Vehicle</option><option value="insurance">🛡️ Insurance</option><option value="utilities">💡 Utilities</option><option value="subscription">📱 Subscription</option><option value="debt">💳 Debt Payment</option><option value="other">📦 Other</option></select></div>
     <button class="btn btn-p" onclick="addBill()">Add Bill</button>
-    <button class="btn btn-g" style="width:100%;margin-top:5px" onclick="closeModal('addBillMod')">Cancel</button>
+    <button class="btn btn-g btn-cancel" onclick="closeModal('addBillMod')">Cancel</button>
   </div>
 </div>
 
@@ -773,7 +427,7 @@ body{
     </div>
     <div class="iwrap"><label>Notes</label><input type="text" id="otNotes" placeholder="Paid to Eddie..."></div>
     <button class="btn btn-p" onclick="addOneTime()">Add Payment</button>
-    <button class="btn btn-g" style="width:100%;margin-top:5px" onclick="closeModal('addOTMod')">Cancel</button>
+    <button class="btn btn-g btn-cancel" onclick="closeModal('addOTMod')">Cancel</button>
   </div>
 </div>
 
@@ -789,8 +443,8 @@ body{
     </div>
     <div class="iwrap"><label>Category</label><select id="ebCat"><option value="housing">🏠 Housing</option><option value="vehicle">🚗 Vehicle</option><option value="insurance">🛡️ Insurance</option><option value="utilities">💡 Utilities</option><option value="subscription">📱 Subscription</option><option value="debt">💳 Debt Payment</option><option value="other">📦 Other</option></select></div>
     <button class="btn btn-p" onclick="saveEditBill()">Save</button>
-    <button class="btn btn-r btn-sm" style="width:100%;margin-top:5px" onclick="deleteBill()">Delete</button>
-    <button class="btn btn-g" style="width:100%;margin-top:5px" onclick="closeModal('editBillMod')">Cancel</button>
+    <button class="btn btn-r btn-sm btn-cancel" onclick="deleteBill()">Delete</button>
+    <button class="btn btn-g btn-cancel" onclick="closeModal('editBillMod')">Cancel</button>
   </div>
 </div>
 
@@ -805,7 +459,7 @@ body{
     </div>
     <div class="iwrap"><label>Notes / Deadline</label><input type="text" id="dNotes" placeholder="Pay by Jul 1..."></div>
     <button class="btn btn-p" onclick="addDebt()">Add Debt</button>
-    <button class="btn btn-g" style="width:100%;margin-top:5px" onclick="closeModal('addDebtMod')">Cancel</button>
+    <button class="btn btn-g btn-cancel" onclick="closeModal('addDebtMod')">Cancel</button>
   </div>
 </div>
 
@@ -817,11 +471,11 @@ body{
     <div id="txnRuleBox" class="rulebox" style="display:none">
       <p id="txnRuleText"></p>
       <div class="rulebtns">
-        <button class="btn btn-p" style="flex:1;padding:9px" onclick="applyRule(true)">Apply To All</button>
-        <button class="btn btn-g" style="flex:1;padding:9px" onclick="applyRule(false)">Just This One</button>
+        <button class="btn btn-p btn-modal-half" onclick="applyRule(true)">Apply To All</button>
+        <button class="btn btn-g btn-modal-half" onclick="applyRule(false)">Just This One</button>
       </div>
     </div>
-    <button class="btn btn-g" style="width:100%;margin-top:11px" onclick="closeModal('txnMod')">Close</button>
+    <button class="btn btn-g btn-cancel-lg" onclick="closeModal('txnMod')">Close</button>
   </div>
 </div>
 
@@ -837,7 +491,7 @@ body{
     <div class="iwrap"><label>Health ($)</label><input type="number" id="budHealth" placeholder="100"></div>
     <div class="iwrap"><label>Other ($)</label><input type="number" id="budOther" placeholder="300"></div>
     <button class="btn btn-p" onclick="saveBudget()">Save Budget</button>
-    <button class="btn btn-g" style="width:100%;margin-top:5px" onclick="closeModal('editBudMod')">Cancel</button>
+    <button class="btn btn-g btn-cancel" onclick="closeModal('editBudMod')">Cancel</button>
   </div>
 </div>
 
@@ -846,11 +500,10 @@ body{
   <div class="modal">
     <div class="mhandle"></div><h2 id="fundsModTitle">Available Funds</h2>
     <div id="fundsModBody"></div>
-    <button class="btn btn-g" style="width:100%;margin-top:11px" onclick="closeModal('fundsMod')">Close</button>
+    <button class="btn btn-g btn-cancel-lg" onclick="closeModal('fundsMod')">Close</button>
   </div>
 </div>
 
-<!-- Drill -->
 <!-- Target Breakdown Modal -->
 <div class="ov" id="targetBreakMod">
   <div class="modal">
@@ -862,6 +515,7 @@ body{
   </div>
 </div>
 
+<!-- Drill -->
 <div class="ov" id="drillMod">
   <div class="modal">
     <div class="mhandle"></div>
@@ -872,1477 +526,15 @@ body{
 </div>
 
 <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
-<script>
-'use strict';
-// ═══════════════════════════════════════════════════════
-// THEME — local time based, refreshes every minute
-// ═══════════════════════════════════════════════════════
-function applyTheme() {
-  const h = new Date().getHours();
-  const isDay = h >= 6 && h < 18;
-  document.documentElement.classList.toggle('day', isDay);
-}
-applyTheme();
-setInterval(applyTheme, 60000);
-
-// ═══════════════════════════════════════════════════════
-// DATE HELPERS — LOCAL time, same as original PBTrack
-// This fixes the PST timezone bug where UTC date was used
-// ═══════════════════════════════════════════════════════
-let _now, _todayStr, _todayDay, _monthStr;
-
-function refreshDate() {
-  _now      = new Date();
-  _todayStr = _now.getFullYear() + '-' +
-              String(_now.getMonth()+1).padStart(2,'0') + '-' +
-              String(_now.getDate()).padStart(2,'0');
-  _todayDay = _now.getDate();
-  _monthStr = _todayStr.slice(0,7);
-}
-refreshDate();
-// Refresh date on every render to catch midnight rollovers
-setInterval(refreshDate, 60000);
-
-function getDaysInMonth() { return new Date(_now.getFullYear(), _now.getMonth()+1, 0).getDate(); }
-function getDaysLeft()    { return Math.max(1, getDaysInMonth() - _todayDay); }
-const tdStr = () => { refreshDate(); return _todayStr; };
-const moStr = () => _monthStr;
-
-// ═══════════════════════════════════════════════════════
-// AUTH
-// ═══════════════════════════════════════════════════════
-const API = window.location.origin;
-const tok = () => localStorage.getItem('pb_token');
-const usr = () => { try { return JSON.parse(localStorage.getItem('pb_user')||'{}'); } catch { return {}; } };
-if (!tok()) window.location.href = '/';
-
-// ═══════════════════════════════════════════════════════
-// STATE — strict separation
-// earnings = manual only | expenses = Plaid only
-// ═══════════════════════════════════════════════════════
-const S = {
-  earnings:  [],
-  expenses:  [],
-  bills:     [],
-  onetime:   [],
-  debts:     [],
-  splitwise: [],
-  accounts:  [],
-  rules:     {},
-  budgets:   { food:400, transportation:600, shopping:150, entertainment:50, utilities:600, health:100, other:300 },
-  settings:  { monthly_goal:9500, daily_quota:400 },
-  shifts:    [],
-};
-
-const fmt = n => '$' + Math.abs(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-const ttc = s => (s||'').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-
-let _earnFilter = 'week';
-let _catFilter  = null;
-let _isMode     = 'spending';
-let _sortMode   = 'newest';
-let _homeTxnMode = 'spending'; // home shows spending by default
-let _pendingSort= 'newest';
-let _pendingTxn = null;
-let _pendingRule= null;
-let _editBillId = null, _editBillType = null;
-let _shiftInterval = null;
-let _chatHistory = [];
-let _flowDays = [];
-let _approvedBudgets = new Set();
-
-// ═══════════════════════════════════════════════════════
-// API
-// ═══════════════════════════════════════════════════════
-async function req(path, opts={}) {
-  try {
-    const r = await fetch(API+path, {
-      ...opts,
-      headers:{ 'Content-Type':'application/json','Authorization':'Bearer '+tok(),...(opts.headers||{}) },
-      body: opts.body ? JSON.stringify(opts.body) : undefined,
-    });
-    if (r.status===401) { logout(); return null; }
-    return r.json();
-  } catch(e) { console.error(path,e); return null; }
-}
-
-// ═══════════════════════════════════════════════════════
-// SMART DAILY TARGET — exact formula from original PBTrack
-// ═══════════════════════════════════════════════════════
-function calcDailyTarget() {
-  refreshDate(); // always use fresh local date
-  const today   = _todayStr;
-  const todayDay= _todayDay;
-  const daysLeft= getDaysLeft();
-
-  // Today's earnings (manual only) and spending (Plaid only)
-  const todayEarned = S.earnings.filter(e=>e.date===today).reduce((s,e)=>s+e.amount,0);
-  const todaySpent  = S.expenses.filter(e=>e.date===today&&!e.is_income).reduce((s,e)=>s+e.amount,0);
-
-  // 1. Overdue bills — past due date, unpaid, not skipped
-  const overdueBills = S.bills
-    .filter(b=>!b.paid&&!b.skipped&&b.due_day<todayDay)
-    .reduce((s,b)=>s+b.amount,0);
-
-  // 2. Upcoming bills — each spread by days until due
-  let upcomingPerDay = 0;
-  S.bills.filter(b=>!b.paid&&!b.skipped&&b.due_day>=todayDay).forEach(b=>{
-    const daysUntilDue = Math.max(1, b.due_day - todayDay);
-    upcomingPerDay += b.amount / daysUntilDue;
-  });
-
-  // 3. One-time payments
-  let oneTimePerDay = 0;
-  S.onetime.filter(p=>!p.paid).forEach(p=>{
-    const dueDate = new Date(p.due_date+'T12:00:00'); // noon local avoids DST issues
-    const daysUntil = Math.max(1, Math.ceil((dueDate - _now) / 86400000));
-    oneTimePerDay += p.amount / daysUntil;
-  });
-
-  // 4. Next month rent ($2,084) — only if rent not already in bills
-  // Prevents double-counting when rent is added as a bill
-  const hasRentInBills = S.bills.some(b => b.name.toLowerCase().includes('rent'));
-  const NEXT_RENT = hasRentInBills ? 0 : 2084;
-  const rentPerDay = NEXT_RENT / daysLeft;
-
-  // 5. Splitwise — use monthly contribution setting (default $0)
-  // We do NOT auto-spread Splitwise total — these are long-term personal loans
-  // User sets a monthly Splitwise contribution in settings
-  const swMonthly = S.settings.sw_monthly || 0;
-  const swPerDay = swMonthly / 30;
-
-  // 6. Daily ops — (1191 + 400 + 1000) / 30 = $86.37/day
-  const dailyOps = (1191 + 400 + 1000) / 30;
-
-  // Urgent: overdue spread across remaining days
-  const urgentPerDay = overdueBills / daysLeft;
-  const totalPerDay  = urgentPerDay + upcomingPerDay + oneTimePerDay + rentPerDay + swPerDay + dailyOps;
-
-  // Subtract today's progress
-  return Math.max(S.settings.daily_quota||400, totalPerDay - todayEarned + todaySpent);
-}
-
-function getBreakdown() {
-  refreshDate();
-  const day = _todayDay;
-  const daysLeft = getDaysLeft();
-  const overdue   = S.bills.filter(b=>!b.paid&&!b.skipped&&b.due_day<day).reduce((s,b)=>s+b.amount,0);
-  const upcoming  = S.bills.filter(b=>!b.paid&&!b.skipped&&b.due_day>=day).reduce((s,b)=>s+b.amount,0);
-  const onetime   = S.onetime.filter(p=>!p.paid).reduce((s,p)=>s+p.amount,0);
-  return { overdue, upcoming, onetime, daysLeft };
-}
-
-function populateTargetBreak() {
-  refreshDate();
-  const dL=getDaysLeft();
-  const day=_todayDay;
-  const todayE=todayEarnings(), todayS=todaySpending();
-  const hasRent=S.bills.some(b=>b.name.toLowerCase().includes('rent'));
-
-  // Calculate each component as /day contribution
-  const overdueBills=S.bills.filter(b=>!b.paid&&!b.skipped&&b.due_day<day).reduce((s,b)=>s+b.amount,0);
-  const urgentPerDay=overdueBills/Math.max(1,dL);
-
-  let upcomingPerDay=0;
-  const upcomingDetails=[];
-  S.bills.filter(b=>!b.paid&&!b.skipped&&b.due_day>=day).forEach(b=>{
-    const d=Math.max(1,b.due_day-day);
-    upcomingPerDay+=b.amount/d;
-    upcomingDetails.push(`${b.name}: ${fmt(b.amount)} ÷ ${d}d = ${fmt(b.amount/d)}/day`);
-  });
-
-  let otPerDay=0;
-  S.onetime.filter(p=>!p.paid).forEach(p=>{
-    const d=Math.max(1,Math.ceil((new Date(p.due_date+'T12:00:00')-_now)/86400000));
-    otPerDay+=p.amount/d;
-  });
-
-  const rentPerDay=hasRent?0:2084/dL;
-  const swPerDay=(S.settings.sw_monthly||0)/30;
-  const dailyOps=86.37;
-  const totalPerDay=urgentPerDay+upcomingPerDay+otPerDay+rentPerDay+swPerDay+dailyOps;
-  const target=Math.max(S.settings.daily_quota||400, totalPerDay-todayE+todayS);
-
-  document.getElementById('targetBreakDate').textContent=
-    _now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})
-    +' · '+dL+' days left';
-
-  const row=(icon,label,val,color,note)=>`
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border)">
-      <div style="flex:1;min-width:0"><div style="font-size:.78rem;font-weight:600">${icon} ${label}</div>${note?`<div style="font-size:.6rem;color:var(--text3);margin-top:1px">${note}</div>`:''}</div>
-      <div style="font-size:.82rem;font-weight:800;color:${color||'var(--text)'};flex-shrink:0;margin-left:8px;font-variant-numeric:tabular-nums">${val}</div>
-    </div>`;
-
-  document.getElementById('targetBreakBody').innerHTML=
-    row('📋','Overdue bills',fmt(urgentPerDay)+'/day',urgentPerDay>0?'var(--red)':'var(--green)',
-        overdueBills>0?`${fmt(overdueBills)} total ÷ ${dL} days`:'No overdue bills ✓')
-   +row('📅','Upcoming bills',fmt(upcomingPerDay)+'/day',null,
-        upcomingDetails.length?upcomingDetails.join(' · '):'No upcoming bills')
-   +(otPerDay>0?row('⚡','One-time payments',fmt(otPerDay)+'/day',null,'Each payment ÷ days until due'):'')
-   +(!hasRent?row('🏠','Next month rent',fmt(rentPerDay)+'/day',null,`$2,084 ÷ ${dL} days`):
-              row('🏠','Rent','In bills ✓','var(--green)','Counted in upcoming bills above'))
-   +(swPerDay>0?row('💸','Splitwise contribution',fmt(swPerDay)+'/day',null,`${fmt(S.settings.sw_monthly)}/mo ÷ 30`):'')
-   +row('⛽','Daily ops',fmt(dailyOps)+'/day',null,'Charging + road + living')
-   +(todayE>0?row('✅','Already earned today','-'+fmt(todayE),'var(--green)','Subtracted from target'):'')
-   +(todayS>0?row('💸','Spent today','+'+fmt(todayS),null,'Added back to target'):'')
-   +`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;margin-top:2px">
-      <div style="font-size:.9rem;font-weight:800">🎯 Your target today</div>
-      <div style="font-size:1.15rem;font-weight:800;color:var(--gold)">${fmt(target)}</div>
-    </div>`;
-}
-
-function hasRentInBillsCheck() {
-  return S.bills.some(b=>b.name.toLowerCase().includes('rent'));
-}
-
-// ═══════════════════════════════════════════════════════
-// CALCULATIONS
-// ═══════════════════════════════════════════════════════
-function todayEarnings() { refreshDate(); return S.earnings.filter(e=>e.date===_todayStr).reduce((s,e)=>s+e.amount,0); }
-function todaySpending()  { refreshDate(); return S.expenses.filter(e=>e.date===_todayStr&&!e.is_income).reduce((s,e)=>s+e.amount,0); }
-function weekEarnings() {
-  const now=new Date(), mon=new Date(now);
-  mon.setDate(now.getDate()-((now.getDay()+6)%7)); mon.setHours(0,0,0,0);
-  return S.earnings.filter(e=>new Date(e.date+'T12:00:00')>=mon).reduce((s,e)=>s+e.amount,0);
-}
-function monthEarnings() { return S.earnings.filter(e=>e.date.startsWith(_monthStr)).reduce((s,e)=>s+e.amount,0); }
-function monthSpending()  { return S.expenses.filter(e=>e.date.startsWith(_monthStr)&&!e.is_income).reduce((s,e)=>s+e.amount,0); }
-
-// ═══════════════════════════════════════════════════════
-// NAVIGATION
-// ═══════════════════════════════════════════════════════
-function showPage(id) {
-  refreshDate();
-  localStorage.setItem('pb_page',id);
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nb').forEach(n=>n.classList.remove('active'));
-  const pg=document.getElementById('page-'+id);
-  const nb=document.getElementById('nav-'+id);
-  if(pg) pg.classList.add('active');
-  if(nb) nb.classList.add('active');
-  if(id==='home')     renderHome();
-  if(id==='earnings') renderEarnings();
-  if(id==='spend')    renderSpend();
-  if(id==='bills')    renderBills();
-  if(id==='more')     renderMore();
-  window.scrollTo(0,0);
-}
-
-function openAI() {
-  showPage('more');
-  setTimeout(()=>{ const el=document.getElementById('chatIn'); if(el) el.focus(); },300);
-}
-
-// ═══════════════════════════════════════════════════════
-// MODALS
-// ═══════════════════════════════════════════════════════
-function openModal(id) {
-  document.getElementById(id).classList.add('open');
-  if(id==='targetBreakMod') populateTargetBreak();
-}
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.ov').forEach(el=>{
-  el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); });
-});
-
-// ═══════════════════════════════════════════════════════
-// ALERTS
-// ═══════════════════════════════════════════════════════
-function renderAlerts() {
-  refreshDate();
-  const day = _todayDay;
-  const dis  = JSON.parse(localStorage.getItem('pb_dis')||'{}');
-  if(dis.date!==_todayStr) localStorage.setItem('pb_dis',JSON.stringify({date:_todayStr}));
-  const alerts=[];
-  const overdue=S.bills.filter(b=>!b.paid&&!b.skipped&&b.due_day<day);
-  if(overdue.length&&!dis.ov) alerts.push({id:'ov',type:'red',t:`🔴 ${overdue.length} Overdue Bill${overdue.length>1?'s':''}`,b:overdue.map(b=>`${b.name} ${fmt(b.amount)}`).join(' · ')});
-  const soon=S.bills.filter(b=>!b.paid&&!b.skipped&&b.due_day>=day&&b.due_day<=day+3);
-  if(soon.length&&!dis.sn) alerts.push({id:'sn',type:'gold',t:'📅 Bills Due Soon',b:soon.map(b=>`${b.name} — ${b.due_day}th`).join(' · ')});
-  const otDue=S.onetime.filter(p=>!p.paid).filter(p=>{ const d=Math.ceil((new Date(p.due_date+'T12:00:00')-_now)/86400000); return d<=3&&d>=0; });
-  if(otDue.length&&!dis.ot) alerts.push({id:'ot',type:'gold',t:'⏰ One-Time Payment Due',b:otDue.map(p=>`${p.name} ${fmt(p.amount)}`).join(' · ')});
-  const earned=todayEarnings(), target=calcDailyTarget();
-  if(earned>=target&&target>0&&!dis.gl) alerts.push({id:'gl',type:'green',t:'🎉 Daily Target Hit!',b:`Earned ${fmt(earned)} — ${fmt(earned-target)} over your ${fmt(target)} target!`});
-  document.getElementById('alertsBox').innerHTML=alerts.filter(a=>!dis[a.id]).map(a=>`
-    <div class="alert ${a.type}" id="al-${a.id}">
-      <div class="alert-t">${a.t}</div><div class="alert-b">${a.b}</div>
-      <button class="alert-x" onclick="dismissAlert('${a.id}',event)">×</button>
-    </div>`).join('');
-}
-
-function dismissAlert(id,e) {
-  e&&e.stopPropagation();
-  const el=document.getElementById('al-'+id);
-  if(el){el.style.opacity='0';el.style.transform='translateX(8px)';el.style.transition='all .2s';setTimeout(()=>el.remove(),200);}
-  const d=JSON.parse(localStorage.getItem('pb_dis')||'{}');
-  d[id]=true;d.date=_todayStr;localStorage.setItem('pb_dis',JSON.stringify(d));
-}
-
-// ═══════════════════════════════════════════════════════
-// HOME
-// ═══════════════════════════════════════════════════════
-function renderHome() {
-  refreshDate();
-  renderAlerts();
-  const earned=todayEarnings(), target=calcDailyTarget(), spent=todaySpending();
-  const pct=Math.min(100,(earned/target)*100);
-
-  // Ring — circumference = 2πr = 2×π×42 ≈ 264
-  const circ=264;
-  const fg=document.getElementById('ringFg');
-  fg.style.strokeDashoffset=circ-(circ*pct/100);
-  fg.style.stroke=pct>=100?'#4ade80':pct>=60?'#fbbf24':'currentColor';
-  if(pct>=100) celebrate();
-  document.getElementById('ringPct').textContent=Math.round(pct)+'%';
-  document.getElementById('earnedBig').textContent=fmt(earned);
-  document.getElementById('targetSub').textContent=pct>=100
-    ?`🎉 Crushed! +${fmt(earned-target)} over target`
-    :`${fmt(Math.max(0,target-earned))} more to hit ${fmt(target)} target`;
-
-  // Platform breakdown — local date only
-  const t=_todayStr;
-  document.getElementById('pUber').textContent =fmt(S.earnings.filter(e=>e.date===t&&e.platform==='Uber').reduce((s,e)=>s+e.amount,0));
-  document.getElementById('pLyft').textContent =fmt(S.earnings.filter(e=>e.date===t&&e.platform==='Lyft').reduce((s,e)=>s+e.amount,0));
-  document.getElementById('pCash').textContent =fmt(S.earnings.filter(e=>e.date===t&&e.platform==='Cash').reduce((s,e)=>s+e.amount,0));
-  document.getElementById('pOther').textContent=fmt(S.earnings.filter(e=>e.date===t&&!['Uber','Lyft','Cash'].includes(e.platform)).reduce((s,e)=>s+e.amount,0));
-
-  // Available funds from Plaid accounts
-  const debit = S.accounts.filter(a=>a.type==='depository').reduce((s,a)=>s+(a.balances?.available||a.balances?.current||0),0);
-  const credit= S.accounts.filter(a=>a.type==='credit').reduce((s,a)=>s+(a.balances?.current||0),0);
-  const dEl=document.getElementById('fundDebit'), cEl=document.getElementById('fundCredit');
-  dEl.textContent=fmt(debit); dEl.style.color='var(--green)';
-  cEl.textContent=fmt(credit);
-  // Credit: if balance is high (close to limit) = red, if low = green
-  cEl.style.color=credit>500?'var(--red)':'var(--green)';
-
-  // Stats
-  document.getElementById('hWeek').textContent =fmt(weekEarnings());
-  document.getElementById('hMonth').textContent=fmt(monthEarnings());
-
-  // Breakdown
-  const bd=getBreakdown();
-  document.getElementById('bdTarget').textContent=fmt(target);
-  const _hasRent=S.bills.some(b=>b.name.toLowerCase().includes('rent'));
-  document.getElementById('bdBody').innerHTML=`
-    ${bd.overdue>0?`<div class="bdrow"><span class="bdlbl">📋 Overdue bills (unpaid)</span><span style="color:var(--red)">${fmt(bd.overdue)} ÷ ${bd.daysLeft}d = ${fmt(bd.overdue/bd.daysLeft)}/day</span></div>`:'<div class="bdrow"><span class="bdlbl">📋 Overdue bills</span><span style="color:var(--green)">None ✓</span></div>'}
-    ${bd.upcoming>0?`<div class="bdrow"><span class="bdlbl">📅 Upcoming bills</span><span>${fmt(bd.upcoming)} total this month</span></div>`:''}
-    ${bd.onetime>0?`<div class="bdrow"><span class="bdlbl">⚡ One-time payments</span><span>${fmt(bd.onetime)}</span></div>`:''}
-    ${!_hasRent?`<div class="bdrow"><span class="bdlbl">🏠 Next month rent</span><span>${fmt(2084/bd.daysLeft)}/day</span></div>`:''}
-    ${(S.settings.sw_monthly||0)>0?`<div class="bdrow"><span class="bdlbl">💸 Splitwise contribution</span><span>${fmt((S.settings.sw_monthly||0)/30)}/day</span></div>`:''}
-    <div class="bdrow"><span class="bdlbl">⛽ Daily ops</span><span>$86.37/day</span></div>
-    <div class="bdrow" style="font-weight:800;padding-top:8px"><span class="bdlbl" style="color:var(--text)">🎯 Your target today</span><span style="color:var(--gold)">${fmt(target)}</span></div>`;
-
-  // Break-even
-  const bePct=spent>0?Math.min(100,(earned/spent)*100):100;
-  const net=earned-spent;
-  const fill=document.getElementById('beFill');
-  fill.style.width=bePct+'%'; fill.style.background=net>=0?'var(--green)':'var(--gold)';
-  document.getElementById('bePct').textContent=Math.round(bePct)+'%';
-  const beMsg = earned===0 && spent===0 ? 'Start driving to track today' : `Earned ${fmt(earned)}`;
-  document.getElementById('beEarned').textContent=beMsg;
-  document.getElementById('beSpent').textContent=earned===0&&spent===0 ? '' : `Spent ${fmt(spent)}`;
-
-  // Upcoming bills
-  const combined=[
-    ...S.bills.map(b=>({...b,_ot:false,_days:b.due_day-_todayDay})),
-    ...S.onetime.map(p=>({...p,_ot:true,_days:Math.ceil((new Date(p.due_date+'T12:00:00')-_now)/86400000)}))
-  ].filter(b=>!b.paid&&!b.skipped).sort((a,b)=>a._days-b._days).slice(0,4);
-
-  document.getElementById('upcomingHome').innerHTML=combined.length
-    ?combined.map(b=>{
-        const chip=b._days<0?'chip-ov':b._days<=3?'chip-sn':b._ot?'chip-ot':'chip-up';
-        const lbl=b._days<0?'Overdue':b._days===0?'Today!':b._ot
-          ?new Date(b.due_date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})
-          :b.due_day+'th';
-        return `<div class="brow">
-          <div class="bbody"><div class="bname">${b.name}</div><div class="bsub">${b._ot?'One-time':'Monthly'}</div></div>
-          <span class="chip ${chip}">${lbl}</span>
-          <div class="bamt">${fmt(b.amount)}</div>
-        </div>`;
-      }).join('')
-    :'<div class="empty">No upcoming bills</div>';
-
-  // Latest transactions — filtered by home mode
-  let txns=[...S.expenses];
-  if(_homeTxnMode==='spending') txns=txns.filter(t=>!t.is_income&&t.category!=='income'&&t.amount>=0);
-  else if(_homeTxnMode==='income') txns=txns.filter(t=>t.is_income||t.category==='income'||t.amount<0);
-  // 'all' shows everything
-  txns=txns.sort((a,b)=>sortTxns(a,b)).slice(0,10);
-  document.getElementById('latestTxns').innerHTML=txns.length
-    ?txns.map(t=>txnRow(t,S.expenses.indexOf(t))).join('')
-    :'<div class="empty">Transactions from your bank appear here</div>';
-}
-
-function toggleBD() {
-  const body=document.getElementById('bdBody'), lbl=document.getElementById('bdLbl');
-  body.classList.toggle('open');
-  lbl.textContent=body.classList.contains('open')?'Hide breakdown ▴':'Show target breakdown ▾';
-}
-
-// Funds detail modal
-function openFundsDetail(type) {
-  const title=type==='debit'?'Available Debit Accounts':'Credit Balances';
-  document.getElementById('fundsModTitle').textContent=title;
-  let html='';
-  if(type==='debit') {
-    const accts=S.accounts.filter(a=>a.type==='depository');
-    const total=accts.reduce((s,a)=>s+(a.balances?.available||a.balances?.current||0),0);
-    html=accts.length
-      ?accts.map(a=>`<div class="acct-row">
-          <div class="acct-icon">🏦</div>
-          <div class="acct-body"><div class="acct-name">${a.name}</div><div class="acct-sub">${a.institution||''} · ${ttc(a.subtype||a.type)}</div></div>
-          <div class="acct-bal" style="color:var(--green)">${fmt(a.balances?.available||a.balances?.current||0)}</div>
-        </div>`).join('')
-        +`<div style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--border);font-weight:700;font-size:.85rem"><span>Total Available</span><span style="color:var(--green)">${fmt(total)}</span></div>`
-      :'<div class="empty">No debit accounts connected</div>';
-  } else {
-    const accts=S.accounts.filter(a=>a.type==='credit');
-    const total=accts.reduce((s,a)=>s+(a.balances?.current||0),0);
-    html=accts.length
-      ?accts.map(a=>`<div class="acct-row">
-          <div class="acct-icon">💳</div>
-          <div class="acct-body"><div class="acct-name">${a.name}</div><div class="acct-sub">${a.institution||''} · Credit</div></div>
-          <div class="acct-bal" style="color:${(a.balances?.current||0)>500?'var(--red)':'var(--green)'}">${fmt(a.balances?.current||0)} owed</div>
-        </div>`).join('')
-        +`<div style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--border);font-weight:700;font-size:.85rem"><span>Total Credit Owed</span><span style="color:var(--red)">${fmt(total)}</span></div>`
-      :'<div class="empty">No credit accounts connected</div>';
-  }
-  document.getElementById('fundsModBody').innerHTML=html;
-  openModal('fundsMod');
-}
-
-// ═══════════════════════════════════════════════════════
-// SORT
-// ═══════════════════════════════════════════════════════
-function setHomeTxnMode(mode) {
-  _homeTxnMode=mode;
-  ['homeTxnSpend','homeTxnIncome','homeTxnAll'].forEach(id=>{
-    const el=document.getElementById(id); if(!el) return;
-    const isActive=(id==='homeTxnSpend'&&mode==='spending')||(id==='homeTxnIncome'&&mode==='income')||(id==='homeTxnAll'&&mode==='all');
-    el.style.background=isActive?'var(--text)':'transparent';
-    el.style.color=isActive?'var(--bg)':'var(--text3)';
-    el.style.fontWeight=isActive?'700':'600';
-  });
-  renderHome();
-}
-
-function toggleSort() { const m=document.getElementById('sortMenu'); m.style.display=m.style.display==='none'?'block':'none'; }
-function pickSort(mode,el) {
-  _pendingSort=mode;
-  document.querySelectorAll('.sort-opt').forEach(o=>{
-    o.classList.remove('active');
-    o.textContent=o.textContent.replace(' ✓','');
-  });
-  el.classList.add('active'); el.textContent+=' ✓';
-}
-function applySort() { _sortMode=_pendingSort; document.getElementById('sortMenu').style.display='none'; renderHome(); }
-function sortTxns(a,b) {
-  if(_sortMode==='newest') return b.date.localeCompare(a.date);
-  if(_sortMode==='oldest') return a.date.localeCompare(b.date);
-  if(_sortMode==='high')   return b.amount-a.amount;
-  if(_sortMode==='low')    return a.amount-b.amount;
-  return 0;
-}
-document.addEventListener('click',e=>{ const m=document.getElementById('sortMenu'); if(m&&!m.contains(e.target)&&!e.target.closest('#sortBtn')) m.style.display='none'; });
-
-// ═══════════════════════════════════════════════════════
-// MERCHANT LOGOS
-// ═══════════════════════════════════════════════════════
-const DOMAINS={
-  'uber':'uber.com','lyft':'lyft.com','doordash':'doordash.com','grubhub':'grubhub.com',
-  'mcdonalds':'mcdonalds.com','mcdonald':'mcdonalds.com','starbucks':'starbucks.com',
-  'amazon':'amazon.com','walmart':'walmart.com','target':'target.com',
-  'netflix':'netflix.com','spotify':'spotify.com','shell':'shell.com',
-  'chevron':'chevron.com','chipotle':'chipotle.com','subway':'subway.com',
-  'chick-fil-a':'chickfila.com','chick fil a':'chickfila.com','cvs':'cvs.com',
-  'walgreens':'walgreens.com','tesla':'tesla.com','apple':'apple.com',
-  'google':'google.com','att':'att.com','t-mobile':'t-mobile.com',
-  'paypal':'paypal.com','venmo':'venmo.com','instacart':'instacart.com',
-  'uber eats':'ubereats.com','costco':'costco.com','whole foods':'wholefoods.com',
-};
-const CAT_IC={food:'🍔',transportation:'🚗',shopping:'🛍️',entertainment:'🎬',utilities:'💡',health:'💊',housing:'🏠',other:'📦',debt:'💳',subscription:'📱',transfers:'↔️',income:'💰',auto:'🚘'};
-
-function logoEl(desc,cat) {
-  const d=(desc||'').toLowerCase();
-  let dom=null;
-  for(const [k,v] of Object.entries(DOMAINS)){if(d.includes(k)){dom=v;break;}}
-  if(!dom){const w=d.split(/\s+/).filter(x=>x.length>3)[0];if(w)dom=w+'.com';}
-  if(dom) return `<div class="tlogo"><img src="https://logo.clearbit.com/${dom}" onerror="this.parentElement.innerHTML='${CAT_IC[cat]||'💳'}';this.parentElement.style.fontSize='.95rem'" alt=""></div>`;
-  return `<div class="tlogo" style="font-size:.95rem">${CAT_IC[cat]||'💳'}</div>`;
-}
-
-function txnRow(t,idx) {
-  const isInc=t.is_income||t.category==='income';
-  const sign=isInc?'+':'-'; const color=isInc?'var(--green)':'var(--red)';
-  return `<div class="txn" onclick="openTxnDetail(${idx})">
-    ${logoEl(t.description,t.category)}
-    <div class="tbody">
-      <div class="tname">${t.label||t.description||'Transaction'}</div>
-      <div class="tmeta">${t.date} · ${ttc(t.category||'Other')}${t.institution?' · '+t.institution:''}</div>
-    </div>
-    <div class="tamt" style="color:${color}">${sign}${fmt(t.amount)}</div>
-  </div>`;
-}
-
-// ═══════════════════════════════════════════════════════
-// EARNINGS
-// ═══════════════════════════════════════════════════════
-function renderEarnings() {
-  refreshDate();
-  const target=calcDailyTarget();
-  document.getElementById('eToday').textContent =fmt(todayEarnings());
-  document.getElementById('eWeek').textContent  =fmt(weekEarnings());
-  document.getElementById('eMonth').textContent =fmt(monthEarnings());
-  document.getElementById('eTarget').textContent=fmt(target);
-  const goal=S.settings.monthly_goal||9500, mE=monthEarnings();
-  const mPct=Math.min(100,(mE/goal)*100);
-  document.getElementById('mFill').style.width=mPct+'%';
-  document.getElementById('mPct').textContent=Math.round(mPct)+'%';
-  document.getElementById('mEarned').textContent=fmt(mE)+' earned';
-  document.getElementById('mGoal').textContent='Goal '+fmt(goal);
-  document.getElementById('logDate').value=_todayStr;
-  renderBestDays(); renderProjection(); renderEarnHist();
-}
-
-function renderBestDays() {
-  const totals=[0,0,0,0,0,0,0], counts=[0,0,0,0,0,0,0], daily={};
-  S.earnings.forEach(e=>{daily[e.date]=(daily[e.date]||0)+e.amount;});
-  Object.entries(daily).forEach(([d,v])=>{
-    const dow=(new Date(d+'T12:00:00').getDay()+6)%7;
-    totals[dow]+=v; counts[dow]++;
-  });
-  const avgs=totals.map((t,i)=>counts[i]>0?t/counts[i]:0);
-  const maxA=Math.max(...avgs,1), top=avgs.indexOf(Math.max(...avgs));
-  document.getElementById('bestDays').innerHTML=['Mo','Tu','We','Th','Fr','Sa','Su'].map((d,i)=>`
-    <div class="dcol">
-      <div class="dbar-w"><div class="dbar" style="height:${Math.max(2,Math.round(avgs[i]/maxA*37))}px;background:${i===top?'var(--green)':'var(--border2)'}"></div></div>
-      <div class="dday">${d}</div>
-      <div class="damt" style="color:${i===top?'var(--green)':'var(--text3)'}">${avgs[i]>0?'$'+Math.round(avgs[i]):'-'}</div>
-    </div>`).join('');
-}
-
-function renderProjection() {
-  const now=new Date(), dIn=Math.max(1,(now.getDay()+6)%7+1);
-  const wE=weekEarnings(), avg=wE/dIn, proj=avg*7, target=calcDailyTarget();
-  document.getElementById('projVal').textContent=fmt(proj);
-  document.getElementById('projVal').style.color=avg>=target?'var(--blue)':'var(--gold)';
-  document.getElementById('projSub').textContent=avg>=target
-    ?`On track · ${fmt(avg)}/day avg · ${7-dIn} days left`
-    :`Need ${fmt(Math.max(0,target*7-wE))} more this week`;
-}
-
-function renderEarnHist() {
-  refreshDate();
-  const now=new Date(), mon=new Date(now);
-  mon.setDate(now.getDate()-((now.getDay()+6)%7)); mon.setHours(0,0,0,0);
-  let list=[...S.earnings];
-  if(_earnFilter==='today') list=list.filter(e=>e.date===_todayStr);
-  else if(_earnFilter==='week') list=list.filter(e=>new Date(e.date+'T12:00:00')>=mon);
-  else if(_earnFilter==='month') list=list.filter(e=>e.date.startsWith(_monthStr));
-  list=list.sort((a,b)=>b.date.localeCompare(a.date)).slice(0,60);
-  const pI={Uber:'🚗',Lyft:'💜',Cash:'💵',Other:'💰'};
-  document.getElementById('earnHist').innerHTML=list.length
-    ?list.map(e=>`<div class="txn">
-        <div class="tlogo" style="font-size:.95rem">${pI[e.platform]||'💰'}</div>
-        <div class="tbody"><div class="tname">${e.platform}${e.note?' · '+e.note:''}</div><div class="tmeta">${e.date}</div></div>
-        <div style="display:flex;align-items:center;gap:5px">
-          <div class="tamt" style="color:var(--green)">+${fmt(e.amount)}</div>
-          <button class="bicon" onclick="openEditEarn('${e.id}')">✏️</button>
-          <button class="bicon" onclick="deleteEarning('${e.id}')">×</button>
-        </div>
-      </div>`).join('')
-    :'<div class="empty">No earnings for this period</div>';
-}
-
-function filterEarn(p,btn) {
-  _earnFilter=p;
-  document.querySelectorAll('.ttab').forEach(t=>t.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  renderEarnHist();
-}
-
-// ═══════════════════════════════════════════════════════
-// SPEND
-// ═══════════════════════════════════════════════════════
-let _isModeCur='spending';
-function setIsMode(mode,btn) {
-  _isModeCur=mode;
-  document.querySelectorAll('.istab').forEach(t=>t.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  renderTxnList();
-  // Update today/month stats to reflect current mode
-  refreshDate();
-  const isInc=mode==='income';
-  const isAll=mode==='all';
-  if(isInc) {
-    // Show income totals
-    const incToday=S.expenses.filter(e=>e.date===_todayStr&&(e.is_income||e.amount<0)).reduce((s,e)=>s+Math.abs(e.amount),0);
-    const incMonth=S.expenses.filter(e=>e.date.startsWith(_monthStr)&&(e.is_income||e.amount<0)).reduce((s,e)=>s+Math.abs(e.amount),0);
-    document.getElementById('sToday').textContent=fmt(incToday);
-    document.getElementById('sToday').style.color='var(--green)';
-    document.getElementById('sMonth').textContent=fmt(incMonth);
-    document.getElementById('sMonth').style.color='var(--green)';
-  } else if(isAll) {
-    // Net: income minus spending
-    const allToday=S.expenses.filter(e=>e.date===_todayStr);
-    const netToday=allToday.filter(e=>e.is_income||e.amount<0).reduce((s,e)=>s+Math.abs(e.amount),0)
-                  -allToday.filter(e=>!e.is_income&&e.amount>=0).reduce((s,e)=>s+e.amount,0);
-    document.getElementById('sToday').textContent=(netToday>=0?'+':'')+fmt(netToday);
-    document.getElementById('sToday').style.color=netToday>=0?'var(--green)':'var(--red)';
-    document.getElementById('sMonth').textContent=fmt(monthSpending());
-    document.getElementById('sMonth').style.color='var(--red)';
-  } else {
-    document.getElementById('sToday').textContent=fmt(todaySpending());
-    document.getElementById('sToday').style.color='var(--red)';
-    document.getElementById('sMonth').textContent=fmt(monthSpending());
-    document.getElementById('sMonth').style.color='var(--red)';
-  }
-}
-
-function renderSpend() {
-  refreshDate();
-  document.getElementById('sToday').textContent=fmt(todaySpending());
-  document.getElementById('sMonth').textContent=fmt(monthSpending());
-  if(S.accounts.length) {
-    document.getElementById('plaidStatus').textContent='🏦 Bank Connected';
-    document.getElementById('plaidBtn').textContent='Sync';
-    document.getElementById('plaidBtn').onclick=syncPlaid;
-    const rb=document.getElementById('plaidResetBtn');
-    if(rb) rb.style.display='block';
-  }
-  drawDonut(); drawFlow(); renderBudBars(); renderCatChips(); renderTxnList();
-}
-
-function drawDonut() {
-  const canvas=document.getElementById('donutC'); if(!canvas) return;
-  const ctx=canvas.getContext('2d');
-  const cats={};
-  S.expenses.filter(e=>e.date.startsWith(_monthStr)&&!e.is_income).forEach(e=>{
-    const c=e.category||'other'; cats[c]=(cats[c]||0)+e.amount;
-  });
-  const entries=Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  const total=entries.reduce((s,[,v])=>s+v,0);
-  if(!total){document.getElementById('donutTotal').textContent='$0';return;}
-  document.getElementById('donutTotal').textContent='$'+Math.round(total).toLocaleString();
-  const colors=['#4ade80','#60a5fa','#fbbf24','#f87171','#a78bfa','#fb923c'];
-  const W=canvas.width,H=canvas.height,cx=W/2,cy=H/2,r=W*.44,inn=W*.28;
-  ctx.clearRect(0,0,W,H);
-  let angle=-Math.PI/2;
-  entries.forEach(([,amt],i)=>{
-    const slice=(amt/total)*Math.PI*2;
-    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,angle,angle+slice);ctx.closePath();
-    ctx.fillStyle=colors[i%colors.length];ctx.fill();angle+=slice;
-  });
-  ctx.beginPath();ctx.arc(cx,cy,inn,0,Math.PI*2);
-  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--card').trim()||'#161616';
-  ctx.fill();
-  document.getElementById('donutLeg').innerHTML=entries.map(([cat,amt],i)=>`
-    <div class="dleg-row" onclick="filterByCat('${cat}')">
-      <div class="dleg-dot" style="background:${colors[i%colors.length]}"></div>
-      <span class="dleg-lbl">${ttc(cat)}</span>
-      <span class="dleg-pct">${Math.round(amt/total*100)}%›</span>
-    </div>`).join('');
-}
-
-function drawFlow() {
-  const canvas=document.getElementById('flowC'); if(!canvas) return;
-  canvas.width=canvas.offsetWidth||320; canvas.height=120;
-  const ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;
-  _flowDays=[];
-  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);
-    _flowDays.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));}
-  const earned=_flowDays.map(d=>S.earnings.filter(e=>e.date===d).reduce((s,e)=>s+e.amount,0));
-  const spent =_flowDays.map(d=>S.expenses.filter(e=>e.date===d&&!e.is_income).reduce((s,e)=>s+e.amount,0));
-  const maxV=Math.max(...earned,...spent,1);
-  const pL=8,pR=8,pT=7,pB=20,cW=W-pL-pR,cH=H-pT-pB;
-  const bW=(cW/_flowDays.length)*.33,gap=cW/_flowDays.length;
-  ctx.clearRect(0,0,W,H);
-  const isDay=document.documentElement.classList.contains('day');
-  ctx.strokeStyle=isDay?'rgba(0,0,0,0.05)':'rgba(255,255,255,0.05)';ctx.lineWidth=1;
-  [.25,.5,.75,1].forEach(p=>{const y=pT+cH*(1-p);ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(W-pR,y);ctx.stroke();});
-  _flowDays.forEach((d,i)=>{
-    const x=pL+i*gap+gap/2;
-    if(earned[i]>0){ctx.fillStyle='#4ade80';const eH=(earned[i]/maxV)*cH;ctx.fillRect(x-bW-1,pT+cH-eH,bW,eH);}
-    if(spent[i]>0) {ctx.fillStyle='#f87171';const sH=(spent[i]/maxV)*cH;ctx.fillRect(x+1,pT+cH-sH,bW,sH);}
-    ctx.fillStyle=isDay?'rgba(0,0,0,0.3)':'rgba(255,255,255,0.3)';
-    ctx.font='9px Inter,sans-serif';ctx.textAlign='center';
-    ctx.fillText(new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'short'}).slice(0,2),x,H-4);
-  });
-}
-
-function onFlowClick(e,canvas) {
-  const rect=canvas.getBoundingClientRect(),x=e.clientX-rect.left;
-  const W=canvas.width,pL=8,cW=W-pL-8,gap=cW/_flowDays.length;
-  const idx=Math.floor((x-pL)/gap);
-  if(idx<0||idx>=_flowDays.length) return;
-  const day=_flowDays[idx];
-  const dayT=S.expenses.filter(t=>t.date===day&&!t.is_income);
-  const dayE=S.earnings.filter(t=>t.date===day);
-  const box=document.getElementById('flowDetail');
-  box.style.display='block';
-  const label=new Date(day+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
-  box.innerHTML=`<div style="font-size:.7rem;font-weight:700;margin-bottom:5px">${label}</div>
-    ${dayE.map(t=>`<div class="txn" style="padding:6px 0"><div class="tlogo" style="font-size:.85rem;width:28px;height:28px">${t.platform==='Uber'?'🚗':t.platform==='Lyft'?'💜':'💰'}</div><div class="tbody"><div class="tname" style="font-size:.76rem">${t.platform}</div></div><div class="tamt" style="color:var(--green);font-size:.76rem">+${fmt(t.amount)}</div></div>`).join('')}
-    ${dayT.map(t=>`<div class="txn" style="padding:6px 0">${logoEl(t.description,t.category)}<div class="tbody"><div class="tname" style="font-size:.76rem">${t.label||t.description||'Transaction'}</div></div><div class="tamt" style="color:var(--red);font-size:.76rem">-${fmt(t.amount)}</div></div>`).join('')}
-    ${!dayE.length&&!dayT.length?'<div style="font-size:.7rem;color:var(--text3)">No activity this day</div>':''}
-    <button onclick="document.getElementById('flowDetail').style.display='none'" style="font-size:.65rem;background:none;border:none;color:var(--text3);cursor:pointer;margin-top:4px">Collapse ▴</button>`;
-}
-
-function renderBudBars() {
-  const cats={};
-  S.expenses.filter(e=>e.date.startsWith(_monthStr)&&!e.is_income).forEach(e=>{const c=e.category||'other';cats[c]=(cats[c]||0)+e.amount;});
-  document.getElementById('budBars').innerHTML=Object.entries(S.budgets).map(([cat,limit])=>{
-    const sp=cats[cat]||0,pct=Math.min(100,(sp/limit)*100);
-    const color=pct>=90?'var(--red)':pct>=70?'var(--gold)':'var(--green)';
-    return `<div class="budrow"><div class="budhdr"><span class="budname">${ttc(cat)}</span><span class="budnums">${fmt(sp)} / ${fmt(limit)}</span></div><div class="budbar"><div class="budfill" style="width:${pct}%;background:${color}"></div></div></div>`;
-  }).join('');
-}
-
-function renderCatChips() {
-  const cats=[...new Set(S.expenses.filter(e=>e.date.startsWith(_monthStr)).map(e=>e.category||'other'))];
-  document.getElementById('catChips').innerHTML=
-    `<button class="cchip${_catFilter===null?' active':''}" onclick="filterByCat(null,this)">All</button>`+
-    cats.map(c=>`<button class="cchip${_catFilter===c?' active':''}" onclick="filterByCat('${c}',this)">${ttc(c)}</button>`).join('');
-}
-
-function filterByCat(cat,btn) {
-  _catFilter=_catFilter===cat?null:cat;
-  document.querySelectorAll('.cchip').forEach(c=>c.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  else { const a=document.querySelector('.cchip'); if(a) a.classList.add('active'); }
-  renderTxnList();
-}
-
-function renderTxnList() {
-  let list=[...S.expenses];
-  // Income = transactions marked is_income OR category 'income' OR deposits (negative amounts from Plaid)
-  if(_isModeCur==='income') list=list.filter(t=>t.is_income||t.category==='income'||t.amount<0);
-  else if(_isModeCur==='spending') list=list.filter(t=>!t.is_income&&t.category!=='income'&&t.amount>=0);
-  if(_catFilter) list=list.filter(t=>(t.category||'other')===_catFilter);
-  list=list.sort((a,b)=>sortTxns(a,b));
-  document.getElementById('allTxns').innerHTML=list.length
-    ?list.map(t=>txnRow(t,S.expenses.indexOf(t))).join('')
-    :'<div class="empty">No transactions match your filter</div>';
-}
-
-// ═══════════════════════════════════════════════════════
-// TRANSACTION DETAIL + MERCHANT RULES
-// ═══════════════════════════════════════════════════════
-function getMKey(desc) { return (desc||'').toLowerCase().trim().replace(/\s+/g,' ').substring(0,30); }
-
-function openTxnDetail(idx) {
-  const t=S.expenses[idx]; if(!t) return;
-  _pendingTxn=idx; _pendingRule=null;
-  const cats=['food','transportation','shopping','entertainment','utilities','health','housing','subscription','debt','transfers','income','other'];
-  document.getElementById('txnModName').textContent=t.label||t.description||'Transaction';
-  document.getElementById('txnModBody').innerHTML=`
-    <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:.78rem"><span style="color:var(--text3)">Amount</span><span style="font-weight:700;color:${t.is_income?'var(--green)':'var(--red)'}">${t.is_income?'+':'-'}${fmt(t.amount)}</span></div>
-    <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:.78rem"><span style="color:var(--text3)">Date</span><span style="font-weight:600">${t.date}</span></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:.78rem"><span style="color:var(--text3)">Category</span>
-      <select id="txnCatSel" onchange="onCatChange()" style="background:var(--s1);border:1.5px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:.76rem;padding:4px 8px;outline:none">
-        ${cats.map(c=>`<option value="${c}"${(t.category||'other')===c?' selected':''}>${ttc(c)}</option>`).join('')}
-      </select>
-    </div>
-    ${t.institution?`<div style="display:flex;justify-content:space-between;padding:7px 0;font-size:.78rem"><span style="color:var(--text3)">Account</span><span>🏦 ${t.institution}</span></div>`:''}`;
-  document.getElementById('txnRuleBox').style.display='none';
-  openModal('txnMod');
-}
-
-function onCatChange() {
-  const t=S.expenses[_pendingTxn]; if(!t) return;
-  const cat=document.getElementById('txnCatSel').value;
-  _pendingRule={key:getMKey(t.description),cat,merchant:t.description};
-  document.getElementById('txnRuleText').textContent=`Apply "${ttc(cat)}" to ALL past, present & future transactions from "${t.description}"?`;
-  document.getElementById('txnRuleBox').style.display='block';
-}
-
-function applyRule(applyAll) {
-  const t=S.expenses[_pendingTxn]; if(!t||!_pendingRule) return;
-  const{key,cat}=_pendingRule;
-  S.expenses[_pendingTxn].category=cat;
-  if(applyAll) {
-    S.rules[key]=cat;
-    S.expenses.forEach((e,i)=>{if(getMKey(e.description)===key)S.expenses[i].category=cat;});
-    req('/api/rules',{method:'POST',body:S.rules});
-  } else {
-    req(`/api/transactions/${t.plaid_id||t.id}/category`,{method:'PATCH',body:{category:cat}});
-  }
-  saveLocal(); closeModal('txnMod'); renderSpend(); renderHome();
-}
-
-// ═══════════════════════════════════════════════════════
-// BILLS
-// ═══════════════════════════════════════════════════════
-function renderBills() {
-  refreshDate();
-  const total=[...S.bills,...S.onetime].reduce((s,b)=>s+b.amount,0);
-  const unpaid=[...S.bills,...S.onetime].filter(b=>!b.paid).reduce((s,b)=>s+b.amount,0);
-  document.getElementById('billTotal').textContent=fmt(total);
-  document.getElementById('billUnpaid').textContent=fmt(unpaid);
-
-  const catIcons={housing:'🏠',vehicle:'🚗',insurance:'🛡️',utilities:'💡',subscription:'📱',debt:'💳',other:'📦'};
-  const combined=[
-    ...S.bills.map(b=>({...b,_ot:false,_days:b.due_day-_todayDay})),
-    ...S.onetime.map(p=>({...p,_ot:true,_days:Math.ceil((new Date(p.due_date+'T12:00:00')-_now)/86400000)}))
-  ].sort((a,b)=>{
-    const aO=!a.paid&&a._days<0,bO=!b.paid&&b._days<0;
-    if(aO&&!bO) return -1; if(!aO&&bO) return 1;
-    return a._days-b._days;
-  });
-
-  document.getElementById('billsList').innerHTML=combined.length
-    ?combined.map(b=>{
-        const chip=b.paid?'chip-pd':b.skipped?'chip-sk':b._days<0?'chip-ov':b._days<=3?'chip-sn':b._ot?'chip-ot':'chip-up';
-        const lbl=b.paid?'✓ Paid':b.skipped?'Skipped':b._days<0?'🚨 Overdue':b._days===0?'Today!':
-          b._ot?new Date(b.due_date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):b.due_day+'th';
-        const dueLabel = b._days<0
-          ? (b._days<-7?'Carried Over':'Overdue')
-          : b._days===0?'Due Today'
-          : b._ot ? new Date(b.due_date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})
-          : `Due ${b.due_day}${[,'st','nd','rd'][b.due_day%10]||'th'}`;
-        const amtColor = b.paid?'var(--green)':b._days<0&&!b.paid?'var(--red)':'var(--text)';
-        return `<div class="brow">
-          <div class="brow-top">
-            <div class="bicon">${catIcons[b.category||'other']||'📦'}</div>
-            <div class="bbody">
-              <div class="bname">${b.name}</div>
-              <div class="bsub">${b._ot?'One-time':'Monthly'} · ${ttc(b.category||'Other')}</div>
-            </div>
-            <div style="text-align:right;flex-shrink:0">
-              <div class="bamt" style="color:${amtColor}">${fmt(b.amount)}</div>
-              <span class="chip ${chip}" style="margin-top:3px;display:inline-block">${lbl}</span>
-            </div>
-          </div>
-          <div class="brow-bot">
-            <div style="font-size:.63rem;color:${b._days<0&&!b.paid?'var(--red)':b._days<=3&&!b.paid?'var(--gold)':'var(--text3)'};font-weight:600">${dueLabel}</div>
-            <div class="bactions">
-              ${b.skipped
-                ?`<button class="bact-btn undo" onclick="unskipBill('${b.id}','${b._ot?'ot':'bill'}')">Undo Skip</button>`
-                :!b.paid
-                  ?`<button class="bact-btn pay" onclick="payBill('${b.id}','${b._ot?'ot':'bill'}')">✓ Mark Paid</button>
-                    <button class="bact-btn" onclick="skipBill('${b.id}','${b._ot?'ot':'bill'}')">Skip</button>`
-                  :`<button class="bact-btn undo" onclick="unpayBill('${b.id}','${b._ot?'ot':'bill'}')">Undo Paid</button>`
-              }
-              <button class="bact-btn" style="padding:5px 9px" onclick="openEditBillMod('${b.id}','${b._ot?'ot':'bill'}')">✎</button>
-            </div>
-          </div>
-        </div>`;
-      }).join('')
-    :'<div class="empty">No bills yet. Add above.</div>';
-
-  showBillSuggestions();
-}
-
-// Bill suggestions from Plaid
-function showBillSuggestions() {
-  const PATS=[
-    {m:'at&t',name:'AT&T',amount:541,due_day:5,category:'utilities'},
-    {m:'tesla subscription',name:'Tesla Subscription',amount:106.67,due_day:12,category:'vehicle'},
-    {m:'crunchyroll',name:'Crunchyroll',amount:2.99,due_day:13,category:'subscription'},
-    {m:'smartcredit',name:'SmartCredit',amount:24.95,due_day:13,category:'subscription'},
-    {m:'uber *one',name:'Uber One',amount:9.99,due_day:12,category:'subscription'},
-    {m:'apple.com/bill',name:'Apple Services',amount:9.99,due_day:7,category:'subscription'},
-    {m:'google one',name:'Google One',amount:19.99,due_day:21,category:'subscription'},
-    {m:'wells fargo auto',name:'Wells Fargo Auto',amount:728.86,due_day:21,category:'vehicle'},
-    {m:'tesla insurance',name:'Tesla Insurance',amount:212.96,due_day:5,category:'insurance'},
-    {m:'mystro',name:'Mystro Driver',amount:18.99,due_day:12,category:'subscription'},
-  ];
-  const suggested=PATS.filter(p=>
-    S.expenses.some(e=>(e.description||'').toLowerCase().includes(p.m))&&
-    !S.bills.some(b=>b.name.toLowerCase().includes(p.name.toLowerCase().split(' ')[0]))
-  );
-  const card=document.getElementById('billSugCard');
-  if(!card||!suggested.length){if(card)card.style.display='none';return;}
-  window._sugBills=suggested;
-  card.style.display='block';
-  card.style.cssText='display:block;background:var(--s1);border:1px solid var(--border2);border-radius:var(--r);padding:13px;margin-bottom:10px';
-  card.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px"><div style="font-size:.76rem;font-weight:700">🔍 Recurring charges detected</div><button class="bicon" onclick="this.parentElement.parentElement.style.display='none'">✕</button></div>
-    ${suggested.map((b,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
-      <div><div style="font-size:.8rem;font-weight:600">${b.name}</div><div style="font-size:.63rem;color:var(--text3)">${fmt(b.amount)}/mo · due ${b.due_day}th</div></div>
-      <button class="bicon" onclick="addSugBill(${i})">+ Add</button>
-    </div>`).join('')}
-    <button class="btn btn-p" style="margin-top:9px" onclick="addAllSug()">Add All (${suggested.length})</button>`;
-}
-async function addSugBill(i) {
-  const b=window._sugBills[i]; if(!b) return;
-  const res=await req('/api/bills',{method:'POST',body:{name:b.name,amount:b.amount,due_day:b.due_day,category:b.category}});
-  if(res){S.bills.push({...b,id:res.id,paid:false});saveLocal();renderBills();}
-}
-async function addAllSug() {
-  for(const b of(window._sugBills||[])){
-    if(S.bills.some(x=>x.name.toLowerCase()===b.name.toLowerCase())) continue;
-    const res=await req('/api/bills',{method:'POST',body:{name:b.name,amount:b.amount,due_day:b.due_day,category:b.category}});
-    if(res?.id) S.bills.push({...b,id:res.id,paid:false});
-  }
-  saveLocal();renderBills();document.getElementById('billSugCard').style.display='none';
-}
-
-// ═══════════════════════════════════════════════════════
-// MORE
-// ═══════════════════════════════════════════════════════
-function renderMore() {
-  const u=usr();
-  const ini=(u.name||'?').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)||'?';
-  ['moreAv','avatarBtn'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=ini;});
-  document.getElementById('moreName').textContent=u.name||'Unknown';
-  document.getElementById('moreEmail').textContent=u.email||'';
-  document.getElementById('setGoal').value=S.settings.monthly_goal||9500;
-  document.getElementById('setQuota').value=S.settings.daily_quota||400;
-  document.getElementById('setSwMonthly').value=S.settings.sw_monthly||0;
-
-  document.getElementById('acctsList').innerHTML=S.accounts.length
-    ?S.accounts.map(a=>`<div class="acct-row">
-        <div class="acct-icon">${a.type==='credit'?'💳':'🏦'}</div>
-        <div class="acct-body"><div class="acct-name">${a.name}</div><div class="acct-sub">${a.institution||''} · ${ttc(a.subtype||a.type)}</div></div>
-        <div class="acct-bal" style="color:${a.type==='credit'?'var(--red)':'var(--green)'}">${a.type==='credit'?'-':'+'}${fmt(a.balances?.current||0)}</div>
-      </div>`).join('')
-    :'<div class="empty">No accounts connected</div>';
-
-  document.getElementById('swList').innerHTML=S.splitwise.length
-    ?S.splitwise.map(d=>`<div class="acct-row"><div class="acct-icon">👤</div><div class="acct-body"><div class="acct-name">${d.name}</div><div class="acct-sub">Personal · Splitwise</div></div><div class="acct-bal" style="color:var(--red)">-${fmt(d.amount)}</div></div>`).join('')
-    :'<div class="empty">Connect Splitwise to see balances</div>';
-
-  document.getElementById('debtsList').innerHTML=S.debts.length
-    ?S.debts.map(d=>`<div class="acct-row"><div class="acct-icon">💸</div><div class="acct-body"><div class="acct-name">${d.name}</div><div class="acct-sub">${d.monthly_payment?fmt(d.monthly_payment)+'/mo · ':''}${d.notes||''}</div></div><div class="acct-bal" style="color:var(--red)">-${fmt(d.amount)}</div></div>`).join('')
-    :'<div class="empty">No manual debts</div>';
-}
-
-// ═══════════════════════════════════════════════════════
-// EARNINGS ACTIONS
-// ═══════════════════════════════════════════════════════
-async function logEarning() {
-  const amt=parseFloat(document.getElementById('logAmt').value);
-  const plat=document.getElementById('logPlat').value;
-  const date=document.getElementById('logDate').value||_todayStr;
-  const note=document.getElementById('logNote').value.trim();
-  if(!amt||amt<=0) return flash('logMsg','Enter a valid amount','var(--red)');
-  const res=await req('/api/earnings',{method:'POST',body:{amount:amt,platform:plat,date,note,is_manual:true}});
-  if(!res) return;
-  S.earnings.push({...res,amount:amt,platform:plat,date,note,is_manual:true});
-  document.getElementById('logAmt').value='';document.getElementById('logNote').value='';
-  flash('logMsg','✅ '+fmt(amt)+' logged!','var(--green)');
-  saveLocal();renderEarnings();renderHome();
-}
-
-async function quickLog() {
-  const amt=parseFloat(document.getElementById('qAmt').value);
-  const plat=document.getElementById('qPlat').value;
-  const note=document.getElementById('qNote').value.trim();
-  if(!amt||amt<=0) return;
-  const res=await req('/api/earnings',{method:'POST',body:{amount:amt,platform:plat,date:_todayStr,note,is_manual:true}});
-  if(res){S.earnings.push({...res,amount:amt,platform:plat,date:_todayStr,note,is_manual:true});closeModal('quickMod');document.getElementById('qAmt').value='';document.getElementById('qNote').value='';saveLocal();renderHome();renderEarnings();}
-}
-
-async function deleteEarning(id) {
-  await req(`/api/earnings/${id}`,{method:'DELETE'});
-  S.earnings=S.earnings.filter(e=>e.id!==id);
-  saveLocal();renderEarnHist();renderHome();
-}
-
-function openEditEarn(id) {
-  const e=S.earnings.find(x=>x.id===id); if(!e) return;
-  document.getElementById('editEarnId').value=id;
-  document.getElementById('editEarnAmt').value=e.amount;
-  document.getElementById('editEarnPlat').value=e.platform;
-  document.getElementById('editEarnDate').value=e.date;
-  document.getElementById('editEarnNote').value=e.note||'';
-  openModal('editEarnMod');
-}
-
-async function saveEditEarn() {
-  const id=document.getElementById('editEarnId').value;
-  const amt=parseFloat(document.getElementById('editEarnAmt').value);
-  const plat=document.getElementById('editEarnPlat').value;
-  const date=document.getElementById('editEarnDate').value;
-  const note=document.getElementById('editEarnNote').value.trim();
-  if(!amt||amt<=0) return;
-  await req(`/api/earnings/${id}`,{method:'PATCH',body:{amount:amt,platform:plat,date,note}});
-  const idx=S.earnings.findIndex(e=>e.id===id);
-  if(idx>=0) Object.assign(S.earnings[idx],{amount:amt,platform:plat,date,note});
-  closeModal('editEarnMod');saveLocal();renderEarnings();renderHome();
-}
-
-// ═══════════════════════════════════════════════════════
-// SHIFT TIMER
-// ═══════════════════════════════════════════════════════
-function toggleShift() { if(localStorage.getItem('pb_shift')) endShift(); else startShift(); }
-function startShift() {
-  localStorage.setItem('pb_shift',Date.now());
-  localStorage.setItem('pb_shift_e',todayEarnings());
-  const btn=document.getElementById('shiftBtn');
-  if(btn){btn.textContent='🛑 End Shift';btn.style.background='var(--red)';}
-  document.getElementById('shiftStatLine').style.display='block';
-  document.getElementById('shiftCard').style.background='var(--s1)';
-  _shiftInterval=setInterval(tickShift,1000);tickShift();
-}
-function endShift() {
-  const start=parseInt(localStorage.getItem('pb_shift')||0);
-  const el=Date.now()-start, hours=el/3600000;
-  const h=Math.floor(hours),m=Math.floor((hours-h)*60);
-  clearInterval(_shiftInterval);_shiftInterval=null;
-  // Prompt user to enter earnings — auto-calc was unreliable
-  const earnedStr=prompt(`Shift ended: ${h}h ${m}m\nHow much did you earn this shift? ($)`,'0');
-  if(earnedStr===null){
-    // User cancelled — restart timer
-    _shiftInterval=setInterval(tickShift,1000);tickShift();
-    localStorage.setItem('pb_shift',start);
-    return;
-  }
-  const earned=Math.max(0,parseFloat(earnedStr)||0);
-  localStorage.removeItem('pb_shift');localStorage.removeItem('pb_shift_e');
-  const shift={id:Date.now()+'',date:_todayStr,start:new Date(start).toTimeString().slice(0,5),end:new Date().toTimeString().slice(0,5),hours:Math.round(hours*10)/10,earned:Math.round(earned*100)/100,perHour:hours>.05?Math.round(earned/hours*100)/100:0};
-  S.shifts.unshift(shift);if(S.shifts.length>50)S.shifts.pop();
-  req('/api/shifts',{method:'POST',body:shift});saveLocal();
-  const btn=document.getElementById('shiftBtn');
-  if(btn){btn.textContent='🚗 Start Shift';btn.style.background='';}
-  document.getElementById('shiftStatLine').style.display='none';
-  document.getElementById('shiftDisp').textContent='00:00:00';
-  document.getElementById('shiftCard').style.background='';
-  alert(`✅ Shift saved!\n${h}h ${m}m · ${fmt(earned)} earned · ${fmt(shift.perHour)}/hr`);
-}
-function tickShift() {
-  const start=parseInt(localStorage.getItem('pb_shift')||0); if(!start) return;
-  const el=Date.now()-start;
-  const h=Math.floor(el/3600000),m=Math.floor((el%3600000)/60000),s=Math.floor((el%60000)/1000);
-  const pad=n=>String(n).padStart(2,'0');
-  document.getElementById('shiftDisp').textContent=`${pad(h)}:${pad(m)}:${pad(s)}`;
-  const startE=parseFloat(localStorage.getItem('pb_shift_e')||0);
-  const earned=Math.max(0,todayEarnings()-startE), hrs=el/3600000;
-  document.getElementById('shiftStatLine').textContent=`${h}h ${m}m · ${fmt(earned)} earned · ${fmt(hrs>.05?earned/hrs:0)}/hr`;
-}
-function saveManualShift() {
-  const date=document.getElementById('sDate').value||_todayStr;
-  const start=document.getElementById('sStart').value;
-  const end=document.getElementById('sEnd').value;
-  const earned=parseFloat(document.getElementById('sEarned').value)||0;
-  const notes=document.getElementById('sNotes').value.trim();
-  if(!start||!end) return alert('Please set start and end time');
-  const [sh,sm]=start.split(':').map(Number),[eh,em]=end.split(':').map(Number);
-  const hours=Math.max(0,((eh*60+em)-(sh*60+sm))/60);
-  const shift={id:Date.now()+'',date,start,end,hours:Math.round(hours*10)/10,earned,perHour:hours>0?Math.round(earned/hours*100)/100:0,notes};
-  S.shifts.unshift(shift);if(S.shifts.length>50)S.shifts.pop();
-  req('/api/shifts',{method:'POST',body:shift});saveLocal();closeModal('editShiftMod');
-  ['sDate','sStart','sEnd','sEarned','sNotes'].forEach(id=>document.getElementById(id).value='');
-  renderEarnings();
-}
-function restoreShift() {
-  if(!localStorage.getItem('pb_shift')) return;
-  const btn=document.getElementById('shiftBtn');
-  if(btn){btn.textContent='🛑 End Shift';btn.style.background='var(--red)';}
-  document.getElementById('shiftStatLine').style.display='block';
-  _shiftInterval=setInterval(tickShift,1000);tickShift();
-}
-
-// ═══════════════════════════════════════════════════════
-// BILLS ACTIONS
-// ═══════════════════════════════════════════════════════
-async function addBill() {
-  const name=document.getElementById('bName').value.trim();
-  const amt=parseFloat(document.getElementById('bAmt').value);
-  const day=parseInt(document.getElementById('bDay').value);
-  const cat=document.getElementById('bCat').value;
-  if(!name||!amt||!day) return;
-  const res=await req('/api/bills',{method:'POST',body:{name,amount:amt,due_day:day,category:cat}});
-  if(res){S.bills.push({...res,name,amount:amt,due_day:day,category:cat,paid:false});closeModal('addBillMod');document.getElementById('bName').value='';document.getElementById('bAmt').value='';document.getElementById('bDay').value='';saveLocal();renderBills();renderHome();}
-}
-async function addOneTime() {
-  const name=document.getElementById('otName').value.trim();
-  const amt=parseFloat(document.getElementById('otAmt').value);
-  const due=document.getElementById('otDue').value;
-  const notes=document.getElementById('otNotes').value.trim();
-  if(!name||!amt||!due) return;
-  const res=await req('/api/onetime',{method:'POST',body:{name,amount:amt,due_date:due,notes}});
-  if(res){S.onetime.push({...res,name,amount:amt,due_date:due,notes,paid:false,_ot:true});closeModal('addOTMod');document.getElementById('otName').value='';document.getElementById('otAmt').value='';document.getElementById('otDue').value='';document.getElementById('otNotes').value='';saveLocal();renderBills();renderHome();}
-}
-async function payBill(id,type) {
-  const arr=type==='ot'?S.onetime:S.bills;
-  await req((type==='ot'?'/api/onetime/':'/api/bills/')+id,{method:'PATCH',body:{paid:true}});
-  const b=arr.find(x=>x.id===id);if(b)b.paid=true;
-  saveLocal();renderBills();renderHome(); // immediately recalculates target
-}
-async function unpayBill(id,type) {
-  const arr=type==='ot'?S.onetime:S.bills;
-  await req((type==='ot'?'/api/onetime/':'/api/bills/')+id,{method:'PATCH',body:{paid:false}});
-  const b=arr.find(x=>x.id===id);if(b)b.paid=false;
-  saveLocal();renderBills();renderHome();
-}
-async function skipBill(id,type) {
-  const arr=type==='ot'?S.onetime:S.bills;
-  await req((type==='ot'?'/api/onetime/':'/api/bills/')+id,{method:'PATCH',body:{skipped:true}});
-  const b=arr.find(x=>x.id===id);if(b)b.skipped=true;
-  saveLocal();renderBills();renderHome();
-}
-async function unskipBill(id,type) {
-  const arr=type==='ot'?S.onetime:S.bills;
-  await req((type==='ot'?'/api/onetime/':'/api/bills/')+id,{method:'PATCH',body:{skipped:false}});
-  const b=arr.find(x=>x.id===id);if(b)b.skipped=false;
-  saveLocal();renderBills();renderHome();
-}
-function openEditBillMod(id,type) {
-  _editBillId=id;_editBillType=type;
-  const arr=type==='ot'?S.onetime:S.bills;
-  const b=arr.find(x=>x.id===id);if(!b)return;
-  document.getElementById('ebName').value=b.name;
-  document.getElementById('ebAmt').value=b.amount;
-  document.getElementById('ebDay').value=type==='ot'?b.due_date:b.due_day;
-  document.getElementById('ebCat').value=b.category||'other';
-  document.getElementById('ebDayLbl').textContent=type==='ot'?'Due Date':'Due Day';
-  openModal('editBillMod');
-}
-async function saveEditBill() {
-  const name=document.getElementById('ebName').value.trim();
-  const amt=parseFloat(document.getElementById('ebAmt').value);
-  const day=document.getElementById('ebDay').value;
-  const cat=document.getElementById('ebCat').value;
-  if(!name||!amt) return;
-  const arr=_editBillType==='ot'?S.onetime:S.bills;
-  const route=(_editBillType==='ot'?'/api/onetime/':'/api/bills/')+_editBillId;
-  const updates=_editBillType==='ot'?{name,amount:amt,due_date:day,category:cat}:{name,amount:amt,due_day:parseInt(day),category:cat};
-  await req(route,{method:'PATCH',body:updates});
-  const b=arr.find(x=>x.id===_editBillId);if(b)Object.assign(b,updates);
-  closeModal('editBillMod');saveLocal();renderBills();renderHome();
-}
-async function deleteBill() {
-  if(!_editBillId||!confirm('Delete this bill?')) return;
-  const arr=_editBillType==='ot'?S.onetime:S.bills;
-  await req((_editBillType==='ot'?'/api/onetime/':'/api/bills/')+_editBillId,{method:'DELETE'});
-  if(_editBillType==='ot') S.onetime=S.onetime.filter(x=>x.id!==_editBillId);
-  else S.bills=S.bills.filter(x=>x.id!==_editBillId);
-  closeModal('editBillMod');saveLocal();renderBills();renderHome();
-}
-
-// ═══════════════════════════════════════════════════════
-// DEBTS
-// ═══════════════════════════════════════════════════════
-async function addDebt() {
-  const name=document.getElementById('dName').value.trim();
-  const amt=parseFloat(document.getElementById('dAmt').value);
-  const mo=parseFloat(document.getElementById('dMonthly').value)||0;
-  const notes=document.getElementById('dNotes').value.trim();
-  if(!name||!amt) return;
-  const res=await req('/api/debts',{method:'POST',body:{name,amount:amt,original:amt,monthly_payment:mo,notes}});
-  if(res){S.debts.push({...res,name,amount:amt,original:amt,monthly_payment:mo,notes});closeModal('addDebtMod');['dName','dAmt','dMonthly','dNotes'].forEach(id=>document.getElementById(id).value='');saveLocal();renderMore();}
-}
-
-// ═══════════════════════════════════════════════════════
-// SETTINGS
-// ═══════════════════════════════════════════════════════
-async function saveSettings() {
-  const goal=parseFloat(document.getElementById('setGoal').value)||9500;
-  const quota=parseFloat(document.getElementById('setQuota').value)||400;
-  const swM=parseFloat(document.getElementById('setSwMonthly').value)||0;
-  S.settings={monthly_goal:goal,daily_quota:quota,sw_monthly:swM};
-  await req('/api/settings',{method:'PUT',body:S.settings});
-  saveLocal();renderHome();alert('✅ Settings saved');
-}
-async function saveBudget() {
-  S.budgets={food:parseFloat(document.getElementById('budFood').value)||400,transportation:parseFloat(document.getElementById('budTrans').value)||600,shopping:parseFloat(document.getElementById('budShop').value)||150,entertainment:parseFloat(document.getElementById('budEnt').value)||50,utilities:parseFloat(document.getElementById('budUtil').value)||600,health:parseFloat(document.getElementById('budHealth').value)||100,other:parseFloat(document.getElementById('budOther').value)||300};
-  await req('/api/settings',{method:'PUT',body:{...S.settings,budgets:S.budgets}});
-  saveLocal();closeModal('editBudMod');renderBudBars();
-}
-
-// ═══════════════════════════════════════════════════════
-// AI BUDGET
-// ═══════════════════════════════════════════════════════
-async function requestAIBudget() {
-  const card=document.getElementById('aiBudCard'); card.style.display='block';
-  document.getElementById('aiBudRows').innerHTML='<div class="lrow"><div class="spinner"></div> Analyzing your transactions...</div>';
-  const mFreq={};
-  S.expenses.forEach(e=>{const m=(e.description||'').toLowerCase().trim().substring(0,25);if(!mFreq[m]){mFreq[m]={count:0,total:0,cat:e.category||'other'};}mFreq[m].count++;mFreq[m].total+=e.amount;});
-  const topM=Object.entries(mFreq).sort((a,b)=>b[1].total-a[1].total).slice(0,10).map(([name,{count,total,cat}])=>({name,count,total:Math.round(total),cat}));
-  const cTotals={};const threeM=new Date();threeM.setMonth(threeM.getMonth()-3);
-  S.expenses.filter(e=>new Date(e.date+'T12:00:00')>=threeM&&!e.is_income).forEach(e=>{const c=e.category||'other';cTotals[c]=(cTotals[c]||0)+e.amount;});
-  const cMonthly=Object.fromEntries(Object.entries(cTotals).map(([c,t])=>[c,Math.round(t/3)]));
-  const context=`Gig driver San Diego. 3-month category averages: ${JSON.stringify(cMonthly)}. Top merchants: ${JSON.stringify(topM)}. Monthly goal: $${S.settings.monthly_goal||9500}. Suggest smart monthly budget limits and flag high-spend merchants. Return ONLY JSON: {"budgets":{"food":N,"transportation":N,"shopping":N,"entertainment":N,"utilities":N,"health":N,"other":N},"flags":[{"merchant":"name","avg_monthly":N,"insight":"why this matters"}]}`;
-  try {
-    const r=await req('/api/ai/budget',{method:'POST',body:{context}});
-    if(!r?.budgets) throw new Error('No response');
-    window._aiBuds=r.budgets;
-    document.getElementById('aiBudRows').innerHTML=
-      Object.entries(r.budgets).map(([cat,sug])=>`<div class="acct-row" id="aibr-${cat}" style="flex-wrap:wrap;gap:5px">
-        <div style="flex:1"><div style="font-size:.83rem;font-weight:600">${ttc(cat)}</div><div style="font-size:.63rem;color:var(--text3)">Current ${fmt(S.budgets[cat]||0)} · Avg ${fmt(cMonthly[cat]||0)}/mo</div></div>
-        <div style="display:flex;gap:5px;align-items:center">
-          <input type="number" value="${sug}" id="aib-${cat}" style="width:65px;background:var(--s1);border:1.5px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:.75rem;padding:4px 7px;outline:none;text-align:right">
-          <button class="bicon" id="aibck-${cat}" onclick="toggleBudApproval('${cat}')">✓</button>
-        </div>
-      </div>`).join('')
-      +((r.flags||[]).length?`<div style="margin-top:11px;padding-top:9px;border-top:1px solid var(--border)"><div class="clbl">⚠️ High-Spend Merchants</div>${(r.flags||[]).map(f=>`<div style="background:var(--gold-bg);border-radius:8px;padding:7px 9px;margin-bottom:5px"><div style="font-size:.76rem;font-weight:700">${f.merchant} · ${fmt(f.avg_monthly)}/mo</div><div style="font-size:.67rem;color:var(--text2);margin-top:2px">${f.insight}</div></div>`).join('')}</div>`:'');
-  } catch(e) { document.getElementById('aiBudRows').innerHTML='<div class="empty">Could not generate suggestions.</div>'; }
-}
-function toggleBudApproval(cat) {
-  const btn=document.getElementById('aibck-'+cat),row=document.getElementById('aibr-'+cat);
-  if(_approvedBudgets.has(cat)){_approvedBudgets.delete(cat);if(btn){btn.style.background='';btn.style.color='';}if(row)row.style.background='';}
-  else{_approvedBudgets.add(cat);if(btn){btn.style.background='var(--green)';btn.style.color='#fff';}if(row)row.style.background='var(--green-bg)';}
-}
-async function applyApprovedBudgets() {
-  if(!_approvedBudgets.size) return alert('Tap ✓ on categories you want to approve first.');
-  _approvedBudgets.forEach(cat=>{const val=parseFloat(document.getElementById('aib-'+cat)?.value);if(val>0)S.budgets[cat]=val;});
-  await req('/api/settings',{method:'PUT',body:{...S.settings,budgets:S.budgets}});
-  saveLocal();document.getElementById('aiBudCard').style.display='none';renderBudBars();
-  alert(`✅ ${_approvedBudgets.size} budget limits saved!`);_approvedBudgets.clear();
-}
-
-// ═══════════════════════════════════════════════════════
-// PLAID
-// ═══════════════════════════════════════════════════════
-async function openPlaidLink() {
-  const r=await req('/api/plaid/link-token',{method:'POST'});
-  if(!r?.link_token) return alert('Could not connect. Try again.');
-  const handler=Plaid.create({
-    token:r.link_token,
-    onSuccess:async(public_token,meta)=>{
-      setSyncing(true);
-      const ex=await req('/api/plaid/exchange-token',{method:'POST',body:{public_token,institution_name:meta.institution?.name}});
-      if(ex?.ok){await syncPlaid();await loadAccounts();}
-      setSyncing(false);
-    },
-    onExit:err=>{if(err)console.error(err);}
-  });
-  handler.open();
-}
-async function fullResync() {
-  if(!confirm('This will re-fetch ALL transactions from your banks including deposits. Takes 10-20 seconds. Continue?')) return;
-  setSyncing(true);
-  document.getElementById('syncLbl').textContent='Full sync...';
-  try {
-    // Reset cursor and clear old transactions
-    await req('/api/plaid/reset-sync', {method:'POST'});
-    // Clear local cache
-    S.expenses=[];
-    saveLocal();
-    // Re-sync from scratch
-    await syncPlaid();
-    alert('✅ Full sync complete! Check Income tab for deposits.');
-  } catch(e) { alert('Sync failed. Try again.'); }
-  setSyncing(false);
-}
-
-async function syncPlaid() {
-  setSyncing(true);
-  const r=await req('/api/plaid/transactions');
-  if(r?.transactions) {
-    r.transactions.forEach(t=>{
-      // Income/deposits ARE included in expenses with is_income:true
-      // so they show in the Income tab on the Spend page
-      // They are excluded from spending totals by the !e.is_income filter elsewhere
-      const key=getMKey(t.description);
-      if(S.rules[key]) t.category=S.rules[key];
-      // Auto-categorize transfers
-      const desc=(t.description||'').toLowerCase();
-      if(!S.rules[key] && (desc.includes('save your change')||desc.includes('backup balance')||desc.includes('transfer')||desc.includes('zelle'))) {
-        t.category='transfers'; t.is_income=false;
-      }
-      if(!S.expenses.some(e=>e.plaid_id===t.plaid_id)) S.expenses.push(t);
-      else{const idx=S.expenses.findIndex(e=>e.plaid_id===t.plaid_id);if(idx>=0&&S.rules[key])S.expenses[idx].category=t.category;}
-    });
-    saveLocal();renderHome();
-    if(document.getElementById('page-spend').classList.contains('active')) renderSpend();
-  }
-  setSyncing(false);
-}
-async function loadAccounts() {
-  const r=await req('/api/plaid/accounts');
-  if(r?.accounts){S.accounts=r.accounts;saveLocal();renderMore();renderHome();}
-}
-
-// ═══════════════════════════════════════════════════════
-// SPLITWISE
-// ═══════════════════════════════════════════════════════
-async function connectSplitwise() { const r=await req('/api/splitwise/auth-url');if(r?.url)window.location.href=r.url; }
-async function loadSplitwise()    { const r=await req('/api/splitwise/balances');if(r?.balances){S.splitwise=r.balances;saveLocal();} }
-
-// ═══════════════════════════════════════════════════════
-// AI BRIEFING
-// ═══════════════════════════════════════════════════════
-async function loadBriefing() {
-  const cached=JSON.parse(localStorage.getItem('pb_brief')||'{}');
-  if(cached.headline&&Date.now()-cached.ts<30*60*1000){showBriefing(cached);return;}
-  try {
-    const r=await req('/api/ai/briefing');
-    if(r?.headline){localStorage.setItem('pb_brief',JSON.stringify({...r,ts:Date.now()}));showBriefing(r);}
-  } catch{}
-}
-function showBriefing(r) {
-  const card=document.getElementById('briefCard');if(!card)return;
-  card.style.display='block';
-  document.getElementById('briefEmoji').textContent=r.mood==='positive'?'🚀':r.mood==='warning'?'⚠️':'📊';
-  document.getElementById('briefHead').textContent=r.headline||'Daily Briefing';
-  document.getElementById('briefBody').textContent=r.briefing||'';
-  document.getElementById('briefTip').textContent=r.tip||'';
-}
-
-// ═══════════════════════════════════════════════════════
-// AI CHAT
-// ═══════════════════════════════════════════════════════
-async function sendChat() {
-  const inp=document.getElementById('chatIn');
-  const msg=inp.value.trim();if(!msg)return;
-  inp.value='';addBubble(msg,'user');
-  document.getElementById('chatSug').style.display='none';
-  const loading=addBubble('','ai',true);
-  try {
-    const now=new Date();
-    const context=`Avinash is a gig driver (Uber/Lyft) in San Diego. App: Livvy.
-Today ${_todayStr}: earned $${todayEarnings().toFixed(2)}, spent $${todaySpending().toFixed(2)}
-Week: $${weekEarnings().toFixed(2)} | Month: $${monthEarnings().toFixed(2)} | Goal: $${S.settings.monthly_goal}
-Daily target: $${calcDailyTarget().toFixed(2)}
-Unpaid bills: $${S.bills.filter(b=>!b.paid).reduce((s,b)=>s+b.amount,0).toFixed(2)}
-Splitwise owed: $${S.splitwise.reduce((s,d)=>s+d.amount,0).toFixed(2)}
-Days left this month: ${getDaysLeft()}
-History: ${_chatHistory.slice(-3).map(m=>m.r+': '+m.c).join(' | ')}
-Be concise, specific with numbers, like a sharp financial coach. Max 2-3 sentences.`;
-    _chatHistory.push({r:'user',c:msg});
-    const r=await req('/api/ai/chat',{method:'POST',body:{question:msg,context}});
-    const answer=r?.answer||'Server may be waking up — try again.';
-    _chatHistory.push({r:'ai',c:answer});
-    loading.remove();addBubble(answer,'ai');
-  } catch(e){loading.remove();addBubble('Connection error.','ai');}
-}
-function sendSug(btn){document.getElementById('chatIn').value=btn.textContent;sendChat();}
-function addBubble(text,role,isLoading=false) {
-  const msgs=document.getElementById('chatMsgs');
-  const div=document.createElement('div');div.className='bubble '+role;
-  if(isLoading)div.innerHTML='<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
-  else div.textContent=text;
-  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;return div;
-}
-
-// ═══════════════════════════════════════════════════════
-// DRILL DOWN
-// ═══════════════════════════════════════════════════════
-function drillEarn(period) {
-  refreshDate();
-  const now=new Date(),mon=new Date(now);
-  mon.setDate(now.getDate()-((now.getDay()+6)%7));mon.setHours(0,0,0,0);
-  let list=[...S.earnings],title='',icon='⚡';
-  if(period==='today'){list=list.filter(e=>e.date===_todayStr);title='Today';}
-  else if(period==='week'){list=list.filter(e=>new Date(e.date+'T12:00:00')>=mon);title='This Week';}
-  else if(period==='month'){list=list.filter(e=>e.date.startsWith(_monthStr));title='This Month';}
-  list=list.sort((a,b)=>b.date.localeCompare(a.date));
-  const total=list.reduce((s,e)=>s+e.amount,0);
-  const pI={Uber:'🚗',Lyft:'💜',Cash:'💵',Other:'💰'};
-  document.getElementById('drillIcon').textContent=icon;
-  document.getElementById('drillTotal').textContent=fmt(total);
-  document.getElementById('drillSub').textContent=`${list.length} entries · ${title}`;
-  document.getElementById('drillList').innerHTML=list.length
-    ?list.map(e=>`<div class="txn"><div class="tlogo" style="font-size:.9rem">${pI[e.platform]||'💰'}</div><div class="tbody"><div class="tname">${e.platform}${e.note?' · '+e.note:''}</div><div class="tmeta">${e.date}</div></div><div class="tamt" style="color:var(--green)">+${fmt(e.amount)}</div></div>`).join('')
-    :'<div class="empty">No earnings this period</div>';
-  openModal('drillMod');
-}
-
-// ═══════════════════════════════════════════════════════
-// CELEBRATE
-// ═══════════════════════════════════════════════════════
-let _lastCel=null;
-function celebrate() {
-  if(_lastCel===_todayStr) return; _lastCel=_todayStr;
-  const card=document.getElementById('targetCard');
-  if(card){card.classList.add('celebrating');setTimeout(()=>card.classList.remove('celebrating'),500);}
-  const colors=['#4ade80','#fbbf24','#60a5fa','#a78bfa','#f87171'];
-  for(let i=0;i<10;i++) setTimeout(()=>{
-    const c=document.createElement('div');c.className='confetti';
-    c.style.cssText=`left:${15+Math.random()*70}%;top:15%;background:${colors[i%5]};animation-duration:${.7+Math.random()*.4}s`;
-    document.body.appendChild(c);setTimeout(()=>c.remove(),1300);
-  },i*50);
-}
-
-// ═══════════════════════════════════════════════════════
-// SYNC
-// ═══════════════════════════════════════════════════════
-function setSyncing(v) {
-  document.getElementById('syncDot').className='sync-dot'+(v?' syncing':'');
-  document.getElementById('syncLbl').textContent=v?'Syncing...':'Live';
-}
-
-// ═══════════════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════════════
-function flash(id,msg,color) {
-  const el=document.getElementById(id);if(!el)return;
-  el.textContent=msg;el.style.color=color;setTimeout(()=>el.textContent='',3000);
-}
-function saveLocal() {
-  localStorage.setItem('pb_state',JSON.stringify({earnings:S.earnings,expenses:S.expenses,bills:S.bills,onetime:S.onetime,debts:S.debts,splitwise:S.splitwise,accounts:S.accounts,rules:S.rules,budgets:S.budgets,settings:S.settings,shifts:S.shifts}));
-}
-function loadLocal() { try{const d=JSON.parse(localStorage.getItem('pb_state')||'{}');Object.assign(S,d);}catch{} }
-function loadRules()  { try{const r=localStorage.getItem('pb_rules');if(r)Object.assign(S.rules,JSON.parse(r));}catch{} }
-function logout() { localStorage.removeItem('pb_token');localStorage.removeItem('pb_user');window.location.href='/'; }
-function exportData() {
-  const b=new Blob([JSON.stringify({state:S,exported:new Date().toISOString()},null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`livvy-backup-${_todayStr}.json`;a.click();URL.revokeObjectURL(a.href);
-}
-function importData(inp) {
-  const f=inp.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.state){Object.assign(S,d.state);saveLocal();renderHome();alert('✅ Data restored!');}}catch{alert('Invalid backup file');}};
-  r.readAsText(f);
-}
-
-// ═══════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════
-async function init() {
-  refreshDate();
-
-  // Splitwise callback
-  const params=new URLSearchParams(window.location.search);
-  if(params.get('splitwise')==='connected'){
-    window.history.replaceState({},'','/app.html');
-    setTimeout(async()=>{await loadSplitwise();renderMore();},800);
-  }
-
-  loadLocal();loadRules();
-
-  // Avatar
-  const u=usr();
-  const ini=(u.name||'?').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)||'?';
-  document.getElementById('avatarBtn').textContent=ini;
-
-  // Restore shift
-  restoreShift();
-
-  // Render from cache immediately
-  renderHome();
-
-  // Restore last page
-  const lastPage=localStorage.getItem('pb_page')||'home';
-  if(lastPage!=='home') showPage(lastPage);
-
-  // Fetch from server
-  setSyncing(true);
-  try {
-    const [earnings,bills,debts,settings,onetime]=await Promise.all([
-      req('/api/earnings'),req('/api/bills'),req('/api/debts'),req('/api/settings'),req('/api/onetime'),
-    ]);
-    // STRICT: only manual earnings go to S.earnings
-    if(earnings?.data) S.earnings=earnings.data.filter(e=>e.is_manual!==false);
-    if(bills?.data)    S.bills=bills.data;
-    if(debts?.data)    S.debts=debts.data;
-    if(settings)       S.settings={...S.settings,...settings};
-    if(onetime?.data)  S.onetime=onetime.data;
-    if(settings?.budgets) S.budgets={...S.budgets,...settings.budgets};
-
-    // Load merchant rules from server
-    const rulesRes=await req('/api/rules');
-    if(rulesRes) Object.assign(S.rules,rulesRes);
-
-    // Parallel: Plaid + Splitwise + Accounts
-    await Promise.allSettled([syncPlaid(),loadSplitwise(),loadAccounts()]);
-
-    saveLocal();
-    refreshDate(); // refresh date after all data loaded
-    renderHome();
-    if(lastPage==='bills')    renderBills();
-    if(lastPage==='spend')    renderSpend();
-    if(lastPage==='more')     renderMore();
-    if(lastPage==='earnings') renderEarnings();
-
-    // AI briefing last
-    loadBriefing();
-  } catch(e){console.error('Init:',e);}
-  setSyncing(false);
-}
-
-init();
-</script>
+<script src="./storage.js"></script>
+<script src="./ui-helpers.js"></script>
+<script src="./data-io.js"></script>
+<script src="./modals.js"></script>
+<script src="./txn-row.js"></script>
+<script src="./target-calc.js"></script>
+<script src="./shift-timer.js"></script>
+<script src="./plaid.js"></script>
+<script src="./ai.js"></script>
+<script src="./app.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-# PBTrack v3 — Gig Driver Finance Dashboard
+# Livvy — Gig Driver Finance Dashboard
 
 > Personal finance command center built specifically for Uber/Lyft drivers.  
 > Tracks daily earnings manually, auto-imports bank spending via Plaid,  
@@ -9,7 +9,7 @@
 
 ## What This App Does
 
-PBTrack is a full-stack web app accessible from any device via a URL.  
+Livvy is a full-stack web app accessible from any device via a URL.  
 It is **not** a generic finance app — every feature is designed around  
 the reality of gig driving: variable income, daily targets, shift tracking,  
 and managing multiple debts alongside monthly bills.
@@ -91,7 +91,7 @@ Daily target reads from `bills[]` and `debts[]` ONLY
 
 | Layer | Technology |
 |---|---|
-| Frontend | Single-file HTML/CSS/JS (app.html) |
+| Frontend | HTML + modular JS (app.html + 10 JS files + styles.css) |
 | Backend | Node.js + Express (server.js) |
 | Database | Supabase (PostgreSQL) |
 | Auth | JWT (bcryptjs + jsonwebtoken) |
@@ -99,7 +99,7 @@ Daily target reads from `bills[]` and `debts[]` ONLY
 | Debt tracking | Splitwise OAuth API |
 | AI | Anthropic Claude (claude-sonnet-4-20250514) |
 | Hosting | Render (free tier) |
-| Fonts | Syne + DM Mono + Inter (Google Fonts) |
+| Fonts | Inter + DM Mono (Google Fonts) |
 | Merchant logos | Clearbit Logo API (free) |
 
 ---
@@ -108,12 +108,22 @@ Daily target reads from `bills[]` and `debts[]` ONLY
 
 | File | Purpose |
 |---|---|
-| `app.html` | Complete dashboard — all 5 tabs, all features, all JS logic |
+| `app.html` | Dashboard shell — all 5 tabs and 13 modals, loads all JS modules |
+| `styles.css` | All app CSS — design tokens, components, dark/light theme, utility classes |
+| `storage.js` | localStorage helpers — saveLocal, loadLocal, loadRules, logout |
+| `ui-helpers.js` | DOM utilities — flash messages, sync indicator |
+| `data-io.js` | Backup and restore — exportData, importData |
+| `modals.js` | Modal open/close + tap-outside-to-dismiss listener |
+| `txn-row.js` | Transaction row rendering — merchant logos, category icons |
+| `target-calc.js` | Daily target formula + all earnings/spending calculation helpers |
+| `shift-timer.js` | Shift timer — start, stop, tick, save, restore on reload |
+| `plaid.js` | Plaid bank sync — link, resync, transaction fetch, account load |
+| `ai.js` | AI features — morning briefing, chat, budget suggestions |
+| `app.js` | Core — state object, API layer, navigation, all render functions, init |
 | `index.html` | Login and signup page |
 | `server.js` | Backend API — auth, earnings, bills, Plaid, Splitwise, AI |
 | `package.json` | Node.js dependencies |
-| `database.sql` | Supabase schema — run once to create all tables |
-| `.env.example` | Template for environment variables — copy to `.env` |
+| `.env.example` | Environment variable template — copy to `.env` |
 | `.gitignore` | Keeps `.env` and `node_modules` out of GitHub |
 | `README.md` | This file |
 
@@ -125,17 +135,17 @@ Copy `.env.example` to `.env` and fill in all values.
 Never commit `.env` to GitHub — it is in `.gitignore`.
 
 ```
-SUPABASE_URL           = https://xxxx.supabase.co
-SUPABASE_SERVICE_KEY   = eyJ... (service_role key — NOT anon key)
-JWT_SECRET             = any long random string (32+ chars)
-PLAID_CLIENT_ID        = from dashboard.plaid.com → Developers → Keys
-PLAID_SECRET           = production secret from Plaid dashboard
-PLAID_ENV              = production
-SPLITWISE_CONSUMER_KEY = from splitwise.com/apps
+SUPABASE_URL              = https://xxxx.supabase.co
+SUPABASE_SERVICE_KEY      = eyJ... (service_role key — NOT anon key)
+JWT_SECRET                = any long random string (32+ chars)
+PLAID_CLIENT_ID           = from dashboard.plaid.com → Developers → Keys
+PLAID_SECRET              = production secret from Plaid dashboard
+PLAID_ENV                 = production
+SPLITWISE_CONSUMER_KEY    = from splitwise.com/apps
 SPLITWISE_CONSUMER_SECRET = from splitwise.com/apps
-ANTHROPIC_API_KEY      = sk-ant-... from console.anthropic.com
-APP_URL                = https://pbtrack.onrender.com
-PORT                   = 3000
+ANTHROPIC_API_KEY         = sk-ant-... from console.anthropic.com
+APP_URL                   = https://pbtrack.onrender.com
+PORT                      = 3000
 ```
 
 ---
@@ -159,7 +169,7 @@ PORT                   = 3000
 ## Setup Instructions (First Time)
 
 ### 1. Supabase
-1. Go to supabase.com and create a free project named `pbtrack`
+1. Go to supabase.com and create a free project
 2. Go to SQL Editor → New Query
 3. Paste the entire contents of `database.sql` and click Run
 4. Go to Settings → API and copy:
@@ -174,14 +184,14 @@ PORT                   = 3000
 
 ### 3. Splitwise
 1. Go to splitwise.com → Apps → Register your application
-2. App name: PBTrack
+2. App name: Livvy
 3. Homepage URL: https://pbtrack.onrender.com
 4. Callback URL: https://pbtrack.onrender.com/api/splitwise/callback
 5. Copy Consumer Key and Secret
 
 ### 4. Anthropic
 1. Go to console.anthropic.com
-2. API Keys → Create Key → name it PBTrack
+2. API Keys → Create Key → name it Livvy
 3. Copy the key → `ANTHROPIC_API_KEY`
 4. Add $5 credit minimum to your account
 
@@ -238,7 +248,7 @@ The home target ring is calculated using this 6-part formula:
 2. Each upcoming bill ÷ days until that bill is due
 3. One-time payments ÷ days until each payment is due
 4. Next month rent ($2,084) ÷ days left in month
-5. Splitwise debts total ÷ 90 days
+5. Splitwise monthly contribution ÷ 30
 6. Daily ops ($86.37/day fixed)
 
 Total per day - today's earnings already logged + today's spending
@@ -268,6 +278,7 @@ When you tap a Plaid transaction and change its category:
 | v1.x | Original single HTML file, localStorage only, no backend |
 | v2.x | Added backend + Plaid + AI but broke daily target formula |
 | v3.0 | Complete rebuild — strict data separation, all features working |
+| v3.1 | Frontend split into modular JS files — no behavior changes |
 
 ---
 
